@@ -80,7 +80,7 @@ text-align: center;
   </style>
 </head>
 <body>
-
+<h1>Welcome to ExamMiner 2.0!</h1>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -124,8 +124,22 @@ text-align: center;
 
   <h3>Generated Exam:</h3>
   <pre id="output"></pre>
-
+  <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
   <script>
+
+function setLoader(message) {
+  const loader = document.getElementById("loader");
+  loader.textContent = message;
+  loader.style.display = "block";
+}
+
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
+}
+
+
+
+/*
     async function generateExam() {
       const fileInput = document.getElementById('material');
       const file = fileInput.files[0];
@@ -150,6 +164,44 @@ text-align: center;
 
       document.getElementById("output").textContent = aiResponse || "No response from AI.";
     }
+
+*/
+
+async function generateExam() {
+  const fileInput = document.getElementById('material');
+  const file = fileInput.files[0];
+  if (!file) return alert('Please upload a learning material file.');
+
+  setLoader("Extracting content from file...");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const extractRes = await fetch("https://pyextractor-dl5w.onrender.com/extract", {
+    method: "POST",
+    body: formData
+  });
+
+  const extractData = await extractRes.json();
+  if (!extractData.content) {
+    hideLoader();
+    return alert("Failed to extract file content.");
+  }
+
+  setLoader("Summarizing content...");
+  const cleanedContent = await summarizeContent(extractData.content);
+  if (!cleanedContent) {
+    hideLoader();
+    return alert("Summarization failed.");
+  }
+
+  setLoader("Generating exam from TOS...");
+  const prompt = buildPrompt(cleanedContent);
+  const aiResponse = await sendToAI(prompt);
+
+  hideLoader();
+  document.getElementById("output").textContent = aiResponse || "No response from AI.";
+}
+
 
     function buildPrompt(content) {
       const subject = document.getElementById('subject').value;
