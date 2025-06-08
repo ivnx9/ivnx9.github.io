@@ -1,75 +1,9 @@
-<!---Doctype html>
-<html>
-<head>
-<title>Ivan Abueg </title>
-<meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
-<style>
-body {
-justify-content: center;
-align-items: center;
-text-align: center;
-}
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-</head>
-<body>
-<h1>Welcome to my webpages!</h1>
-<p>My websites that i own.</p>
-<a href="https://legitsource.coolpage.biz">Legitsources webpage #1</a><br/>
-<a href="http://legitsource.tk">Legitsources webpage #2</a><br/>
-<a href="https://ending.tk">Ending.tk webpage</a><br/>
-<a href="https://www.roleplayworld.tk">Role Play World - PH</a><br/>
-<a href="https://timeline.freeoda.com">Timeline webpage</a><br/>
-
-<br/>
-  <h2>Upload a File (PDF, DOCX, PPTX)</h2>
-  <input type="file" id="fileInput" />
-  <button onclick="uploadFile()">Extract Text</button>
-
-  <h3>Extracted Content:</h3>
-  <pre id="output"></pre>
-
-  <script>
-    function uploadFile() {
-      const fileInput = document.getElementById('fileInput');
-      const output = document.getElementById('output');
-      const file = fileInput.files[0];
-
-      if (!file) {
-        output.textContent = "Please select a file.";
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      fetch("https://pymultiextractor.onrender.com/", {
-        method: "POST",
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.content) {
-          output.textContent = data.content;
-        } else {
-          output.textContent = "Error: " + (data.error || "Unknown error");
-        }
-      })
-      .catch(err => {
-        output.textContent = "Request failed: " + err.message;
-      });
-    }
-  </script>
-
-</body>
-</html-->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <title>Exam Prompt Generator with TOS</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
@@ -83,7 +17,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.1</p>
+  <p>System version 1.0.2</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -216,7 +150,14 @@ async function generateExam() {
       const shuffle = document.getElementById('shuffle').checked ? "Yes" : "No";
       const answerKey = document.getElementById('answerKey').checked ? "Yes" : "No";
 
-      return `You are an AI Exam Generator. Based on the information below, generate a complete exam. Do not include a Table of Specification. Make sure to generate exactly [Number of Questions] questions. Do not use any Markdown formatting (e.g., no *bold*, no ### headings).
+      return `You are an Exam Generator AI. Based on the information below, generate a complete exam. Do not include a Table of Specification. Make sure to generate the exactly [Number of Questions] questions. Format the following exam cleanly and clearly for printing. Use this layout:
+
+- Add a centered title like: "[title] - [Grade number", if not specified don't add it.
+- For each question, write the number and question clearly.
+- For Multiple Choice, show options labeled A, B, C, D.
+- For True or False, just write: ( ) True   ( ) False in instruction then add an underline before the number question like "____ [number]. [Question] "
+- For Identification or Essay, leave space: _______________________
+- Do NOT use all Markdown symbols like **, ###, --- and others
 
 Subject: ${subject}
 Topic: ${topic}
