@@ -82,7 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 0.8</p>
+  <p>System version 0.9</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -147,36 +147,6 @@ function hideLoader() {
   document.getElementById("loader").style.display = "none";
 }
 
-
-
-/*
-    async function generateExam() {
-      const fileInput = document.getElementById('material');
-      const file = fileInput.files[0];
-      if (!file) return alert('Please upload a learning material file.');
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const extractRes = await fetch("https://pyextractor-dl5w.onrender.com/extract", {
-        method: "POST",
-        body: formData
-      });
-
-      const extractData = await extractRes.json();
-      if (!extractData.content) return alert("Failed to extract file content.");
-
-      const cleanedContent = await summarizeContent(extractData.content);
-      if (!cleanedContent) return alert("Summarization failed.");
-
-      const prompt = buildPrompt(cleanedContent);
-      const aiResponse = await sendToAI(prompt);
-
-      document.getElementById("output").textContent = aiResponse || "No response from AI.";
-    }
-
-*/
-
 async function generateExam() {
   const fileInput = document.getElementById('material');
   const file = fileInput.files[0];
@@ -186,7 +156,7 @@ async function generateExam() {
   const formData = new FormData();
   formData.append("file", file);
 
-  const extractRes = await fetch("https://pyextractor-dl5w.onrender.com/extract", {
+  const extractRes = await fetch("https://pymultiextractor.onrender.com/extract", {
     method: "POST",
     body: formData
   });
