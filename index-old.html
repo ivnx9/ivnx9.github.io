@@ -82,7 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>Deployment counter: 0.6</p>
+  <p>System version 0.6</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -128,6 +128,14 @@ text-align: center;
   <pre id="output"></pre>
   <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
   <script>
+const apikey = "Bearer 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";
+
+
+
+
+
+
+
 
 function setLoader(message) {
   const loader = document.getElementById("loader");
@@ -244,7 +252,7 @@ ${content}
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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",
+          "Authorization": apikey,
           "HTTP-Referer":"https://ivnx9.github.io",
           "X-Title":" Exam Miner 2.0"
         },
@@ -267,7 +275,7 @@ ${content}
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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",
+          "Authorization": apikey,
           "HTTP-Referer":"https://ivnx9.github.io",
           "X-Title":" Exam Miner 2.0"
         },
