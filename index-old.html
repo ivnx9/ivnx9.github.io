@@ -10,6 +10,7 @@ align-items: center;
 text-align: center;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <h1>Welcome to my webpages!</h1>
@@ -82,7 +83,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 0.9</p>
+  <p>System version 1.0.0</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -125,16 +126,32 @@ text-align: center;
   <button onclick="generateExam()">Generate Exam</button>
 
   <h3>Generated Exam:</h3>
+  <button onclick="downloadPDF()">Download exam as PDF</button>
+  <div id="pdf-output" style="white-space: pre-wrap;">
   <pre id="output"></pre>
+  </div>
   <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
   <script>
+
+function downloadPDF() {
+  const element = document.getElementById("pdf-output");
+  var fname = document.getElementById("topic").value;
+  if(fname == null) { fname = "exam_paper"; }
+  else { fname = fname + ".pdf"; }
+  
+  const opt = {
+    margin:       0.5,
+    filename:     fname,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, logging: true, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+    pagebreak: {mode: ['avoid-all', 'css', 'legacy']
+  };
+  html2pdf().set(opt).from(element).save();
+}
+
+    
 const apikey = "Bearer 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";
-
-
-
-
-
-
 
 
 function setLoader(message) {
