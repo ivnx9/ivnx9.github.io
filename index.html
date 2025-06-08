@@ -17,7 +17,7 @@
 </head>
 <body>
 <b style="color:red">Welcome to Exam Miner 2.0</b>
-<p>System version v0.7</p>
+<p>System version v0.8</p>
 <div id="auth-section">
   <button id="login-btn" onclick="startOAuth()">Login with OpenRouter</button>
   <p id="instruction">1. Create an OpenRouter Account<br/>
@@ -78,15 +78,13 @@ function getAccessToken() {
 }
 
 function showLoginUI(user = null) {
-  alert("showLoginUI");
-  
-  document.getElementById("instruction").innerText = user ? "Login successful." : "Login required.";
+  document.getElementById("instruction").style.display = user ? "none" : "inline-block";
   document.getElementById("login-btn").style.display = user ? "none" : "inline-block";
   document.getElementById("logout-btn").style.display = user ? "inline-block" : "none";
   document.getElementById("exam-section").style.display = user ? "block" : "none";
   document.getElementById("user-info").style.display = user ? "inline-block" : "none";
   document.getElementById("user-info").textContent = user ? `Logged in as: ${user}` : "";
-  document.getElementById("apik").innerText = getAccessToken();
+  document.getElementById("apik").textContent = user ? "API Key: "+getAccessToken() : "API Key Unavailable";
 }
 
 function logout() {
@@ -95,7 +93,6 @@ function logout() {
 }
 
 async function handleOAuthCallback() {
-  alert("handleOAuthCallback");
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("code");
   if (code) {
@@ -121,7 +118,6 @@ async function handleOAuthCallback() {
 }
   
 function startOAuth() {
-  alert("startOAuth");
   const verifier = generateVerifier();
   sha256(verifier).then(challengeBuffer => {
     const challenge = base64urlencode(challengeBuffer);
