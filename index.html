@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+   <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
   <title>Exam Prompt Generator with TOS</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
@@ -123,21 +124,17 @@
     }
 
     function startOAuth() {
-      const verifier = generateVerifier();
-      sha256(verifier).then(challengeBuffer => {
-        const challenge = base64urlencode(challengeBuffer);
-        localStorage.setItem("or_code_verifier", verifier);
+  const verifier = generateVerifier();
+  sha256(verifier).then(challengeBuffer => {
+    const challenge = base64urlencode(challengeBuffer);
+    localStorage.setItem("or_code_verifier", verifier);
 
-        const params = new URLSearchParams({
-          response_type: "code",
-          client_id: "exam-prompt-generator",
-          redirect_uri: window.location.origin + window.location.pathname,
-          code_challenge_method: "S256",
-          code_challenge: challenge,
-          scope: "openid"
-        });
-        window.location.href = `https://openrouter.ai/oauth/authorize?${params}`;
-      });
+    const callbackURL = encodeURIComponent(window.location.origin + window.location.pathname);
+
+    const authURL = `https://openrouter.ai/auth?callback_url=${callbackURL}&code_challenge=${challenge}&code_challenge_method=S256`;
+
+    window.location.href = authURL;
+  });
     }
 
     function generateVerifier(length = 64) {
