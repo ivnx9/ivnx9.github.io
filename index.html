@@ -17,7 +17,7 @@
 </head>
 <body>
 <b style="color:red">Welcome to Exam Miner 2.0</b>
-<p>System version v0.6</p>
+<p>System version v0.7</p>
 <div id="auth-section">
   <button id="login-btn" onclick="startOAuth()">Login with OpenRouter</button>
   <p id="instruction">1. Create an OpenRouter Account<br/>
@@ -79,13 +79,14 @@ function getAccessToken() {
 
 function showLoginUI(user = null) {
   alert("showLoginUI");
-  //document.getElementById("instruction").innerText = user ? "Login successful." : "Login required.";
+  
+  document.getElementById("instruction").innerText = user ? "Login successful." : "Login required.";
   document.getElementById("login-btn").style.display = user ? "none" : "inline-block";
   document.getElementById("logout-btn").style.display = user ? "inline-block" : "none";
   document.getElementById("exam-section").style.display = user ? "block" : "none";
   document.getElementById("user-info").style.display = user ? "inline-block" : "none";
   document.getElementById("user-info").textContent = user ? `Logged in as: ${user}` : "";
-  document.getElementById("apik").innerText = localStorage.getItem("or_access_token");
+  document.getElementById("apik").innerText = getAccessToken();
 }
 
 function logout() {
@@ -112,30 +113,13 @@ async function handleOAuthCallback() {
     if (data.key) {
       localStorage.setItem("or_access_token", data.key);
       history.replaceState(null, "", window.location.pathname);
-      //await getUserInfo();
-      showloginUI("Authenticated User");
+      showLoginUI("Authenticated User");
     } else {
       alert("Failed to exchange code for API key.");
     }
   }
 }
-/*
-async function getUserInfo() {
-  alert("getUserInfo");
-  try {
-    const res = await fetch("https://openrouter.ai/v1/auth/me", {
-      headers: { Authorization: `Bearer ${getAccessToken()}` }
-    });
-    if (!res.ok) throw new Error("Unauthorized");
-    const data = await res.json();
-    showLoginUI(data.name || data.id || "user");
-  } catch (err) {
-    console.warn("Auth failed:", err.message);
-    alert(" Auth failed:  "+err.message);
-    logout();
-  }
-}
-*/
+  
 function startOAuth() {
   alert("startOAuth");
   const verifier = generateVerifier();
