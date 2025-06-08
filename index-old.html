@@ -61,7 +61,7 @@ text-align: center;
   </script>
 
 </body>
-</html--->
+</html-->
 
 
 <!DOCTYPE html>
@@ -82,7 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>Deployment counter: 0.5</p>
+  <p>Deployment counter: 0.6</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -99,7 +99,7 @@ text-align: center;
   </div>
 
   <h2>Section C: Configure Exam</h2>
-  <label>Number of Questions: <input type="number" id="questionCount" min="1" /></label>
+  <label>Number of Questions: <input type="number" value="20" id="questionCount" min="1" /></label>
 
   <label>Difficulty:
     <div class="difficulty-group">
@@ -210,6 +210,9 @@ async function generateExam() {
       const topic = document.getElementById('topic').value;
       const grade = document.getElementById('grade').value;
       const questionCount = document.getElementById('questionCount').value;
+      if (questionCount == null || questionCount == 0) {
+        const questionCount = 20;
+      }
 
       const formats = Array.from(document.querySelectorAll('.format:checked'))
                            .map(cb => cb.value).join(', ');
@@ -242,7 +245,7 @@ ${content}
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer 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",
-          " HTTP-Referer":"https://ivnx9.github.io",
+          "HTTP-Referer":"https://ivnx9.github.io",
           "X-Title":" Exam Miner 2.0"
         },
         body: JSON.stringify({
@@ -254,7 +257,7 @@ ${content}
         })
       });
       const data = await res.json();
-      alert(data);
+      console.log(data);
       return data.choices?.[0]?.message?.content || null;
     }
 
@@ -265,7 +268,7 @@ ${content}
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer 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",
-          " HTTP-Referer":"https://ivnx9.github.io",
+          "HTTP-Referer":"https://ivnx9.github.io",
           "X-Title":" Exam Miner 2.0"
         },
         body: JSON.stringify({
