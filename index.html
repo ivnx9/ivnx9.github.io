@@ -82,6 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
+  <p>Deployment counter: 0.1</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -251,6 +252,7 @@ ${content}
         })
       });
       const data = await res.json();
+      alert(await res.json());
       return data.choices?.[0]?.message?.content || null;
     }
 
