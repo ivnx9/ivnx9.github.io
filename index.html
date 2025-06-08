@@ -82,7 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>Deployment counter: 0.1</p>
+  <p>Deployment counter: 0.2</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -241,7 +241,9 @@ ${content}
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
+          "Authorization": "Bearer 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",
+          " HTTP-Referer":"ivnx9.github.io",
+          "X-Title":" Exam Miner 2.0"
         },
         body: JSON.stringify({
           model: model,
@@ -262,7 +264,9 @@ ${content}
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
+          "Authorization": "Bearer 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",
+          " HTTP-Referer":"ivnx9.github.io",
+          "X-Title":" Exam Miner 2.0"
         },
         body: JSON.stringify({
           model: model,
