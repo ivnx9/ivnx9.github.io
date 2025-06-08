@@ -128,6 +128,7 @@ async function getUserInfo() {
     showLoginUI(data.name || data.id || "user");
   } catch (err) {
     console.warn("Auth failed:", err.message);
+    alert(" Auth failed:  "+err.message);
     logout();
   }
 }
