@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
+  <title>Exam Prompt Generator with TOS</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    h2 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea { width: 100%; padding: 6px; margin-top: 5px; }
+    .checkbox-group, .difficulty-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
+    button { padding: 10px 15px; margin-top: 20px; }
+    pre { background: #f0f0f0; padding: 10px; white-space: pre-wrap; }
+    #auth-section { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <div id="auth-section">
+    <button id="login-btn" onclick="startOAuth()">Login with OpenRouter</button>
+    <span id="user-info" style="display:none;"></span>
+    <button id="logout-btn" style="display:none;" onclick="logout()">Logout</button>
+  </div>
+
+  <div id="exam-section" style="display:none;">
+    <h2>Section A: Upload Learning Material</h2>
+    <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
+    <label>Subject: <input type="text" id="subject" /></label>
+    <label>Topic/Title: <input type="text" id="topic" /></label>
+    <label>Grade Level: <input type="text" id="grade" /></label>
+
+    <h2>Section B: Choose Exam Type</h2>
+    <div class="checkbox-group">
+      <label><input type="checkbox" value="Multiple Choice" class="format" /> Multiple Choice</label>
+      <label><input type="checkbox" value="True or False" class="format" /> True or False</label>
+      <label><input type="checkbox" value="Identification" class="format" /> Identification</label>
+      <label><input type="checkbox" value="Matching Type" class="format" /> Matching Type</label>
+      <label><input type="checkbox" value="Essay" class="format" /> Essay</label>
+    </div>
+
+    <h2>Section C: Configure Exam</h2>
+    <label>Number of Questions: <input type="number" id="questionCount" min="1" /></label>
+
+    <label>Difficulty:
+      <div class="difficulty-group">
+        <label><input type="radio" name="difficulty" value="Easy" /> Easy</label>
+        <label><input type="radio" name="difficulty" value="Medium" /> Medium</label>
+        <label><input type="radio" name="difficulty" value="Hard" /> Hard</label>
+      </div>
+    </label>
+
+    <label><input type="checkbox" id="shuffle" /> Shuffle Questions</label>
+    <label><input type="checkbox" id="answerKey" /> Include Answer Key</label>
+
+    <h2>Select AI Model</h2>
+    <select id="model">
+      <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+      <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3</option>
+      <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral 3.1</option>
+      <option value="google/gemini-2.5-pro-exp-03-25:free">Gemini 2.5 Pro</option>
+      <option value="bytedance-research/ui-tars-72b:free">UI-TARS 72B</option>
+    </select>
+
+    <h2>Section D: Generate & Edit</h2>
+    <button onclick="generateExam()">Generate Exam</button>
+
+    <h3>Generated Exam:</h3>
+    <pre id="output"></pre>
+    <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
+  </div>
+
+  <script>
+    let openrouterAccessToken = localStorage.getItem("or_access_token") || null;
+
+    function showLoginUI(user = null) {
+      document.getElementById("login-btn").style.display = user ? "none" : "inline-block";
+      document.getElementById("logout-btn").style.display = user ? "inline-block" : "none";
+      document.getElementById("exam-section").style.display = user ? "block" : "none";
+      document.getElementById("user-info").style.display = user ? "inline-block" : "none";
+      document.getElementById("user-info").textContent = user ? `Logged in as: ${user}` : "";
+    }
+
+    function logout() {
+      localStorage.removeItem("or_access_token");
+      location.reload();
+    }
+
+    function handleOAuthCallback() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessToken = urlParams.get("access_token");
+      if (accessToken) {
+        localStorage.setItem("or_access_token", accessToken);
+        openrouterAccessToken = accessToken;
+        history.replaceState(null, "", window.location.pathname);
+        getUserInfo();
+      }
+    }
+
+    async function getUserInfo() {
+      const res = await fetch("https://openrouter.ai/v1/auth/me", {
+        headers: { Authorization: `Bearer ${openrouterAccessToken}` }
+      });
+      const data = await res.json();
+      showLoginUI(data.name || data.id || "user");
+    }
+
+    function startOAuth() {
+      const verifier = generateVerifier();
+      sha256(verifier).then(challengeBuffer => {
+        const challenge = base64urlencode(challengeBuffer);
+        localStorage.setItem("or_code_verifier", verifier);
+
+        const callbackURL = encodeURIComponent(window.location.origin + window.location.pathname);
+        const authURL = `https://openrouter.ai/auth?callback_url=${callbackURL}&include_token=true&code_challenge=${challenge}&code_challenge_method=S256`;
+        window.location.href = authURL;
+      });
+    }
+
+    function generateVerifier(length = 64) {
+      const array = new Uint8Array(length);
+      window.crypto.getRandomValues(array);
+      return btoa(String.fromCharCode(...array)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+    }
+
+    function sha256(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      return crypto.subtle.digest("SHA-256", data);
+    }
+
+    function base64urlencode(buffer) {
+      return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+    }
+
+    async function summarizeContent(text) {
+      const model = document.getElementById("model").value;
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openrouterAccessToken}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: "Summarize this learning material to include only the most important topics, keywords, concepts, and definitions. Ignore greetings or instructions." },
+            { role: "user", content: text.slice(0, 10000) }
+          ]
+        })
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    async function sendToAI(prompt) {
+      const model = document.getElementById("model").value;
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openrouterAccessToken}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: "You are a helpful AI Exam Generator." },
+            { role: "user", content: prompt }
+          ]
+        })
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    async function generateExam() {
+      const fileInput = document.getElementById('material');
+      const file = fileInput.files[0];
+      if (!file) return alert('Please upload a learning material file.');
+
+      setLoader("Extracting content from file...");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const extractRes = await fetch("https://pyextractor-dl5w.onrender.com/extract", {
+        method: "POST",
+        body: formData
+      });
+
+      const extractData = await extractRes.json();
+      if (!extractData.content) {
+        hideLoader();
+        return alert("Failed to extract file content.");
+      }
+
+      setLoader("Summarizing content...");
+      const cleanedContent = await summarizeContent(extractData.content);
+      if (!cleanedContent) {
+        hideLoader();
+        return alert("Summarization failed.");
+      }
+
+      setLoader("Generating exam from TOS...");
+      const prompt = buildPrompt(cleanedContent);
+      const aiResponse = await sendToAI(prompt);
+
+      hideLoader();
+      document.getElementById("output").textContent = aiResponse || "No response from AI.";
+    }
+
+    function buildPrompt(content) {
+      const subject = document.getElementById('subject').value;
+      const topic = document.getElementById('topic').value;
+      const grade = document.getElementById('grade').value;
+      const questionCount = document.getElementById('questionCount').value;
+
+      const formats = Array.from(document.querySelectorAll('.format:checked'))
+                           .map(cb => cb.value).join(', ');
+
+      const difficulty = document.querySelector('input[name="difficulty"]:checked')?.value || "Any";
+      const shuffle = document.getElementById('shuffle').checked ? "Yes" : "No";
+      const answerKey = document.getElementById('answerKey').checked ? "Yes" : "No";
+
+      return `You are an AI Exam Generator. Use the following input to generate a Table of Specification (TOS) and then a full exam.
+
+Subject: ${subject}
+Topic: ${topic}
+Grade Level: ${grade}
+Exam Formats: ${formats}
+Number of Questions: ${questionCount}
+Difficulty: ${difficulty}
+Shuffle Questions: ${shuffle}
+Include Answer Key: ${answerKey}
+
+Learning Material Content:
+"""
+${content}
+"""`;
+    }
+
+    function setLoader(message) {
+      const loader = document.getElementById("loader");
+      loader.textContent = message;
+      loader.style.display = "block";
+    }
+
+    function hideLoader() {
+      document.getElementById("loader").style.display = "none";
+    }
+
+    handleOAuthCallback();
+    if (openrouterAccessToken) getUserInfo();
+  </script>
+
+</body>
+</html>
