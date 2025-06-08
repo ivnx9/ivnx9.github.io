@@ -17,13 +17,14 @@
 </head>
 <body>
 <b style="color:red">Welcome to Exam Miner 2.0</b>
-
+<p>System version v0.6</p>
 <div id="auth-section">
-  <button id="login-btn" onclick="startOAuth()">Login with OpenRouter.ai</button>
+  <button id="login-btn" onclick="startOAuth()">Login with OpenRouter</button>
   <p id="instruction">1. Create an OpenRouter Account<br/>
   2. Create Your API key to Settings > Keys<br/>
   3. Go back here and click Login > Authorize.</p>
   <span id="user-info" style="display:none;"></span>
+  <span id="apik"></span>
   <button id="logout-btn" style="display:none;" onclick="logout()">Logout</button>
 </div>
 
@@ -78,12 +79,13 @@ function getAccessToken() {
 
 function showLoginUI(user = null) {
   alert("showLoginUI");
-  document.getElementById("instruction").innerText = user ? "Login successful." : "Login required.";
+  //document.getElementById("instruction").innerText = user ? "Login successful." : "Login required.";
   document.getElementById("login-btn").style.display = user ? "none" : "inline-block";
   document.getElementById("logout-btn").style.display = user ? "inline-block" : "none";
   document.getElementById("exam-section").style.display = user ? "block" : "none";
   document.getElementById("user-info").style.display = user ? "inline-block" : "none";
   document.getElementById("user-info").textContent = user ? `Logged in as: ${user}` : "";
+  document.getElementById("apik").innerText = localStorage.getItem("or_access_token");
 }
 
 function logout() {
@@ -110,13 +112,14 @@ async function handleOAuthCallback() {
     if (data.key) {
       localStorage.setItem("or_access_token", data.key);
       history.replaceState(null, "", window.location.pathname);
-      await getUserInfo();
+      //await getUserInfo();
+      showloginUI("Authenticated User");
     } else {
       alert("Failed to exchange code for API key.");
     }
   }
 }
-
+/*
 async function getUserInfo() {
   alert("getUserInfo");
   try {
@@ -132,7 +135,7 @@ async function getUserInfo() {
     logout();
   }
 }
-
+*/
 function startOAuth() {
   alert("startOAuth");
   const verifier = generateVerifier();
