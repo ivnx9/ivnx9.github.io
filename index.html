@@ -72,7 +72,9 @@
 </div>
 
 <script>
-let openrouterAccessToken = localStorage.getItem("or_access_token") || null;
+function getAccessToken() {
+  return localStorage.getItem("or_access_token");
+}
 
 function showLoginUI(user = null) {
   document.getElementById("instruction").innerText = user ? "Login successful." : "Login required.";
@@ -103,12 +105,10 @@ async function handleOAuthCallback() {
       })
     });
     const data = await response.json();
-    console.log("Exchange result:", data);
     if (data.key) {
       localStorage.setItem("or_access_token", data.key);
-      openrouterAccessToken = data.key;
       history.replaceState(null, "", window.location.pathname);
-      getUserInfo();
+      await getUserInfo();
     } else {
       alert("Failed to exchange code for API key.");
     }
@@ -118,7 +118,7 @@ async function handleOAuthCallback() {
 async function getUserInfo() {
   try {
     const res = await fetch("https://openrouter.ai/v1/auth/me", {
-      headers: { Authorization: `Bearer ${openrouterAccessToken}` }
+      headers: { Authorization: `Bearer ${getAccessToken()}` }
     });
     if (!res.ok) throw new Error("Unauthorized");
     const data = await res.json();
@@ -163,7 +163,7 @@ async function summarizeContent(text) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${openrouterAccessToken}`
+      "Authorization": `Bearer ${getAccessToken()}`
     },
     body: JSON.stringify({
       model,
@@ -183,7 +183,7 @@ async function sendToAI(prompt) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${openrouterAccessToken}`
+      "Authorization": `Bearer ${getAccessToken()}`
     },
     body: JSON.stringify({
       model,
@@ -262,7 +262,7 @@ function hideLoader() {
 }
 
 handleOAuthCallback();
-if (openrouterAccessToken) getUserInfo();
+if (getAccessToken()) getUserInfo();
 </script>
 
 </body>
