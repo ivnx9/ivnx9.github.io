@@ -42,7 +42,7 @@ text-align: center;
       const formData = new FormData();
       formData.append("file", file);
 
-      fetch("https://pyextractor-dl5w.onrender.com/extract", {
+      fetch("https://pymultiextractor.onrender.com/", {
         method: "POST",
         body: formData
       })
@@ -82,7 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 0.7</p>
+  <p>System version 0.8</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
