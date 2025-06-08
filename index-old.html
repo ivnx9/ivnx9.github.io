@@ -83,7 +83,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.0</p>
+  <p>System version 1.0.1</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -145,7 +145,7 @@ function downloadPDF() {
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2, logging: true, useCORS: true },
     jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-    pagebreak: {mode: ['avoid-all', 'css', 'legacy']
+    pagebreak: {mode: ['avoid-all', 'css', 'legacy']}
   };
   html2pdf().set(opt).from(element).save();
 }
