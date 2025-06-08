@@ -82,7 +82,7 @@ text-align: center;
 </head>
 <body>
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 0.6</p>
+  <p>System version 0.7</p>
   <h2>Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -128,7 +128,7 @@ text-align: center;
   <pre id="output"></pre>
   <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
   <script>
-const apikey = "Bearer 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";
+const apikey = "Bearer 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";
 
 
 
@@ -229,7 +229,7 @@ async function generateExam() {
       const shuffle = document.getElementById('shuffle').checked ? "Yes" : "No";
       const answerKey = document.getElementById('answerKey').checked ? "Yes" : "No";
 
-      return `You are an AI Exam Generator. Use the following input to generate a Table of Specification (TOS) and then a full exam.
+      return `You are an AI Exam Generator. Based on the information below, generate a complete exam. Do not include a Table of Specification. Make sure to generate exactly [Number of Questions] questions. Do not use any Markdown formatting (e.g., no *bold*, no ### headings).
 
 Subject: ${subject}
 Topic: ${topic}
@@ -282,7 +282,7 @@ ${content}
         body: JSON.stringify({
           model: model,
           messages: [
-            { role: "system", content: "You are a helpful AI Exam Generator." },
+            { role: "system", content: "You are an expert AI Exam Generator with the applied TOS." },
             { role: "user", content: prompt }
           ]
         })
