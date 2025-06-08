@@ -19,7 +19,7 @@
 <b style="color:red">Welcome to Exam Miner 2.0</b>
   <div id="auth-section">
     
-    <button id="login-btn" onclick="startOAuth()">Login with OpenRouter</button>
+    <button id="login-btn" onclick="startOAuth()">Login with OpenRouter.ai</button>
     <p id="instruction">1. Create an OpenRouter Account<br/>
     2. Create Your API key to Settings > keys<br/>
     3.go back to this page and then click login > Authorize.</p>
@@ -78,6 +78,7 @@
     let openrouterAccessToken = localStorage.getItem("or_access_token") || null;
 
     function showLoginUI(user = null) {
+      document.getElementById("instruction").innerHTML = "Login Successfully..";
       document.getElementById("login-btn").style.display = user ? "none" : "inline-block";
       document.getElementById("instruction").style.display = user? "none" : "inline-block";
       document.getElementById("logout-btn").style.display = user ? "inline-block" : "none";
@@ -130,6 +131,7 @@
       });
       const data = await res.json();
       showLoginUI(data.name || data.id || "user");
+      alert(" Login successfully");
     }
 
     function startOAuth() {
