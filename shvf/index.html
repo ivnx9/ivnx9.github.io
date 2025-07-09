@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>IoT Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .sidebar {
+            width: 250px;
+            background: #222;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar h2 {
+            margin-bottom: 20px;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            display: block;
+            background: #333;
+            border-radius: 5px;
+        }
+        .sidebar a:hover {
+            background: #555;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        .header {
+            background: white;
+            padding: 15px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .menu-btn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #222;
+            color: white;
+            border: none;
+            padding: 0px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100%;
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .menu-btn {
+                display: block;
+            }
+            .chat-support-container-window {
+                position: fixed;
+                bottom: 50px;
+                right: 20px;
+                z-index: 9999;
+            }
+            .chat-window {
+                position: fixed;
+                height:400px;
+                top: 30px;
+                right: 20px;
+            }
+        }
+
+
+       
+
+        /* Floating Chat Container */
+.chat-support-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  font-family: Arial, sans-serif;
+}
+
+/* Chat Toggle Button (FAB style) */
+.chat-toggle {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #0078D7;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Chat Window */
+.chat-window {
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  height: 400px;
+  display: none;
+  flex-direction: column;
+  width: 320px;
+  max-height: 500px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+/* Chat Header */
+.chat-header {
+  background: #0078D7;
+  color: white;
+  padding: 12px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header span {
+  font-size: 16px;
+}
+
+.chat-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: transform 0.2s ease;
+}
+
+.chat-close-btn:hover {
+  transform: scale(1.2);
+  color: #ffdddd;
+}
+
+
+/* Chat Messages */
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 300px;
+  background: #f9f9f9;
+}
+
+.chat-messages .message {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  max-width: 80%;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+  margin-left: auto;
+  margin-right: 0;
+  border-top-right-radius: 0;
+  border-top-left-radius: 12px;
+}
+
+.message.bot {
+  background-color: #eee;
+  align-self: flex-start;
+}
+/* Marked down style */
+.message pre {
+  background: #f1f1f1;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.message code {
+  background: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.message blockquote {
+  border-left: 4px solid #ccc;
+  padding-left: 10px;
+  color: #666;
+}
+
+
+/* Chat Input */
+.chat-input-area {
+  display: flex;
+  border-top: 1px solid #ccc;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.chat-input-area button {
+  padding: 10px 15px;
+  border: none;
+  background: #0078D7;
+  color: white;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .chat-window {
+    width: 95vw;
+    max-height: 90vh;
+    right: 10px;
+    left: 10px;
+  }
+}
+
+
+img {
+      border: 4px solid #4CAF50;
+      max-width: 100%;
+      height: auto;
+      animation: cctvPulse 2s infinite;
+}
+
+@keyframes cctvPulse {
+  0%   { border: 4px solid #00FF41; }
+  50%  { border: 4px solid #000000; }
+  100% { border: 4px solid #00FF41; }
+}
+
+
+
+
+        /*  gauge */
+
+        .gaue {
+      position: relative;
+      width: 300px;
+      height: 160px;
+    }
+
+    svg {
+      width: 100%;
+      height: 180px;
+    }
+
+    .value {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      color: #1a1a1a;
+      pointer-events: none;
+    }
+
+    .value-2 {
+      position: absolute;
+      left: 55%;
+      top: 35%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      font-weight: bold;
+      color: #1a1a1a;
+      pointer-events: none;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* css grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.dashboard-card-2 {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.dashboard-card h4 {
+  margin-bottom: 10px;
+}
+
+/* Gauge Placeholder Style */
+.gauge {
+  width: 150px;
+  height: 150px;
+  background: #f1f1f1;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 50px;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+.gauge .value {
+  padding-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+    </style>
+</head>
+<body>
+    <div class="chat-toggle" onclick="toggleChatSupport()">💬</div>
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <h3>Smart HydroVertical Farm</h3>
+        <a href="#" onclick="changeContent('Dashboard')">Dashboard</a>
+        <a href="#" onclick="changeContent('Control & Configurations')">Control & Configurations</a>
+        <a href="#" onclick="changeContent('API Webhooks')">API Webhooks</a>
+        <a href="#" onclick="changeContent('Account Settings')">Account Settings</a>
+        <a href="#" onclick="changeContent('About')">About</a>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1 id="page-title">Dashboard</h1>
+        </div>
+
+        <!-- Dashboard -->
+
+        <div class="content" id="page-content1">
+          <!--p style="font-weight:bold; margin:5px;">CCTV Live snapshot</p>
+                      <img id="snapshot" src="images/latest.jpg" alt="Live Image"-->
+
+              
+                <h3 style="margin-bottom: 15px;">Smart Farm Live Dashboard</h3>
+                <div class="dashboard-grid-2">
+              <!-- CCTV -->
+                   <div class="dashboard-card">
+                    <h4>CCTV Live Snapshot</h4>
+                    <img id="snapshot" src="images/latest.jpg" alt="Live Image" />
+                  </div>
+                
+                  
+                <div class="dashboard-grid">
+              
+                  
+                  <!-- Weather -->
+                  <div class="dashboard-card">
+                    <h4>Weather Info</h4>
+                    <p id="weatherDisplay">Loading...</p>
+                  </div>
+              
+                  <!-- pH Level -->
+                  <div class="dashboard-card">
+                    <h4>pH Level</h4>
+                    <div class="gauge" id="phGauge">
+                      <svg viewBox="0 0 100 50">
+                        <!-- Background arc --
+                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="#eee" stroke-width="10"/>
+                    -->
+                        <!-- Gre<diven Arc (0-40%) -->
+                        <path d="M10 50 A40 40 0 0 1 38 20" fill="none" stroke="#4cd964" stroke-width="10"/>
+                    
+                        <!-- Orange Arc (40-75%) -->
+                        <path d="M38 20 A40 40 0 0 1 66 22" fill="none" stroke="#ffa500" stroke-width="10"/>
+                    
+                        <!-- Red Arc (75-100%) -->
+                        <path d="M66 22 A40 40 0 0 1 90 50" fill="none" stroke="#ff3b30" stroke-width="10"/>
+                    
+                        <!-- Needle -->
+                        <line id="needle2" x1="50" y1="50" x2="50" y2="5" stroke="#111" stroke-width="2" stroke-linecap="round"
+                              transform="rotate(-90 50 50)" />
+                      </svg>
+                      <div class="value" id="phValue">6.5</div>
+                    </div>
+                  </div>
+              
+                  <!-- TDS Level -->
+                  <div class="dashboard-card">
+                    <h4>TDS (ppm)</h4>
+                    <div class="gauge" id="tdsGauge">
+                      <svg viewBox="0 0 100 50">
+                        <!-- Background arc --
+                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="#eee" stroke-width="10"/>
+                    -->
+                        <!-- Gre<diven Arc (0-40%) -->
+                        <path d="M10 50 A40 40 0 0 1 38 20" fill="none" stroke="#4cd964" stroke-width="10"/>
+                    
+                        <!-- Orange Arc (40-75%) -->
+                        <path d="M38 20 A40 40 0 0 1 66 22" fill="none" stroke="#ffa500" stroke-width="10"/>
+                    
+                        <!-- Red Arc (75-100%) -->
+                        <path d="M66 22 A40 40 0 0 1 90 50" fill="none" stroke="#ff3b30" stroke-width="10"/>
+                    
+                        <!-- Needle -->
+                        <line id="needle2" x1="50" y1="50" x2="50" y2="5" stroke="#111" stroke-width="2" stroke-linecap="round"
+                              transform="rotate(-90 50 50)" />
+                      </svg>
+                      <div class="value" id="tdsValue">700</div>
+                    </div>
+                  </div>
+              
+                  <!-- Water Temp -->
+                  <div class="dashboard-card">
+                    <h4>Water Temperature</h4>
+                    <div class="gauge" id="waterTempGauge">
+                      <svg viewBox="0 0 100 50">
+                        <!-- Background arc --
+                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="#eee" stroke-width="10"/>
+                    -->
+                        <!-- Gre<diven Arc (0-40%) -->
+                        <path d="M10 50 A40 40 0 0 1 38 20" fill="none" stroke="#4cd964" stroke-width="10"/>
+                    
+                        <!-- Orange Arc (40-75%) -->
+                        <path d="M38 20 A40 40 0 0 1 66 22" fill="none" stroke="#ffa500" stroke-width="10"/>
+                    
+                        <!-- Red Arc (75-100%) -->
+                        <path d="M66 22 A40 40 0 0 1 90 50" fill="none" stroke="#ff3b30" stroke-width="10"/>
+                    
+                        <!-- Needle -->
+                        <line id="needle2" x1="50" y1="50" x2="50" y2="5" stroke="#111" stroke-width="2" stroke-linecap="round"
+                              transform="rotate(-90 50 50)" />
+                      </svg>
+                      <div class="value" id="waterTempValue">22°C</div>
+                    </div>
+                  </div>
+
+                  <!-- Water Level -->
+                  <div class="dashboard-card">
+                    <h4>Water Level</h4>
+                    <div class="gauge" id="waterLevelGauge">
+                      <svg viewBox="0 0 100 50">
+                        <!-- Background arc --
+                        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="#eee" stroke-width="10"/>
+                    -->
+                        <!-- Gre<diven Arc (0-40%) -->
+                        <path d="M10 50 A40 40 0 0 1 38 20" fill="none" stroke="#4cd964" stroke-width="10"/>
+                    
+                        <!-- Orange Arc (40-75%) -->
+                        <path d="M38 20 A40 40 0 0 1 66 22" fill="none" stroke="#ffa500" stroke-width="10"/>
+                    
+                        <!-- Red Arc (75-100%) -->
+                        <path d="M66 22 A40 40 0 0 1 90 50" fill="none" stroke="#ff3b30" stroke-width="10"/>
+                    
+                        <!-- Needle -->
+                        <line id="needle2" x1="50" y1="50" x2="50" y2="5" stroke="#111" stroke-width="2" stroke-linecap="round"
+                              transform="rotate(-90 50 50)" />
+                      </svg>
+                      <div class="value" id="waterLevelValue">85%</div>
+                    </div>
+                  </div>
+              
+                  <!-- Humidity -->
+                  <div class="dashboard-card">
+                    <h4>Humidity</h4>
+                    <div class="gauge" id="humidityGauge">
+                      <div class="value-2" id="humidityValue">60%</div>
+                    </div>
+                  </div>
+              
+                  <!-- Air Temp -->
+                  <div class="dashboard-card">
+                    <h4>Air Temperature</h4>
+                    <div class="gauge" id="airTempGauge">
+                      <div class="value-2" id="airTempValue">25°C</div>
+                    </div>
+                  </div>
+              
+                  
+              
+                  <!-- Relay Status (Simple Text List for now) -->
+                  <div class="dashboard-card">
+                    <h4>Relay Status</h4>
+                    <ul style="line-height: 1.6;">
+                      <li>Nutrient A Pump: <strong>ON</strong></li>
+                      <li>Nutrient B Pump: <strong>OFF</strong></li>
+                      <li>pH Up: <strong>OFF</strong></li>
+                      <li>pH Down: <strong>OFF</strong></li>
+                      <li>Water Pump: <strong>ON</strong></li>
+                      <li>Lights: <strong>ON</strong></li>
+                      <li>Solenoid Valve: <strong>OFF</strong></li>
+                    </ul>
+                  </div>
+              
+                </div>
+             
+            
+
+            </div>
+  <script>
+    setInterval(() => {
+      const img = document.getElementById("snapshot");
+      img.src = "images/latest.jpg?rand=" + new Date().getTime(); // prevent caching
+    }, 4000); // update every 10 seconds
+  </script>
+
+        <!-- Control & Configuration -->
+
+        <div class="content" style="display:none" id="page-content2">
+          <p>Content for 2 goes here...</p>
+          
+      </div>
+
+        <!-- API webhooks -->
+
+        <div class="content" style="display:none" id="page-content3">
+          <p>Content for 3 goes here...</p>
+      </div>
+
+      <!-- Account settings -->
+
+      <div class="content" style="display:none" id="page-content4">
+        <p>Content for 4 goes here...</p>
+    </div>
+
+    <!-- About -->
+
+    <div class="content" style="display:none" id="page-content5">
+      <p>Content for 5 goes here...</p>
+  </div>
+
+    </div>
+
+    <div class="chat-support-container">
+  
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <span>SHVF Customer Support<br/>
+      <span style="font-size:8px; font-style: italic;">A.I support</span></span>
+      <button class="chat-close-btn" onclick="toggleChatSupport()" aria-label="Close chat">×</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Type your message..." onkeydown="handleEnter(event)" />
+      <button id="msgBtn" onclick="sendChatMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<script>
+
+  const latitude = 14.5995; // Replace with your latitude
+  const longitude = 120.9842; // Replace with your longitude
+  
+  //const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,precipitation,surface_solar_radiation`;
+      const weatherDisplay = document.getElementById("weatherDisplay");
+      
+      
+  // Function to fetch and display weather data
+  async function fetchWeatherData() {
+      try {
+          const response = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=14&longitude=120&current_weather=true&hourly=temperature_2m,relative_humidity_2m,precipitation`
+          );
+  
+          if (!response.ok) throw new Error("Failed to fetch weather data.");
+  
+          const data = await response.json();
+  
+          // Debug: Log the data for inspection
+          console.log("Weather API Response:", data);
+  
+          // Safely extract current weather data
+          const currentTemp = data?.current_weather?.temperature ?? "--";
+          const windSpeed = data?.current_weather?.windspeed ?? "--";
+  
+          // Safely extract hourly data
+          const temperature = data?.hourly?.temperature_2m?.[0] ?? "--";
+          const humidity = data?.hourly?.relative_humidity_2m?.[0] ?? "--";
+          const precipitation = data?.hourly?.precipitation?.[0] ?? "--";
+  
+          // Display weather data
+          weatherDisplay.innerHTML = `
+              <strong>Current Temperature:</strong> ${currentTemp}°C<br/>
+              <strong>Wind Speed:</strong> ${windSpeed} km/h<br/>
+              <strong>Humidity:</strong> ${humidity}%<br/>
+              <strong>Precipitation:</strong> ${precipitation} mm<br/>
+          `;
+      } catch (error) {
+          console.error("Error fetching weather data:", error);
+          weatherDisplay.innerHTML = "<strong>Error loading weather data. Please try again later.</strong>";
+      }
+  }
+  
+  // Fetch data initially and every 10 minutes
+  fetchWeatherData();
+  setInterval(fetchWeatherData, 600000);
+  
+  
+  function handleEnter(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // stops the form or default action
+      sendChatMessage();
+    }
+  }
+          let chatMessagesArray = [{
+              role: "system",
+              content: "You are SHVF, who specialized of product called Smart Hydroponics Vertical Farm, a professional assistant specialized in analyzing Smart Hydroponic Vertical Farming data such as pH Levels, water levels, nutrient balance, temperature, and plant growth. Respond clearly, intelligently, and with agricultural insight. When user talk you in tagalog, talk to tagalog clearly in modern tagalog(taglish) and talk english if english, talk tagalog as default language. Respond as SHVF. Rules: Do not tell who you are, only tell who i tell who you are, avoid telling you're specialized with something, just talk normaly."
+          }];
+          
+          
+          async function sendChatMessage() {
+    const input = document.getElementById("chatInput");
+    var sndbtn = document.getElementById("msgBtn");
+    const msg = input.value.trim();
+    if (!msg) return;
+  
+    const chatMessages = document.getElementById("chatMessages");
+  
+    // Display user message
+    const userMsg = document.createElement("div");
+    userMsg.className = "message user";
+    userMsg.textContent = msg;
+    chatMessages.appendChild(userMsg);
+  
+    chatMessagesArray.push({ role: "user", content: msg });
+    input.value = "";
+    sndbtn.disabled = true;
+  
+    // Show typing indicator
+    const typingEl = document.createElement("div");
+    typingEl.className = "message bot typing";
+    typingEl.textContent = "Typing...";
+    chatMessages.appendChild(typingEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer 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"
+          /*"HTTP-Referer": "https://ivnx9.github.io",
+          "X-Title": "Multi A.I (by ivan abueg)"*/
+        },
+        body: JSON.stringify({
+          model: "deepseek/deepseek-r1:free", // or make this dynamic if you want
+          messages: chatMessagesArray
+        })
+      });
+  
+      const data = await response.json();
+      typingEl.remove();
+      sndbtn.disabled = false;
+  
+      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        const reply = data.choices[0].message.content;
+  
+        const botMsg = document.createElement("div");
+        botMsg.className = "message bot";
+        botMsg.innerHTML = marked.parse(reply);  //botMsg.innerHTML = reply;
+        chatMessages.appendChild(botMsg);
+  
+        chatMessagesArray.push({ role: "assistant", content: reply });
+      } else {
+        const errorMsg = document.createElement("div");
+        errorMsg.className = "message bot";
+        errorMsg.textContent = "AI: Something went wrong.";
+        chatMessages.appendChild(errorMsg);
+      }
+  
+    } catch (error) {
+      typingEl.remove();
+      sndbtn.disabled = false;
+      const errorMsg = document.createElement("div");
+      errorMsg.className = "message bot";
+      errorMsg.textContent = "Error: " + error.message;
+      chatMessages.appendChild(errorMsg);
+    }
+  
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+  }
+  
+  
+          function changeContent(title) {
+             if(title == "Dashboard") {
+              document.getElementById("page-title").textContent = title;
+              document.getElementById("page-content1").style.display = "block";
+              document.getElementById("page-content2").style.display = "none";
+              document.getElementById("page-content3").style.display = "none";
+              document.getElementById("page-content4").style.display = "none";
+              document.getElementById("page-content5").style.display = "none";
+            } else if(title == "Control & Configurations") {
+              document.getElementById("page-title").textContent = title;
+              document.getElementById("page-content1").style.display = "none";
+              document.getElementById("page-content2").style.display = "block";
+              document.getElementById("page-content3").style.display = "none";
+              document.getElementById("page-content4").style.display = "none";
+              document.getElementById("page-content5").style.display = "none";
+            } else if(title == "API Webhooks") {
+              document.getElementById("page-title").textContent = title;
+              document.getElementById("page-content1").style.display = "none";
+              document.getElementById("page-content2").style.display = "none";
+              document.getElementById("page-content3").style.display = "block";
+              document.getElementById("page-content4").style.display = "none";
+              document.getElementById("page-content5").style.display = "none";
+            } else if(title == "Account Settings") {
+              document.getElementById("page-title").textContent = title;
+              document.getElementById("page-content1").style.display = "none";
+              document.getElementById("page-content2").style.display = "none";
+              document.getElementById("page-content3").style.display = "none";
+              document.getElementById("page-content4").style.display = "block";
+              document.getElementById("page-content5").style.display = "none";
+            } else if(title == "About") {
+              document.getElementById("page-title").textContent = title;
+              document.getElementById("page-content1").style.display = "none";
+              document.getElementById("page-content2").style.display = "none";
+              document.getElementById("page-content3").style.display = "none";
+              document.getElementById("page-content4").style.display = "none";
+              document.getElementById("page-content5").style.display = "block";
+            }
+          }
+          
+          function toggleSidebar() {
+              document.getElementById("sidebar").classList.toggle("active");
+          }
+  
+  
+          // chat support function
+  
+          function toggleChatSupport() {
+    const chat = document.getElementById("chatWindow");
+    chat.style.display = chat.style.display === "flex" ? "none" : "flex";
+  }
+      </script>
+</body>
+</html>
