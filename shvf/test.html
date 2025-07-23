@@ -4,121 +4,128 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
   <title>SmartHydroFarm – Dashboard</title>
-
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <!-- =====  LIGHT THEME  ===== -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
+    /* 8-pt grid + typography scale */
     :root{
       --bg:#f5f7fa;
       --card:#ffffff;
       --accent:#00b894;
-      --accent2:#00cec9;
+      --success:#00cc9e;
       --text:#2d3436;
       --danger:#e17055;
       --radius:12px;
       --shadow:0 4px 16px rgba(0,0,0,.06);
       --trans:.3s ease;
+      --space-xs:4px;--space-s:8px;--space-m:12px;--space-l:16px;--space-xl:20px;--space-2xl:24px;--space-3xl:32px;
     }
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Exo 2',sans-serif}
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
 
-    /* SIDEBAR */
+    /* Typography scale */
+    h1{font-size:2rem;font-weight:700} /* 32 px */
+    h2{font-size:1.5rem;font-weight:600} /* 24 px */
+    h4{font-size:1.125rem;font-weight:500} /* 18 px */
+
+    /* Sidebar */
     .sidebar{
       width:250px;height:100%;background:var(--card);
       border-right:1px solid #e0e0e0;box-shadow:var(--shadow);
-      display:flex;flex-direction:column;padding:20px 0;position:fixed;z-index:5;
+      display:flex;flex-direction:column;padding:var(--space-xl) 0;position:fixed;z-index:5;
       transition:transform var(--trans);
     }
-    .sidebar h2{padding:0 20px 20px;color:var(--accent);font-size:1.2rem}
-    .sidebar a{color:var(--text);text-decoration:none;padding:14px 20px;margin:4px 0;
-      border-left:3px solid transparent;border-radius:0 var(--radius) var(--radius) 0;
+    .sidebar h2{padding:0 var(--space-xl) var(--space-xl);color:var(--accent)}
+    .sidebar a{color:var(--text);text-decoration:none;padding:var(--space-m) var(--space-xl);
+      margin:var(--space-xs) 0;border-left:3px solid transparent;border-radius:0 var(--radius) var(--radius) 0;
       transition:var(--trans)}
     .sidebar a:hover{background:rgba(0,184,148,.1)}
     .sidebar a.active{background:rgba(0,184,148,.15);border-color:var(--accent);font-weight:600}
-    .logout-btn{background:var(--danger);margin:20px;border-radius:var(--radius);
-      text-align:center;color:#fff;font-weight:700;cursor:pointer}
-    .logout-btn:hover{background:#d63031}
+    .logout-btn{background:var(--danger);margin:var(--space-xl);border-radius:var(--radius);
+      text-align:center;color:#fff;font-weight:700;cursor:pointer;padding:var(--space-m)}
 
-    /* MAIN */
+    /* Main */
     .main-content{flex:1;margin-left:250px;display:flex;flex-direction:column;
-      overflow:auto;padding:20px;background:var(--bg)}
-    header{background:var(--card);padding:15px 20px;font-size:1.5rem;font-weight:700;
-      border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+      overflow:auto;padding:var(--space-xl);background:var(--bg)}
+    @media(max-width:1024px){.main-content{margin-left:0}}
+    header{background:var(--card);padding:var(--space-l) var(--space-xl);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:var(--space-xl)}
     .content{background:var(--card);border:1px solid #e0e0e0;border-radius:var(--radius);
-      padding:20px;margin-bottom:20px;box-shadow:var(--shadow);display:none}
+      padding:var(--space-xl);margin-bottom:var(--space-xl);box-shadow:var(--shadow);display:none}
     .content.active{display:block}
 
-    /* GRIDS & CARDS */
-    .grid{display:grid;gap:20px}
+    /* Grid & Cards */
+    .grid{display:grid;gap:var(--space-xl)}
     .grid-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
     .grid-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
     .card{background:var(--card);border:1px solid #e0e0e0;border-radius:var(--radius);
-      padding:20px;text-align:center;box-shadow:var(--shadow);transition:var(--trans)}
+      padding:var(--space-xl);text-align:center;box-shadow:var(--shadow);transition:var(--trans)}
     .card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
-    .card h4{margin-bottom:10px;color:var(--accent)}
 
-    /* GAUGES */
+    /* Gauges + Skeleton */
     .gauge{display:flex;align-items:center;justify-content:center;position:relative;height:140px}
     .gauge span{font-size:1.8rem;font-weight:700;color:var(--accent)}
+    .skeleton{height:100%;width:100%;border-radius:var(--radius);
+      background:linear-gradient(90deg,#e0e0e0 25%,#f2f2f2 50%,#e0e0e0 75%);
+      background-size:200% 100%;animation:shimmer 1.5s infinite}
+    @keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
 
-    /* RELAYS */
-    .relay-grid{display:grid;gap:10px}
+    /* Relays */
+    .relay-grid{display:grid;gap:var(--space-l)}
     .relay-item{display:flex;justify-content:space-between;align-items:center;
-      padding:12px 16px;background:#f5f7fa;border-radius:var(--radius)}
-    .relay-state.on{background:rgba(0,184,148,.2);color:var(--accent);font-weight:600}
+      padding:var(--space-m) var(--space-l);background:#f5f7fa;border-radius:var(--radius)}
+    .relay-state.on{background:rgba(0,184,148,.2);color:var(--success);font-weight:600}
     .relay-state.off{background:rgba(225,112,85,.2);color:var(--danger)}
+    .btn{padding:var(--space-m) var(--space-l);border:none;border-radius:var(--radius);
+      font-weight:600;cursor:pointer;transition:var(--trans)}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.primary:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 
-    /* TOGGLE SWITCH */
-    .toggle{display:flex;align-items:center;justify-content:space-between;margin:10px 0}
-    .switch{position:relative;width:50px;height:24px;background:#ccc;border-radius:24px}
+    /* Toggle (accessible) */
+    .toggle{display:flex;align-items:center;justify-content:space-between;margin:var(--space-m) 0}
+    .switch{position:relative;width:52px;height:28px;background:#ccc;border-radius:28px}
     .switch input{opacity:0;width:0;height:0}
-    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;border-radius:24px;transition:var(--trans)}
-    .slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:var(--trans)}
-    input:checked + .slider{background:var(--accent)}
-    input:checked + .slider:before{transform:translateX(26px)}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;border-radius:28px;transition:var(--trans)}
+    .slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:var(--trans)}
+    input:checked + .slider{background:var(--success)}
+    input:checked + .slider:before{transform:translateX(24px)}
+    label.switch{min-width:44px;min-height:44px;display:inline-flex;align-items:center}
 
-    /* CROP SELECTOR */
-    .crop-list{display:flex;gap:20px;flex-wrap:wrap}
-    .crop-item{flex:1 1 150px;background:var(--card);border:1px solid #e0e0e0;border-radius:var(--radius);
-      padding:15px;text-align:center;cursor:pointer;transition:var(--trans)}
-    .crop-item.selected{border-color:var(--accent);box-shadow:var(--shadow)}
-    .crop-item img{width:100%;height:100px;object-fit:cover;border-radius:var(--radius);margin-bottom:8px}
-
-    /* MODAL */
-    .modal{
-      display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;
-      align-items:center;justify-content:center
-    }
-    .modal-content{background:var(--card);padding:25px;border-radius:var(--radius);
+    /* Modal */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center}
+    .modal-content{background:var(--card);padding:var(--space-xl);border-radius:var(--radius);
       width:90%;max-width:400px;box-shadow:var(--shadow)}
-    .modal-content input{width:100%;padding:10px;margin-top:8px;border:1px solid #e0e0e0;border-radius:var(--radius)}
-    .modal-actions{margin-top:15px;display:flex;gap:10px;justify-content:flex-end}
+    .modal-actions{margin-top:var(--space-l);display:flex;gap:var(--space-m);justify-content:flex-end}
 
-    /* DEVELOPER CARDS */
-    .dev-grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+    /* Developer cards */
+    .dev-grid{display:grid;gap:var(--space-xl);grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
     .dev-card{background:var(--card);border:1px solid #e0e0e0;border-radius:var(--radius);
-      padding:20px;text-align:center;transition:var(--trans)}
-    .dev-card img{width:100%;height:150px;object-fit:cover;border-radius:var(--radius);margin-bottom:10px}
-    .dev-card h5{color:var(--accent);margin-bottom:6px}
+      padding:var(--space-xl);text-align:center;transition:var(--trans);}
+    .dev-card img{width:100%;height:150px;object-fit:cover;border-radius:var(--radius);margin-bottom:var(--space-m)}
+    .dev-card h5{color:var(--accent);margin-bottom:var(--space-xs)}
     .dev-card p{font-size:.9rem;color:var(--text)}
 
-    /* RESPONSIVE */
+    /* Mobile */
+    @media(max-width:1024px){.main-content{margin-left:0}}
     @media(max-width:768px){
       .sidebar{transform:translateX(-100%)}
       .sidebar.active{transform:translateX(0)}
-      .main-content{margin-left:0}
+      .grid-2,.grid-4{grid-template-columns:1fr}
+    }
+    @media(max-width:480px){
+      .sidebar{width:100%}
+      .content{padding:var(--space-l)}
     }
   </style>
 </head>
 
 <body>
-  <!-- Mobile Menu Toggle -->
-  <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <!-- Mobile menu toggle -->
+  <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('active')">
+    <i class="fas fa-bars"></i>
+  </button>
 
   <!-- Sidebar -->
   <nav class="sidebar" id="sidebar">
@@ -133,9 +140,9 @@
 
   <!-- Main -->
   <main class="main-content">
-    <header id="page-title">Dashboard</header>
+    <header><h1 id="page-title">Dashboard</h1></header>
 
-    <!-- =====  DASHBOARD  ===== -->
+    <!-- Dashboard -->
     <section id="Dashboard" class="content active">
       <div class="grid grid-2">
         <div class="card">
@@ -143,49 +150,63 @@
           <img id="snapshot" src="images/latest.jpg" alt="Live Image" style="width:100%;border-radius:var(--radius)">
         </div>
         <div class="card">
-          <h4>Solar Forecast (Windy)</h4>
-          <iframe id="windyFrame" width="100%" height="250" frameborder="0"
-            src="https://embed.windy.com/embed2.html?lat=14.6&lon=120.98&zoom=6&level=surface&overlay=clouds&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=14&detailLon=121&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"></iframe>
+          <h4>Solar Forecast Map</h4>
+          <div id="mapPicker" style="height:250px;border-radius:var(--radius)"></div>
         </div>
       </div>
 
       <div class="grid grid-4">
-        <div class="card"><h4>pH Level</h4><div class="gauge"><span id="phValue">6.2</span></div></div>
-        <div class="card"><h4>TDS (ppm)</h4><div class="gauge"><span id="tdsValue">750</span></div></div>
-        <div class="card"><h4>Water Temp</h4><div class="gauge"><span id="waterTempValue">24°C</span></div></div>
-        <div class="card"><h4>Water Level</h4><div class="gauge"><span id="waterLevelValue">85%</span></div></div>
+        <div class="card">
+          <h4>pH Level</h4>
+          <div class="gauge" id="phGauge"><div class="skeleton"></div></div>
+        </div>
+        <div class="card">
+          <h4>TDS (ppm)</h4>
+          <div class="gauge" id="tdsGauge"><div class="skeleton"></div></div>
+        </div>
+        <div class="card">
+          <h4>Water Temp</h4>
+          <div class="gauge" id="waterTempGauge"><div class="skeleton"></div></div>
+        </div>
+        <div class="card">
+          <h4>Water Level</h4>
+          <div class="gauge" id="waterLevelGauge"><div class="skeleton"></div></div>
+        </div>
       </div>
 
       <div class="grid grid-2">
-        <div class="card"><h4>Humidity</h4><span class="value-2">65%</span></div>
-        <div class="card"><h4>Air Temperature</h4><span class="value-2">28°C</span></div>
+        <div class="card"><h4>Humidity</h4><span class="value-2" id="humidityValue">--</span></div>
+        <div class="card"><h4>Air Temperature</h4><span class="value-2" id="airTempValue">--</span></div>
       </div>
 
       <div class="card">
         <h4>Relay Status</h4>
         <div id="relayStatus" class="relay-grid">
-          <!-- injected by JS -->
+          <!-- Skeleton until JS loads -->
+          <div class="relay-item"><span>Nutrient A Pump</span><span class="relay-state on">ON</span></div>
+          <div class="relay-item"><span>Nutrient B Pump</span><span class="relay-state off">OFF</span></div>
+          <div class="relay-item"><span>pH Up</span><span class="relay-state off">OFF</span></div>
+          <div class="relay-item"><span>pH Down</span><span class="relay-state off">OFF</span></div>
+          <div class="relay-item"><span>Water Pump</span><span class="relay-state on">ON</span></div>
+          <div class="relay-item"><span>Lights</span><span class="relay-state on">ON</span></div>
+          <div class="relay-item"><span>Solenoid Valve</span><span class="relay-state off">OFF</span></div>
         </div>
       </div>
     </section>
 
-    <!-- =====  CONTROL & CONFIG  ===== -->
+    <!-- Control & Config -->
     <section id="Control" class="content">
       <div class="card">
         <h4>Select Device</h4>
         <select id="deviceSelect" onchange="loadDeviceConfig()"></select>
       </div>
-
       <div class="card">
         <h4>Automation</h4>
-        <div class="toggle">
-          <span>Automation Mode</span>
-          <label class="switch">
-            <input type="checkbox" id="autoToggle" onchange="toggleAutomation()" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div id="manualPanel" style="display:none;margin-top:15px">
+        <label class="switch" role="switch" aria-checked="true">
+          <input type="checkbox" id="autoToggle" onchange="toggleAutomation()" checked>
+          <span class="slider"></span>
+        </label>
+        <div id="manualPanel" style="display:none;margin-top:var(--space-l)">
           <div class="toggle"><span>Water Pump</span>
             <label class="switch"><input type="checkbox" id="pumpToggle"><span class="slider"></span></label>
           </div>
@@ -194,7 +215,6 @@
           </div>
         </div>
       </div>
-
       <div class="card">
         <h4>Select Crop & Settings</h4>
         <select id="cropSelect" onchange="applyCrop()">
@@ -204,26 +224,27 @@
           <option value="munggo">Munggo (pH 6.0-6.8, TDS 600-900)</option>
           <option value="spinach">Spinach (pH 6.2-6.8, TDS 550-800)</option>
         </select>
-        <div id="cropDetails" style="margin-top:10px"></div>
+        <div id="cropDetails" style="margin-top:var(--space-m)"></div>
       </div>
-
       <div class="card">
         <h4>Grow Light Schedule</h4>
-        <label>ON <input type="time" id="lightOn" value="06:00"></label>
+        <label>ON <input type="time" id="lightOn" value="06:00"></label><br>
         <label>OFF <input type="time" id="lightOff" value="18:00"></label>
-        <button class="btn" onclick="saveSchedule()">Save</button>
+        <button class="btn primary" onclick="saveSchedule()">Save</button>
       </div>
     </section>
 
-    <!-- =====  API WEBHOOKS  ===== -->
+    <!-- API Webhooks -->
     <section id="API" class="content">
       <div class="card">
-        <button class="btn" onclick="openApiModal()">+ Add Device</button>
-        <div id="apiList" class="relay-grid"></div>
+        <button class="btn primary" onclick="openApiModal()">+ Add Device</button>
+        <div id="apiList" class="relay-grid">
+          <!-- populated by JS -->
+        </div>
       </div>
     </section>
 
-    <!-- =====  ACCOUNT SETTINGS  ===== -->
+    <!-- Account Settings -->
     <section id="Account" class="content">
       <div class="card">
         <h4>Profile</h4>
@@ -234,20 +255,20 @@
         <h4>Subscription</h4>
         <p>Current: <span id="currentPlan">Free</span></p>
         <select id="planSelect" onchange="changePlan(this.value)">
-          <option value="free">Free - $0 / mo</option>
-          <option value="monthly">Monthly - $4.99 / mo</option>
-          <option value="yearly">Yearly - $49.99 / yr</option>
-          <option value="custom">Custom - contact</option>
+          <option value="free">Free – $0 / mo</option>
+          <option value="monthly">Monthly – $4.99 / mo</option>
+          <option value="yearly">Yearly – $49.99 / yr</option>
+          <option value="custom">Custom – contact us</option>
         </select>
       </div>
     </section>
 
-    <!-- =====  ABOUT  ===== -->
+    <!-- About -->
     <section id="About" class="content">
       <div class="card">
         <h2>Smart Hydroponics Vertical Farming</h2>
         <p>
-          An IoT-enabled, AI-driven vertical hydroponic system that optimizes plant growth while
+          An IoT-enabled, AI-driven vertical hydroponic system that optimises plant growth while
           conserving 95 % water and enabling remote monitoring & control from any device.
         </p>
       </div>
@@ -280,7 +301,7 @@
     </section>
   </main>
 
-  <!-- =====  API MODAL  ===== -->
+  <!-- API Modal -->
   <div class="modal" id="apiModal">
     <div class="modal-content">
       <h4>Add Device</h4>
@@ -289,20 +310,27 @@
       <input id="apiLat" placeholder="Latitude">
       <input id="apiLng" placeholder="Longitude">
       <div class="modal-actions">
-        <button class="btn" onclick="addDevice()">Save</button>
+        <button class="btn primary" onclick="addDevice()">Save</button>
         <button class="btn" onclick="closeApiModal()" style="background:#ccc">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- =====  SCRIPTS  ===== -->
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     /* JWT check */
     const token = localStorage.getItem("jwt_token");
     if (!token) { alert("Not logged in"); location.href="login.html"; }
 
-    /* =====  DATA STORES  ===== */
+    /* Data stores */
     let devices = [];
+    let crops = {
+      lettuce:{phMin:5.8,phMax:6.4,tdsMin:500,tdsMax:800,lightOn:"06:00",lightOff:"18:00"},
+      pechay:{phMin:6.0,phMax:7.0,tdsMin:400,tdsMax:700,lightOn:"06:30",lightOff:"17:30"},
+      munggo:{phMin:6.0,phMax:6.8,tdsMin:600,tdsMax:900,lightOn:"07:00",lightOff:"19:00"},
+      spinach:{phMin:6.2,phMax:6.8,tdsMin:550,tdsMax:800,lightOn:"05:30",lightOff:"18:30"}
+    };
     let relays = [
       {name:"Nutrient A Pump",state:true},
       {name:"Nutrient B Pump",state:false},
@@ -312,14 +340,8 @@
       {name:"Lights",state:true},
       {name:"Solenoid Valve",state:false}
     ];
-    let crops = {
-      lettuce:{phMin:5.8,phMax:6.4,tdsMin:500,tdsMax:800,lightOn:"06:00",lightOff:"18:00"},
-      pechay:{phMin:6.0,phMax:7.0,tdsMin:400,tdsMax:700,lightOn:"06:30",lightOff:"17:30"},
-      munggo:{phMin:6.0,phMax:6.8,tdsMin:600,tdsMax:900,lightOn:"07:00",lightOff:"19:00"},
-      spinach:{phMin:6.2,phMax:6.8,tdsMin:550,tdsMax:800,lightOn:"05:30",lightOff:"18:30"}
-    };
 
-    /* =====  TABS  ===== */
+    /* Tabs */
     document.querySelectorAll('.tab-link').forEach(link=>{
       link.addEventListener('click',e=>{
         e.preventDefault();
@@ -332,11 +354,43 @@
       });
     });
 
-    /* =====  SIDEBAR & LOGOUT  ===== */
+    /* Sidebar & logout */
     function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('active'); }
     function logout(){ localStorage.removeItem('jwt_token'); location.href='login.html'; }
 
-    /* =====  RELAYS  ===== */
+    /* Skeleton removal after data arrives */
+    function hideSkeleton(selector,value){
+      const el=document.querySelector(selector);
+      if(el.classList.contains('skeleton')){el.classList.remove('skeleton');el.innerHTML=value;}
+    }
+
+    /* Leaflet map */
+    document.addEventListener('DOMContentLoaded',()=>{
+      const map = L.map('mapPicker').setView([14.6, 120.98], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      let marker = L.marker([14.6, 120.98]).addTo(map);
+      map.on('click', e=>{
+        marker.setLatLng(e.latlng);
+        document.getElementById('apiLat').value = e.latlng.lat.toFixed(4);
+        document.getElementById('apiLng').value = e.latlng.lng.toFixed(4);
+      });
+    });
+
+    /* Fetch data & remove skeletons */
+    Promise.all([
+      fetch("https://api.open-meteo.com/v1/forecast?latitude=14&longitude=120&current_weather=true").then(r=>r.json())
+    ]).then(([wData])=>{
+      const w = wData.current_weather;
+      hideSkeleton('#phValue','6.2');
+      hideSkeleton('#tdsValue','750');
+      hideSkeleton('#waterTempValue','24°C');
+      hideSkeleton('#waterLevelValue','85%');
+      hideSkeleton('#humidityValue','65%');
+      hideSkeleton('#airTempValue','28°C');
+      hideSkeleton('#weatherDisplay',`${w.temperature}°C – ${w.windspeed} km/h`);
+    });
+
+    /* Relays */
     function renderRelays(){
       const el=document.getElementById('relayStatus');
       el.innerHTML=relays.map(r=>`
@@ -347,26 +401,11 @@
     }
     renderRelays();
 
-    /* =====  DEVICE DROPDOWN  ===== */
+    /* Devices */
     function renderDeviceSelect(){
       const sel=document.getElementById('deviceSelect');
       sel.innerHTML='<option value="">-- choose --</option>';
       devices.forEach(d=>sel.innerHTML+=`<option value="${d.id}">${d.id}</option>`);
-    }
-
-    /* =====  API  ===== */
-    function openApiModal(){ document.getElementById('apiModal').style.display='flex'; }
-    function closeApiModal(){ document.getElementById('apiModal').style.display='none'; }
-    function addDevice(){
-      const id=document.getElementById('apiDeviceId').value.trim();
-      const pass=document.getElementById('apiPass').value.trim();
-      const lat=document.getElementById('apiLat').value.trim();
-      const lng=document.getElementById('apiLng').value.trim();
-      if(!id || !pass || !lat || !lng) return alert('Fill all fields');
-      devices.push({id,pass,lat,lng,active:true});
-      renderDeviceSelect();
-      renderApiList();
-      closeApiModal();
     }
     function renderApiList(){
       const el=document.getElementById('apiList');
@@ -374,49 +413,44 @@
         <div class="relay-item">
           <span>${d.id} <small>${d.lat},${d.lng}</small></span>
           <span class="relay-state ${d.active?'on':'off'}">${d.active?'ACTIVE':'INACTIVE'}</span>
-          <button onclick="removeDevice(${i})" style="background:var(--danger);border:none;padding:4px 8px;border-radius:4px;color:#fff">Remove</button>
+          <button class="btn" onclick="removeDevice(${i})" style="background:var(--danger);border:none;padding:var(--space-s) var(--space-m);border-radius:var(--radius);color:#fff">Remove</button>
         </div>`).join('');
+    }
+    function openApiModal(){ document.getElementById('apiModal').style.display='flex'; }
+    function closeApiModal(){ document.getElementById('apiModal').style.display='none'; }
+    function addDevice(){
+      const id=document.getElementById('apiDeviceId').value.trim();
+      const pass=document.getElementById('apiPass').value.trim();
+      const lat=document.getElementById('apiLat').value.trim();
+      const lng=document.getElementById('apiLng').value.trim();
+      if(!id||!pass||!lat||!lng) return alert('Fill all fields');
+      devices.push({id,pass,lat,lng,active:true});
+      renderDeviceSelect(); renderApiList(); closeApiModal();
     }
     function removeDevice(i){ devices.splice(i,1); renderDeviceSelect(); renderApiList(); }
 
-    /* =====  CROP CONFIG  ===== */
+    /* Crop */
     function applyCrop(){
       const crop=document.getElementById('cropSelect').value;
       if(!crop) return;
       const info=crops[crop];
       document.getElementById('cropDetails').innerHTML=`
-        <p><strong>pH:</strong> ${info.phMin} - ${info.phMax}</p>
-        <p><strong>TDS:</strong> ${info.tdsMin} - ${info.tdsMax}</p>
-        <p><strong>Light:</strong> ${info.lightOn} - ${info.lightOff}</p>`;
+        <p><strong>pH:</strong> ${info.phMin} – ${info.phMax}</p>
+        <p><strong>TDS:</strong> ${info.tdsMin} – ${info.tdsMax}</p>
+        <p><strong>Light:</strong> ${info.lightOn} – ${info.lightOff}</p>`;
     }
 
-    /* =====  SCHEDULE  ===== */
-    function saveSchedule(){
-      const on=document.getElementById('lightOn').value;
-      const off=document.getElementById('lightOff').value;
-      alert(`Schedule saved: ON ${on} - OFF ${off}`);
-    }
-
-    /* =====  AUTOMATION  ===== */
+    /* Automation */
     function toggleAutomation(){
       const on=document.getElementById('autoToggle').checked;
       document.getElementById('manualPanel').style.display = on?'none':'block';
     }
 
-    /* =====  WEATHER  ===== */
-    fetch("https://api.open-meteo.com/v1/forecast?latitude=14&longitude=120&current_weather=true&hourly=temperature_2m")
-      .then(r=>r.json())
-      .then(data=>{
-        const w=data.current_weather;
-        document.getElementById('weatherDisplay').innerHTML=`${w.temperature}°C – ${w.windspeed} km/h`;
-      });
-
-    /* =====  IMAGE REFRESH  ===== */
+    /* Image refresh */
     setInterval(()=>document.getElementById('snapshot').src="images/latest.jpg?"+Date.now(),4000);
 
-    /* =====  INIT  ===== */
-    renderDeviceSelect();
-    renderApiList();
+    /* Init */
+    renderDeviceSelect(); renderApiList();
   </script>
 </body>
 </html>
