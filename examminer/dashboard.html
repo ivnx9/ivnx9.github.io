@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Miner 2.0 – Dashboard</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <i class="fa-solid fa-box-open"></i>
+          <span>Exam Miner 2.0</span>
+        </div>
+        <nav>
+          <button id="navDashboard" class="active"><i class="fa-solid fa-chart-bar"></i> Dashboard</button>
+          <button id="navGenerate"><i class="fa-solid fa-file-lines"></i> Generate Exam</button>
+          <button id="navMyExams"><i class="fa-solid fa-folder-open"></i> My Exams</button>
+        </nav>
+      </div>
+      <div class="profile">
+        <div class="avatar"></div>
+        <span class="user-name">Ms. Smith</span>
+        <button class="btn btn-outline" id="openProfile">Edit Profile</button>
+        <button class="logout" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+    <!-- Main content -->
+    <div class="main-area">
+      <!-- Dashboard Page -->
+      <section id="dashboardPage">
+        <h2>Welcome back, <span id="userGreeting">Ms. Smith</span>!</h2>
+        <div class="dashboard-overview">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="stat-content">
+              <div class="number" id="totalExams">0</div>
+              <div class="label">Total Exams Created</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-user"></i></div>
+            <div class="stat-content">
+              <div class="number">80%</div>
+              <div class="label">Profile Complete</div>
+            </div>
+          </div>
+        </div>
+        <div class="exam-list">
+          <h3>Recent Exams Created</h3>
+          <table id="recentExamsTable">
+            <thead>
+              <tr>
+                <th>Exam Title</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+          <div class="actions" style="margin-top:1rem;">
+            <button class="btn btn-outline" id="viewExamsBtn">View Exams</button>
+            <button class="btn btn-primary" id="goGenerateBtn">Generate Exam</button>
+          </div>
+        </div>
+      </section>
+      <!-- Generate Exam Page -->
+      <section id="generatePage" class="hidden">
+        <h2>Generate Exam</h2>
+        <!-- Upload form -->
+        <div id="generateForm">
+          <div class="generate-container">
+            <div class="drop-area" id="dropArea">
+              <p id="dropMessage">Drag and drop a file here, or click to browse<br><small>Supported docx, ppt, pdf</small></p>
+              <input type="file" id="material" accept=".pdf,.doc,.docx,.ppt,.pptx" style="display:none;">
+            </div>
+            <div class="form-group">
+              <label for="titleMaterial">Title of Material</label>
+              <input type="text" id="titleMaterial" placeholder="Enter the title">
+            </div>
+            <div class="form-group">
+              <label for="description">Description / Notes (optional)</label>
+              <textarea id="description" rows="3" placeholder="Add any notes or description"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Exam Types</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" value="Multiple Choice" class="format"> Multiple Choice</label>
+                <label><input type="checkbox" value="True or False" class="format"> True or False</label>
+                <label><input type="checkbox" value="Identification" class="format"> Identification</label>
+                <label><input type="checkbox" value="Matching Type" class="format"> Matching Type</label>
+                <label><input type="checkbox" value="Essay" class="format"> Essay</label>
+              </div>
+            </div>
+            <div class="inline-fields">
+              <div class="field form-group">
+                <label for="questionCount">Number of Questions</label>
+                <input type="number" id="questionCount" min="1" value="20">
+              </div>
+              <div class="field form-group">
+                <label for="setCount">Sets of exam</label>
+                <input type="number" id="setCount" min="1" value="1">
+              </div>
+            </div>
+            <!-- Advanced options collapsed using details -->
+            <details id="advancedDetails" class="advanced-details">
+              <summary><i class="fa-solid fa-caret-right" id="advancedIcon"></i> Advanced settings</summary>
+              <div class="advanced-content">
+                <div class="inline-fields">
+                  <div class="field form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" placeholder="Subject">
+                  </div>
+                  <div class="field form-group">
+                    <label for="grade">Grade Level</label>
+                    <input type="text" id="grade" placeholder="Grade level (e.g. College, 10th Grade)">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Difficulty (should total 100%)</label>
+                  <div class="inline-fields">
+                    <div class="field form-group">
+                      <label for="easy">Easy</label>
+                      <input type="number" id="easy" min="0" max="100" value="60">%
+                    </div>
+                    <div class="field form-group">
+                      <label for="medium">Medium</label>
+                      <input type="number" id="medium" min="0" max="100" value="20">%
+                    </div>
+                    <div class="field form-group">
+                      <label for="hard">Hard</label>
+                      <input type="number" id="hard" min="0" max="100" value="20">%
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Bloom's Cognitive Levels (should total 100%)</label>
+                  <div class="inline-fields">
+                    <div class="field form-group">
+                      <label for="remembering">Remembering</label>
+                      <input type="number" id="remembering" min="0" max="100" value="60">%
+                    </div>
+                    <div class="field form-group">
+                      <label for="understanding">Understanding</label>
+                      <input type="number" id="understanding" min="0" max="100" value="20">%
+                    </div>
+                    <div class="field form-group">
+                      <label for="applying">Applying</label>
+                      <input type="number" id="applying" min="0" max="100" value="20">%
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="instructions">Custom Exam Instructions (optional)</label>
+                  <textarea id="instructions" rows="3" placeholder="Enter any special instructions"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Shuffle Questions</label>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="shuffle">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label>Include Answer Key</label>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="answerKey">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+            </details>
+            <div class="actions">
+              <button class="btn btn-primary" id="generateBtn">Generate</button>
+            </div>
+          </div>
+        </div>
+        <!-- Loading state -->
+        <div id="loadingScreen" class="hidden loading-screen">
+          <div class="loader"></div>
+          <p id="loadingMessage">Processing...</p>
+        </div>
+        <!-- Preview state -->
+        <div id="previewPage" class="hidden preview-page">
+          <h3>Preview Exam</h3>
+          <div id="previewOutput" class="preview-output"></div>
+          <div class="actions">
+            <button class="btn btn-outline" id="tryAgainBtn">Try Again</button>
+            <button class="btn btn-primary" id="continueBtn">Continue</button>
+          </div>
+        </div>
+        <!-- Editor state -->
+        <div id="editorPage" class="hidden editor-page">
+          <h3>Edit Exam</h3>
+          <div class="toolbar" id="editorToolbar">
+            <button type="button" data-command="bold"><i class="fa-solid fa-bold"></i></button>
+            <button type="button" data-command="italic"><i class="fa-solid fa-italic"></i></button>
+            <button type="button" data-command="underline"><i class="fa-solid fa-underline"></i></button>
+            <select id="fontSizePicker">
+              <option value="">Font Size</option>
+              <option value="12px">6pt</option>
+              <option value="14px">7pt</option>
+              <option value="16px">8pt</option>
+              <option value="18px">9pt</option>
+              <option value="20px">10pt</option>
+              <option value="22px">11pt</option>
+              <option value="24px">12pt</option>
+              <option value="26px">13pt</option>
+              <option value="28px">14pt</option>
+              <option value="30px">15pt</option>
+              <option value="32px">16pt</option>
+              <option value="36px">18pt</option>
+              <option value="48px">24pt</option>
+              <option value="64px">32pt</option>
+              <option value="72px">36pt</option>
+            </select>
+            <button type="button" data-command="insertUnorderedList"><i class="fa-solid fa-list-ul"></i></button>
+            <button type="button" data-command="insertOrderedList"><i class="fa-solid fa-list-ol"></i></button>
+            <button type="button" data-command="justifyLeft"><i class="fa-solid fa-align-left"></i></button>
+            <button type="button" data-command="justifyCenter"><i class="fa-solid fa-align-center"></i></button>
+            <button type="button" data-command="justifyRight"><i class="fa-solid fa-align-right"></i></button>
+            <button type="button" id="copyClipboard"><i class="fa-solid fa-copy"></i></button>
+          </div>
+          <!-- A4 style page for editing -->
+          <div class="editor-container">
+            <div class="editable" id="output" contenteditable="true"></div>
+          </div>
+          <div class="actions" style="margin-top:1rem; display:flex; gap:0.5rem;">
+            <button class="btn btn-primary" id="saveExamBtn">Save</button>
+            <button class="btn btn-primary" id="downloadPdf">Download as PDF</button>
+            <button class="btn btn-outline" id="downloadDocx">Download as DOCX</button>
+          </div>
+        </div>
+      </section>
+      <!-- My Exams Page -->
+      <section id="myExamsPage" class="hidden">
+        <h2>My Exams</h2>
+        <div class="exam-list">
+          <table id="myExamsTable">
+            <thead>
+              <tr>
+                <th>Exam Title</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Profile Settings Modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal">
+      <button class="close-btn" id="closeProfileModal"><i class="fa-solid fa-xmark"></i></button>
+      <h3>Edit Profile</h3>
+      <!-- Large avatar placeholder -->
+      <div class="avatar-large"></div>
+      <div class="profile-form">
+        <div class="form-group">
+          <label for="profileName">Full Name</label>
+          <input type="text" id="profileName" value="Ms. Smith">
+        </div>
+        <div class="form-group">
+          <label for="profileEmail">Email</label>
+          <input type="email" id="profileEmail" value="ms.smith@example.com">
+        </div>
+        <div class="form-group">
+          <label for="profilePhone">Phone</label>
+          <input type="tel" id="profilePhone" value="">
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <div class="gender-group">
+            <label><input type="radio" name="profileGender" value="male"> Male</label>
+            <label><input type="radio" name="profileGender" value="female" checked> Female</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="cancelProfile">Cancel</button>
+        <button class="btn btn-primary" id="saveProfile">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts for exam generation dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.4/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-pdfmake/2.1.1/html-to-pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- Main application script -->
+  <script src="script.js"></script>
+</body>
+</html>

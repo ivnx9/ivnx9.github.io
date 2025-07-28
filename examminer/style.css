@@ -1,0 +1,760 @@
+/*
+ * Global styles and variables for the Exam Miner 2.0 prototype UI.
+ *
+ * The design follows a clean, modern aesthetic inspired by the provided
+ * Figma mock‑ups. Colours, spacing and typography are controlled via
+ * CSS variables defined on :root. Feel free to tweak these values
+ * globally to adjust the look and feel of the application.
+ */
+
+:root {
+  /* Primary branding colour used throughout the application */
+  --primary-color: #007AFF;
+  /* Light background colour for sections and pages */
+  --background-color: #f5f8fe;
+  /* Colour for cards and surfaces */
+  --card-bg: #ffffff;
+  /* Muted text colour */
+  --text-color: #2c3e50;
+  /* Secondary accent colour for subtle elements */
+  --accent-color: #eff3fb;
+  /* Standard border radius for elements */
+  --border-radius: 8px;
+  /* Shadow for cards */
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  /* Transition speed for hover effects */
+  --transition-speed: 0.2s;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  background: var(--background-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition-speed);
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed), box-shadow var(--transition-speed);
+}
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+.btn-primary:hover {
+  background-color: #006be5;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-outline:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* Simple utility class to hide elements */
+.hidden {
+  display: none !important;
+}
+
+/* Navigation Bar for landing and auth pages */
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: transparent;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+.navbar.scrolled {
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+.navbar .logo {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.navbar .logo-icon {
+  width: 28px;
+  height: 28px;
+}
+.navbar .nav-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.navbar .nav-links .btn {
+  margin-left: 0.5rem;
+}
+
+/* Hero Section on landing page */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100vh;
+  padding: 8rem 2rem 2rem; /* top padding accounts for fixed nav */
+  background: var(--background-color);
+}
+.hero-content {
+  flex: 1;
+  max-width: 50%;
+  padding-right: 2rem;
+}
+.hero-content h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+.hero-content p {
+  font-size: 1.125rem;
+  margin-bottom: 2rem;
+  max-width: 80%;
+  color: #4b5563;
+}
+.hero-image {
+  flex: 1;
+  text-align: center;
+}
+.hero-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Auth page styles */
+.auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 4rem 1rem;
+}
+.auth-card {
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.auth-card h2 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.auth-card label {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  color: #4b5563;
+}
+.auth-card input[type="text"],
+.auth-card input[type="email"],
+.auth-card input[type="password"],
+.auth-card input[type="tel"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccd5e4;
+  font-size: 1rem;
+  transition: border var(--transition-speed);
+}
+.auth-card input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+}
+.auth-card .gender-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Gender radio group in profile modal */
+.modal .gender-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.3rem;
+}
+.auth-card .actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+.auth-card .actions a {
+  font-size: 0.875rem;
+}
+.auth-card .divider {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Dashboard layout */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+}
+.sidebar {
+  width: 220px;
+  background: var(--card-bg);
+  border-right: 1px solid #e0e6f1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1rem;
+  box-shadow: var(--card-shadow);
+}
+.sidebar .brand {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.sidebar nav button {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+.sidebar nav button:hover,
+.sidebar nav button.active {
+  background: var(--accent-color);
+  color: var(--primary-color);
+}
+.sidebar nav button i {
+  width: 18px;
+}
+.sidebar .profile {
+  margin-top: auto;
+  padding-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.sidebar .profile .avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ccd5e4;
+  display: inline-block;
+}
+.sidebar .profile span {
+  font-size: 0.9rem;
+}
+.sidebar .logout {
+  background: #f0f4fa;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background var(--transition-speed);
+}
+.sidebar .logout:hover {
+  background: #e2e8f6;
+}
+
+.main-area {
+  flex: 1;
+  padding: 2rem 3rem;
+  overflow-y: auto;
+}
+.dashboard-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  flex: 1;
+  min-width: 220px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.stat-card .stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+.stat-card .stat-content {
+  flex: 1;
+  margin-left: 1rem;
+}
+.stat-card .stat-content .number {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+.stat-card .stat-content .label {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Recent exams list */
+.exam-list {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+}
+.exam-list h3 {
+  margin-bottom: 1rem;
+}
+.exam-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.exam-list table th,
+.exam-list table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5eaf1;
+  font-size: 0.9rem;
+}
+.exam-list table th {
+  color: #6b7280;
+  font-weight: 500;
+}
+.exam-list table tr:last-child td {
+  border-bottom: none;
+}
+.exam-list .actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.exam-list .actions button {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+/* Generate Exam page */
+.generate-container {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-width: 900px;
+}
+.generate-container .drop-area {
+  border: 2px dashed #c8d4e3;
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background: var(--accent-color);
+  transition: background var(--transition-speed);
+}
+.generate-container .drop-area:hover {
+  background: #e7effc;
+}
+
+/* Highlight drop area during drag */
+.generate-container .drop-area.dragging {
+  background: #e7effc;
+  border-color: var(--primary-color);
+}
+.generate-container .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.generate-container .form-group label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+.generate-container input[type="text"],
+.generate-container input[type="number"],
+.generate-container select,
+.generate-container textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccd5e4;
+  font-size: 0.95rem;
+  width: 100%;
+  resize: none;
+  transition: border var(--transition-speed);
+}
+.generate-container input:focus,
+.generate-container textarea:focus,
+.generate-container select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.15);
+}
+.generate-container .inline-fields {
+  display: flex;
+  gap: 1rem;
+}
+.generate-container .inline-fields .field {
+  flex: 1;
+}
+.generate-container .checkbox-group,
+.generate-container .radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.generate-container .checkbox-group label,
+.generate-container .radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+/* Deprecated selectors for old advanced section; hide them */
+.generate-container .advanced,
+.generate-container .advanced.show,
+.generate-container .toggle-advanced {
+  display: none;
+}
+.generate-container .toggle-switch {
+  position: relative;
+  width: 42px;
+  height: 22px;
+}
+.generate-container .toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.generate-container .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccd5e4;
+  transition: 0.4s;
+  border-radius: 22px;
+}
+.generate-container .slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+.generate-container input:checked + .slider {
+  background-color: var(--primary-color);
+}
+.generate-container input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+.generate-container .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Output viewer */
+.exam-output {
+  margin-top: 2rem;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+}
+.exam-output .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.exam-output .toolbar button,
+.exam-output .toolbar select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccd5e4;
+  border-radius: var(--border-radius);
+  background: var(--accent-color);
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.exam-output .toolbar button:hover {
+  background: #e7effc;
+}
+.exam-output .editable {
+  border: 1px solid #e0e6f1;
+  border-radius: var(--border-radius);
+  min-height: 300px;
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+/* Modal overlay for profile settings */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Form styling inside profile modal */
+.modal .form-group label {
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  color: #4b5563;
+}
+.modal .form-group input[type="text"],
+.modal .form-group input[type="email"],
+.modal .form-group input[type="tel"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccd5e4;
+  font-size: 0.95rem;
+  transition: border var(--transition-speed);
+}
+.modal .form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.15);
+}
+.modal {
+  background: var(--card-bg);
+  border-radius: calc(var(--border-radius) * 1.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+/* Profile modal custom elements */
+.avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #ccd5e4;
+  margin: 0 auto 1rem;
+}
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.modal h3 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+.modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+.modal .close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+/* Advanced settings within <details> */
+.advanced-details {
+  margin-top: 1rem;
+}
+.advanced-details summary {
+  cursor: pointer;
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  list-style: none;
+}
+.advanced-details summary::-webkit-details-marker {
+  display: none;
+}
+.advanced-details[open] summary i {
+  transform: rotate(90deg);
+}
+.advanced-details .advanced-content {
+  padding-top: 1rem;
+  border-top: 1px dashed #e0e6f1;
+  margin-top: 0.5rem;
+}
+
+/* Loading screen styling */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+.loader {
+  border: 4px solid #e0e6f1;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loading-screen p {
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Preview page */
+.preview-output {
+  background: #ffffff;
+  padding: 1rem;
+  border: 1px solid #ccd5e4;
+  border-radius: var(--border-radius);
+  max-height: 60vh;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+.preview-page .actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+/* Editor page (A4 scaled) */
+.editor-container {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+}
+.editor-container .editable {
+  width: 21cm;
+  min-height: 29.7cm;
+  background: #ffffff;
+  padding: 2cm;
+  box-shadow: var(--card-shadow);
+  border-radius: var(--border-radius);
+  /* Scale down the A4 page for better fit inside the browser while
+     preserving real dimensions when exporting. Adjust the scale to
+     control how large the page appears in the editor. */
+  transform: scale(0.75);
+  transform-origin: top left;
+  white-space: pre-wrap;
+  font-size: 14pt;
+  line-height: 1.6;
+}
+
+/* Modal card improvements */
+.modal {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  max-width: 450px;
+  width: 100%;
+  position: relative;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 0.5rem;
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Miner 2.0 – AI powered exam generation</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation bar -->
+  <header class="navbar" id="landingNav">
+    <div class="logo">
+      <!-- Icon placeholder -->
+      <i class="fa-solid fa-box-open"></i>
+      <span>Exam Miner 2.0</span>
+    </div>
+    <div class="nav-links">
+      <a href="auth.html#login" class="btn btn-outline">Log In</a>
+      <a href="auth.html#signup" class="btn btn-primary">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>The Best WebApp for<br>Exam Generator</h1>
+      <p>Turn PDFs, PPTs, and Docs into exams and distribute them online effortlessly. Our AI‑powered platform makes creating assessments simple and fast.</p>
+      <a href="auth.html#signup" class="btn btn-primary">Try for free</a>
+    </div>
+    <div class="hero-image">
+      <img src="assets/robot.png" alt="Cute AI robot" />
+    </div>
+  </section>
+
+  <script>
+    // Optional: make navbar background solid on scroll
+    const nav = document.getElementById('landingNav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+  </script>
+
+</body>
+</html>

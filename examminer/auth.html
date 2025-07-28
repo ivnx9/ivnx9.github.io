@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Miner 2.0 – Account</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <i class="fa-solid fa-box-open"></i>
+      <span>Exam Miner 2.0</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="btn btn-outline">Home</a>
+    </div>
+  </header>
+
+  <main class="auth-wrapper">
+    <div class="auth-card" id="loginForm">
+      <h2>Log In</h2>
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password">
+      </div>
+      <button class="btn btn-primary" id="loginBtn">Log In</button>
+      <div class="actions">
+        <a href="#recover" id="toRecover">Forgot Password?</a>
+        <a href="#signup" id="toSignup">Sign Up</a>
+      </div>
+    </div>
+
+    <div class="auth-card hidden" id="signupForm">
+      <h2>Sign Up</h2>
+      <div class="form-group">
+        <label for="signupName">Full Name</label>
+        <input type="text" id="signupName" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" placeholder="Your email address">
+      </div>
+      <div class="form-group">
+        <label for="signupPhone">Phone</label>
+        <input type="tel" id="signupPhone" placeholder="Mobile number">
+      </div>
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="Create a password">
+      </div>
+      <div class="form-group">
+        <label for="signupConfirm">Confirm Password</label>
+        <input type="password" id="signupConfirm" placeholder="Repeat your password">
+      </div>
+      <div class="form-group">
+        <span>Select your gender:</span>
+        <div class="gender-group">
+          <label><input type="radio" name="gender" value="male"> Male</label>
+          <label><input type="radio" name="gender" value="female" checked> Female</label>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="signupBtn">Submit</button>
+      <div class="actions">
+        <span>Already have an account?</span>
+        <a href="#login" id="backToLoginFromSignup">Log In</a>
+      </div>
+    </div>
+
+    <!-- Recover password step 1: request OTP -->
+    <div class="auth-card hidden" id="recoverForm">
+      <h2>Recover Account</h2>
+      <div class="form-group">
+        <label for="recoverEmail">Enter your email</label>
+        <input type="email" id="recoverEmail" placeholder="Your email">
+      </div>
+      <div class="inline-fields">
+        <div class="field form-group">
+          <label for="otp">OTP</label>
+          <input type="text" id="otp" placeholder="Enter OTP" disabled>
+        </div>
+        <div class="field form-group" style="display:flex; align-items:flex-end;">
+          <button class="btn btn-primary" id="sendOtp" style="width:100%;">Send OTP</button>
+        </div>
+      </div>
+      <p id="timer" style="font-size:0.85rem; color:#6b7280; margin-top:0.5rem;"></p>
+      <button class="btn btn-primary" id="recoverSubmit" disabled>Submit</button>
+      <div class="actions">
+        <a href="#login" id="backToLogin">Go back</a>
+      </div>
+    </div>
+
+    <!-- Recover password step 2: reset password -->
+    <div class="auth-card hidden" id="resetForm">
+      <h2>Recover Account</h2>
+      <div class="form-group">
+        <label for="newPass">Enter Password</label>
+        <input type="password" id="newPass" placeholder="New password">
+      </div>
+      <div class="form-group">
+        <label for="confirmNewPass">Confirm Password</label>
+        <input type="password" id="confirmNewPass" placeholder="Confirm new password">
+      </div>
+      <button class="btn btn-primary" id="resetSubmit">Submit</button>
+      <div class="actions">
+        <a href="#login" id="backToLoginFromReset">Go back</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    // On page load, show the correct form based on the hash (#login, #signup, #recover)
+    function showForm(hash) {
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const recoverForm = document.getElementById('recoverForm');
+      const resetForm = document.getElementById('resetForm');
+      [loginForm, signupForm, recoverForm, resetForm].forEach((el) => el.classList.add('hidden'));
+      if (hash === '#signup') {
+        signupForm.classList.remove('hidden');
+      } else if (hash === '#recover') {
+        recoverForm.classList.remove('hidden');
+      } else if (hash === '#reset') {
+        resetForm.classList.remove('hidden');
+      } else {
+        loginForm.classList.remove('hidden');
+      }
+    }
+    window.addEventListener('hashchange', () => {
+      showForm(window.location.hash);
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      showForm(window.location.hash);
+      // Basic OTP simulation
+      const sendOtp = document.getElementById('sendOtp');
+      const otpInput = document.getElementById('otp');
+      const recoverSubmit = document.getElementById('recoverSubmit');
+      const timerEl = document.getElementById('timer');
+      let timerInterval;
+      sendOtp.addEventListener('click', () => {
+        otpInput.disabled = false;
+        sendOtp.disabled = true;
+        recoverSubmit.disabled = false;
+        let secondsLeft = 275;
+        timerEl.textContent = `Resend in 4:35 mins...`;
+        timerInterval = setInterval(() => {
+          secondsLeft--;
+          const mins = Math.floor(secondsLeft / 60);
+          const secs = secondsLeft % 60;
+          timerEl.textContent = `Resend in ${mins}:${secs.toString().padStart(2, '0')} mins...`;
+          if (secondsLeft <= 0) {
+            clearInterval(timerInterval);
+            sendOtp.disabled = false;
+            timerEl.textContent = '';
+          }
+        }, 1000);
+      });
+      recoverSubmit.addEventListener('click', () => {
+        window.location.hash = '#reset';
+      });
+    });
+  </script>
+</body>
+</html>
