@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>SHVF Dashboard</title>
 	<script>
 	const token = localStorage.getItem("jwt_token");
@@ -460,8 +461,8 @@ function logout() {
 </head>
 <body>
 
-    <div class="chat-toggle" onclick="toggleChatSupport()">ðŸ’¬</div>
-    <button class="menu-btn" onclick="toggleSidebar()">â˜°</button>
+    <div class="chat-toggle" onclick="toggleChatSupport()"><i class="fa-regular fa-message"></i></div>
+    <button class="menu-btn" onclick="toggleSidebar()">&#9776;</button>
     <div class="sidebar" id="sidebar">
         <h3>Smart HydroVertical Farm</h3>
         <a href="#" onclick="changeContent('Dashboard')">Dashboard</a>
@@ -490,16 +491,15 @@ function logout() {
                     <img id="snapshot" src="images/latest.jpg" alt="Live Image" /><br/>
                     
                    
-                  <!-- windy report --
-                  <div class="dashboard-card"-->
-                    <h4>Solar Forecast (Windy)</h4>
+                  <!-- windy report -->
+                  
+                    <h4>Solar Forecast (by Windy)</h4>
                     <iframe id="windyFrame" width="100%" height="250" frameborder="0"
-            src="https://embed.windy.com/embed2.html?lat=14.6&lon=120.98&zoom=1&level=surface&overlay=windy&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=14&detailLon=121&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"></iframe>
-            <br/>
-            <h4>Weather Info</h4>
+            src="https://embed.windy.com/embed2.html?lat=14.6&lon=120.98&zoom=1&level=surface&overlay=solarpower&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=14&detailLon=121&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"></iframe>
+            <br/><h4>Weather Info</h4>
             <p id="weatherDisplay">Loading...</p>
-                  <!-- /div-->
-                  </div><br/>
+                  
+                  </div>
                 <div class="dashboard-grid">
                   <!-- pH Level -->
                   <div class="dashboard-card">
@@ -674,13 +674,13 @@ function logout() {
     <div class="dashboard-card">
       <h4>Developers</h4>
       <ul style="line-height: 1.6; list-style: disc; text-align: left;">
-        <li><strong>Ivan Abueg</strong> â€“ Lead Developer (Full-stack Programming, IoT Integration, Solar System Integration, Hardware and electronics Assembly, Welding Support, Electronics Design)</li>
-        <li><strong>James P. Bondoc</strong> â€“ Hardware Assistance (Helped in metalwork and full system development)</li>
-        <li><strong>Arnold John E. Cruz</strong> â€“ Chassis Fabrication & Electronics Support (Built the system chassis and assisted in assembling electronics)</li>
-        <li><strong>Vince Jheriel C. Nicodemus</strong> â€“ Physical Frame Construction (Handled frame building and structural support)</li>
-        <li><strong>Ellaiza Anne T. Contreras</strong> â€“ Project Assistance (Paperwork and general documentation support)</li>
-        <li><strong>Isaac B. Sunpongco</strong> â€“ Research Coordinator (Revised and formatted the full research paper for final output)</li>
-        <li><strong>Adrian T. Perez</strong> â€“ No contribution recorded</li>
+        <li><strong>Ivan Abueg</strong>  Lead Developer (Full-stack Programming, IoT Integration, Solar System Integration, Hardware and electronics Assembly, Welding Support, Electronics Design)</li>
+        <li><strong>James P. Bondoc</strong> Hardware Assistance (Helped in metalwork and full system development)</li>
+        <li><strong>Arnold John E. Cruz</strong> Chassis Fabrication & Electronics Support (Built the system chassis and assisted in assembling electronics)</li>
+        <li><strong>Vince Jheriel C. Nicodemus</strong> Physical Frame Construction (Handled frame building and structural support)</li>
+        <li><strong>Ellaiza Anne T. Contreras</strong> Project Assistance (Paperwork and general documentation support)</li>
+        <li><strong>Isaac B. Sunpongco</strong> Research Coordinator (Revised and formatted the full research paper for final output)</li>
+        <li><strong>Adrian T. Perez</strong> No contribution recorded</li>
       </ul>
     </div>
 
@@ -709,7 +709,7 @@ function logout() {
     <div class="chat-header">
       <span>SHVF Customer Support<br/>
       <span style="font-size:8px; font-style: italic;">A.I support</span></span>
-      <button class="chat-close-btn" onclick="toggleChatSupport()" aria-label="Close chat">x</button>
+      <button class="chat-close-btn" onclick="toggleChatSupport()" aria-label="Close chat"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
