@@ -755,7 +755,7 @@ function logout() {
 
           // Display weather data
           weatherDisplay.innerHTML = `
-              <strong>Current Temperature:</strong> ${currentTemp}Â°C<br/>
+              <strong>Current Temperature:</strong> ${currentTemp}°C<br/>
               <strong>Wind Speed:</strong> ${windSpeed} km/h<br/>
               <strong>Humidity:</strong> ${humidity}%<br/>
               <strong>Precipitation:</strong> ${precipitation} mm<br/>
@@ -777,75 +777,72 @@ function logout() {
       sendChatMessage();
     }
   }
-          let chatMessagesArray = [{
-              role: "system",
-              content: "You are SHVF, who specialized of product called Smart Hydroponics Vertical Farm, a professional assistant specialized in analyzing Smart Hydroponic Vertical Farming data such as pH Levels, water levels, nutrient balance, temperature, and plant growth. Respond clearly, intelligently, and with agricultural insight. When user talk you in tagalog, talk to tagalog clearly in modern tagalog(taglish) and talk english if english, talk tagalog as default language. Respond as SHVF. Rules: Do not tell who you are, only tell who i tell who you are, avoid telling you're specialized with something, just talk normaly."
-          }];
 
-          async function sendChatMessage() {
-    const input = document.getElementById("chatInput");
-    var sndbtn = document.getElementById("msgBtn");
-    const msg = input.value.trim();
-    if (!msg) return;
-    const chatMessages = document.getElementById("chatMessages");
 
-    // Display user message
-    const userMsg = document.createElement("div");
-    userMsg.className = "message user";
-    userMsg.textContent = msg;
-    chatMessages.appendChild(userMsg);
-    chatMessagesArray.push({ role: "user", content: msg });
-    input.value = "";
-    sndbtn.disabled = true;
+  
+    let chatMessagesArray = [];
+    
+    async function sendChatMessage() {
+        const input = document.getElementById("chatInput");
+        const sndbtn = document.getElementById("msgBtn");
+        const msg = input.value.trim();
+        if (!msg) return;
+    
+        const chatMessages = document.getElementById("chatMessages");
+    
+        // Display user message
+        const userMsg = document.createElement("div");
+        userMsg.className = "message user";
+        userMsg.textContent = msg;
+        chatMessages.appendChild(userMsg);
+        input.value = "";
+        sndbtn.disabled = true;
+    
+        // Show typing indicator
+        const typingEl = document.createElement("div");
+        typingEl.className = "message bot typing";
+        typingEl.textContent = "Typing...";
+        chatMessages.appendChild(typingEl);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    // Show typing indicator
-    const typingEl = document.createElement("div");
-    typingEl.className = "message bot typing";
-    typingEl.textContent = "Typing...";
-    chatMessages.appendChild(typingEl);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+        const formData = new FormData();
+        formData.append("message", msg);
 
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
-          /*"HTTP-Referer": "https://ivnx9.github.io",
-          "X-Title": "Multi A.I (by ivan abueg)"*/
-        },
-        body: JSON.stringify({
-          model: "deepseek/deepseek-r1:free", // or make this dynamic if you want
-          messages: chatMessagesArray
-        })
-      });
-
-      const data = await response.json();
-      typingEl.remove();
-      sndbtn.disabled = false;
-      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-        const reply = data.choices[0].message.content;
-        const botMsg = document.createElement("div");
-        botMsg.className = "message bot";
-        botMsg.innerHTML = marked.parse(reply);  //botMsg.innerHTML = reply;
-        chatMessages.appendChild(botMsg);
-        chatMessagesArray.push({ role: "assistant", content: reply });
-      } else {
-        const errorMsg = document.createElement("div");
-        errorMsg.className = "message bot";
-        errorMsg.textContent = "AI: Something went wrong.";
-        chatMessages.appendChild(errorMsg);
-      }
-    } catch (error) {
-      typingEl.remove();
-      sndbtn.disabled = false;
-      const errorMsg = document.createElement("div");
-      errorMsg.className = "message bot";
-      errorMsg.textContent = "Error: " + error.message;
-      chatMessages.appendChild(errorMsg);
+        try {
+            const response = await fetch("https://legitsource.coolpage.biz/shvf/chat.php", {
+                method: "POST",
+                body: formData
+            });
+    
+            const data = await response.json();
+            typingEl.remove();
+            sndbtn.disabled = false;
+    
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                const reply = data.choices[0].message.content;
+                const botMsg = document.createElement("div");
+                botMsg.className = "message bot";
+                botMsg.innerHTML = marked.parse(reply); // Use marked for Markdown rendering
+                chatMessages.appendChild(botMsg);
+                chatMessagesArray.push({ role: "assistant", content: reply });
+            } else {
+                const errorMsg = document.createElement("div");
+                errorMsg.className = "message bot";
+                errorMsg.textContent = "AI: Something went wrong.";
+                chatMessages.appendChild(errorMsg);
+            }
+        } catch (error) {
+            typingEl.remove();
+            sndbtn.disabled = false;
+            const errorMsg = document.createElement("div");
+            errorMsg.className = "message bot";
+            errorMsg.textContent = "Error: " + error.message;
+            chatMessages.appendChild(errorMsg);
+        }
+    
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
+    
 
           function changeContent(title) {
              if(title == "Dashboard") {
