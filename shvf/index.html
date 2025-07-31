@@ -188,7 +188,7 @@
       }
     }
 
-    /* Handle signup */
+    /* Handle signup 
     async function handleSignup(e){
       e.preventDefault();
       const fd=new FormData(e.target);
@@ -207,7 +207,33 @@
         msg.textContent='Server error';
       }
     }
+*/ 
 
+    /* Handle signup */
+async function handleSignup(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const msg = document.getElementById('signupMsg');
+  msg.textContent = '';
+  try {
+    const res = await fetch(api.signup, {
+      method: 'POST',
+      body: new URLSearchParams(fd)
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      // redirect to OTP confirmation page
+      const email = fd.get('email');
+      location.href = `confirm_otp.html?email=${encodeURIComponent(email)}`;
+    } else {
+      msg.textContent = data.message || 'Signup failed';
+    }
+  } catch (err) {
+    msg.textContent = 'Server error';
+  }
+}
+
+    
     /* Header shadow on scroll */
     window.addEventListener('scroll',()=>{
       document.getElementById('header').classList.toggle('scrolled',window.scrollY>40);
