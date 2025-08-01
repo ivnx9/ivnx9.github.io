@@ -190,6 +190,7 @@
 
   document.getElementById("otpForm").addEventListener("submit", function (e) {
     e.preventDefault();
+    responseBox.textContent = "";
     const email = emailInput.value.trim();
     const otp = document.getElementById("otp").value.trim();
 
