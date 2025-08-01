@@ -227,6 +227,7 @@
         responseBox.style.color = data.status === "success" ? "#00ff8c" : "red";
         if (data.status === "success") {
           setTimeout(() => {
+            localStorage.setItem('jwt_token',data.token);
             window.location.href = "dashboard.html";
           }, 1500);
         }
