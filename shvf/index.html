@@ -188,7 +188,7 @@
       }
     }
 
-    /* Handle signup 
+    /* Handle signup */
     async function handleSignup(e){
       e.preventDefault();
       const fd=new FormData(e.target);
@@ -198,8 +198,11 @@
         const res=await fetch(api.signup,{method:'POST',body:new URLSearchParams(fd)});
         const data=await res.json();
         if(data.status==='success'){
-          localStorage.setItem('jwt_token',data.token);
-          location.href='dashboard.html';
+          //localStorage.setItem('jwt_token',data.token);
+          //location.href='dashboard.html';
+
+          const email = fd.get('email');
+          location.href = `confirm_otp.html?email=${encodeURIComponent(email)}`;
         }else{
           msg.textContent=data.message||'Signup failed';
         }
@@ -207,9 +210,9 @@
         msg.textContent='Server error';
       }
     }
-*/ 
 
-    /* Handle signup */
+
+    /* Handle signup 
 async function handleSignup(e) {
   e.preventDefault();
   const fd = new FormData(e.target);
@@ -231,7 +234,7 @@ async function handleSignup(e) {
   } catch (err) {
     msg.textContent = 'Server error';
   }
-}
+} */
 
     
     /* Header shadow on scroll */
