@@ -128,7 +128,9 @@
     </div>
 -->
   <script>
-
+    /* Redirect if already logged in */
+    if(localStorage.getItem('jwt_token')) location.href='dashboard.html';
+    
     const urlParams = new URLSearchParams(window.location.search);
   const emailParam = urlParams.get("email");
   const userIDParam = urlParams.get("user_id");
