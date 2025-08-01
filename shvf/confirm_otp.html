@@ -96,7 +96,7 @@
     <h2>Confirm OTP</h2>
     <form id="otpForm">
       <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
+      <input type="email" id="email" name="email" disabled>
 
       <label for="otp">Enter OTP sent to your email:</label>
       <input type="text" id="otp" name="otp" required>
@@ -111,6 +111,8 @@
     const emailParam = urlParams.get("email");
     if (emailParam) {
       document.getElementById("email").value = emailParam;
+    } else {
+      location.href = `index.html`;
     }
 
     document.getElementById("otpForm").addEventListener("submit", function(e) {
