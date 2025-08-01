@@ -9,18 +9,18 @@
 	<script>
 	const token = localStorage.getItem("jwt_token");
 
-if (!token) {
-  window.location.href = "index.html";
-} else {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    console.log("Hello,", payload.username); // You can use it now!
-  } catch (e) {
-    console.error("Invalid token", e);
-    localStorage.removeItem("jwt_token");
-    window.location.href = "login.html";
-  }
-}
+	if (!token) {
+	  window.location.href = "index.html";
+	} else {
+	  try {
+	    const payload = JSON.parse(atob(token.split('.')[1]));
+	    console.log("Hello,", payload.username); // You can use it now!
+	  } catch (e) {
+	    console.error("Invalid token", e);
+	    localStorage.removeItem("jwt_token");
+	    window.location.href = "login.html";
+	  }
+	}
 
 function logout() {
   localStorage.removeItem("jwt_token");
