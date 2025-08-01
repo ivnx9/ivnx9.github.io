@@ -180,7 +180,10 @@
         if(data.status==='success'){
           localStorage.setItem('jwt_token',data.token);
           location.href='dashboard.html';
-        }else{
+        } else if (data.status === 'unverified') {
+          // Redirect to confirmation_OTP.html with necessary parameters
+          location.href = data.redirect;
+        } else{
           msg.textContent=data.message||'Login failed';
         }
       }catch(err){
