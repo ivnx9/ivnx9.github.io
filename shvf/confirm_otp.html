@@ -193,8 +193,16 @@
     const email = emailInput.value.trim();
     const otp = document.getElementById("otp").value.trim();
 
-    if (!email || !otp) {
+    if (!email && !otp) {
       responseBox.textContent = "Email and OTP are required.";
+      responseBox.style.color = "red";
+      return;
+    } else if(!email) {
+      responseBox.textContent = "Email are required.";
+      responseBox.style.color = "red";
+      return;
+    } else if(!otp) {
+      responseBox.textContent = "OTP are required.";
       responseBox.style.color = "red";
       return;
     }
