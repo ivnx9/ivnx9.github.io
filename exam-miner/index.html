@@ -509,6 +509,219 @@ function allocateItemsByTOS(totalQuestions){
 
       // ====================
 
+
+      // ================ NEW UPDATE =============
+// Split N items across selected formats (fair apportionment)
+function distributeAcrossFormats(total, formats){
+  if (formats.length === 1) return {[formats[0]]: total};
+  const pct = Array(formats.length).fill(100 / formats.length);
+  const counts = apportion(total, pct);
+  const out = {};
+  formats.forEach((f, i) => out[f] = counts[i]);
+  return out;
+}
+
+// Extract numbered questions from plain text; returns {items:[], answerKeyText:""}
+function extractQuestions(block){
+  // Very simple parser: split on lines that look like "1. ...", "2) ...", etc.
+  const lines = block.split(/\r?\n/);
+  const q = [];
+  const answerLines = [];
+  let inAnswerKey = false;
+
+  for (let line of lines){
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const isAnswerHeader = /^answer\s*key[:\s]?$/i.test(trimmed);
+    if (isAnswerHeader) { inAnswerKey = true; continue; }
+    if (inAnswerKey) { answerLines.push(trimmed); continue; }
+
+    // Question start
+    if (/^\d+[\.\)]\s+/.test(trimmed) || /^_+\s*\d+[\.\)]\s+/.test(trimmed)){
+      q.push(trimmed);
+    } else if (q.length){
+      // Append continuation lines (choices, stems) to the last question
+      q[q.length - 1] += "\n" + trimmed;
+    }
+  }
+  return { items: q, answerKeyText: answerLines.join("\n") };
+}
+
+
+
+
+function buildCellTasks(plan, selectedFormats, meta){
+  // plan = [{topic, total, RU, AA, HOTS}]
+  // returns an array of {topic, level, format, count, prompt}
+  const tasks = [];
+
+  for (const row of plan){
+    const levels = [
+      { key: 'RU', label: 'Remember/Understand', count: row.RU },
+      { key: 'AA', label: 'Apply/Analyze',       count: row.AA },
+      { key: 'HOTS', label: 'Higher-Order',      count: row.HOTS },
+    ];
+
+    for (const L of levels){
+      if (L.count <= 0) continue;
+      const perFormat = distributeAcrossFormats(L.count, selectedFormats);
+      for (const [fmt, cnt] of Object.entries(perFormat)){
+        if (cnt <= 0) continue;
+
+        const fmtGuidance = (() => {
+          if (fmt === "Multiple Choice") return "Multiple Choice with choices A–D.";
+          if (fmt === "True or False") return "True/False. Start each line with an underscore before the number.";
+          if (fmt === "Identification") return "Identification. Provide a short blank line for the answer.";
+          if (fmt === "Matching Type") return "Matching Type. Provide pairs and clear instructions.";
+          if (fmt === "Essay") return "Essay. Provide 1–3 sentence prompts; include blank lines.";
+          return fmt + ".";
+        })();
+
+        const prompt = `
+Generate exactly ${cnt} ${fmt} questions for the topic "${row.topic}" at cognitive level "${L.label}".
+Subject: ${meta.subject || "(unspecified)"}
+Course Topic: ${meta.topic || "(unspecified)"}
+Grade Level: ${meta.grade || "(unspecified)"}
+
+STRICT REQUIREMENTS:
+- Output ONLY the ${fmt} items, numbered 1..${cnt}, plain text (no markdown, no extra commentary).
+- ${fmtGuidance}
+- Do not include any other formats or sections.
+- Do not include an Answer Key for this block.
+
+Style:
+- Clear, unambiguous wording.
+- ${L.key === 'RU' ? 'Focus on factual recall/definitions.' : L.key === 'AA' ? 'Focus on application, scenarios, troubleshooting, decisions.' : 'Focus on evaluation/creation, justification, or multi-step reasoning at an advanced level.'}
+
+Learning Material (summary or text):
+"""
+${meta.content}
+"""`.trim();
+
+        tasks.push({
+          topic: row.topic,
+          level: L.key,
+          format: fmt,
+          count: cnt,
+          prompt
+        });
+      }
+    }
+  }
+  return tasks;
+}
+
+
+
+
+
+  async function callModelStrict(prompt, model){
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": apikey,
+      "HTTP-Referer":"https://ivnx9.github.io",
+      "X-Title":"Exam Miner 2.0"
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: "You generate exam items only, following instructions exactly."},
+        { role: "user", content: prompt }
+      ]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "Model error");
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function generateCellExactly(task, model){
+  // Try up to 2 passes to hit exact count
+  let text = await callModelStrict(task.prompt, model);
+  let {items} = extractQuestions(text);
+
+  if (items.length === task.count) return items;
+
+  // Too many → trim
+  if (items.length > task.count) return items.slice(0, task.count);
+
+  // Too few → ask for the missing remainder once
+  const missing = task.count - items.length;
+  if (missing > 0){
+    const follow = `
+Earlier you produced ${items.length} ${task.format} question(s) for "${task.topic}" at level ${task.level}.
+Generate exactly ${missing} MORE ${task.format} question(s), continuing the numbering from ${items.length + 1}.
+Do not repeat prior questions. Do not include an answer key.
+`.trim();
+    const more = await callModelStrict(follow, model);
+    const parsed = extractQuestions(more).items;
+    const needed = parsed.slice(0, missing);
+    return items.concat(needed);
+  }
+
+  return items; // fallback
+}
+
+
+
+function renderExamFromBlocks(blocks, meta){
+  // blocks: array of {topic, format, items: [q1,q2,...]}
+  // Create Title
+  const lines = [];
+  const title = `${meta.topic || meta.subject || "Exam"}`.trim();
+  lines.push(`${title}`);
+  lines.push("");
+
+  // Render grouped by Topic, then by Format
+  const byTopic = {};
+  for (const b of blocks){
+    byTopic[b.topic] ||= {};
+    byTopic[b.topic][b.format] ||= [];
+    byTopic[b.topic][b.format].push(...b.items);
+  }
+
+  for (const [topic, formats] of Object.entries(byTopic)){
+    lines.push(`${topic.toUpperCase()}`);
+    for (const [fmt, items] of Object.entries(formats)){
+      lines.push(`${fmt}`);
+      // Re-number within format section
+      items.forEach((txt, i) => {
+        // normalize leading number
+        const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, '');
+        lines.push(`${i+1}. ${body}`);
+      });
+      lines.push("");
+    }
+    lines.push("");
+  }
+
+  // We didn’t collect per-item answers here (MC/TF). If you want an answer key:
+  // Simple heuristic: pull lines like "A.", "B.", etc. from items is unreliable.
+  // Better: ask the model for answer key AFTER assembling—all at once, from the rendered paper.
+  return lines.join("\n");
+}
+
+async function generateAnswerKeyFromPaper(paperText, model){
+  const prompt = `
+Produce ONLY the answer key for the exam below.
+- For Multiple Choice: "1. A", "2. C", ...
+- For True/False: "1. True/False", ...
+- Do not rewrite the exam, only the key lines.
+
+Exam:
+"""
+${paperText}
+"""`.trim();
+  const key = await callModelStrict(prompt, model);
+  return key.trim();
+}
+
+
+      
+      // =========================================
+
 function addTosRow(){
   const tr = document.createElement('tr');
   tr.innerHTML = `
@@ -658,7 +871,7 @@ async function generateExam() {
   //document.getElementById("output").textContent = aiResponse || "No response from AI.";
 }
 */
-
+/*
 async function generateExam() {
   const fileInput = document.getElementById('material');
   const file = fileInput.files?.[0];
@@ -670,13 +883,8 @@ async function generateExam() {
     if (!extractedText || !extractedText.trim()) {
       hideLoader(); return alert("Could not extract any text from the file.");
     }
-/*
-    setLoader("Summarizing content…");
-    const cleanedContent = await summarizeContent(extractedText);
-    if (!cleanedContent) {
-      hideLoader(); return alert("Summarization failed.");
-    }
-*/
+
+
     // Auto mode: summarize only if very long
     const NEED_SUMMARY = extractedText.length > 10000;  // tweak threshold as needed
     setLoader(NEED_SUMMARY ? "Summarizing content…" : "Using full content…");
@@ -696,6 +904,71 @@ async function generateExam() {
     const safe = DOMPurify.sanitize((aiResponse || "No response").replace(/\n/g, "<br>"));
     document.getElementById("output").innerHTML = safe;
   } catch (e) {
+    hideLoader();
+    console.error(e);
+    alert("Error: " + (e?.message || e));
+  }
+}
+*/
+
+  async function generateExam(){
+  const fileInput = document.getElementById('material');
+  const file = fileInput.files?.[0];
+  if (!file) return alert('Please upload a learning material file.');
+
+  // Read meta
+  const subject = document.getElementById('subject').value.trim();
+  const topic = document.getElementById('topic').value.trim();
+  const grade = document.getElementById('grade').value.trim();
+  let total = parseInt(document.getElementById('questionCount').value,10);
+  if (!Number.isFinite(total) || total<=0) total = 20;
+
+  const selectedFormats = Array.from(document.querySelectorAll('.format:checked')).map(cb=>cb.value);
+  if (!selectedFormats.length) return alert('Select at least one exam format.');
+
+  try {
+    setLoader("Extracting content…");
+    const extractedText = await extractLocally(file);
+    if (!extractedText || !extractedText.trim()) { hideLoader(); return alert("No extractable text."); }
+
+    // Auto-summarize if long
+    const NEED_SUMMARY = extractedText.length > 10000;
+    setLoader(NEED_SUMMARY ? "Summarizing content…" : "Using full content…");
+    const content = NEED_SUMMARY ? (await summarizeContent(extractedText)) : extractedText;
+    if (!content) { hideLoader(); return alert("Summarization failed."); }
+
+    if (!validateTOS()) { hideLoader(); return alert("Fix TOS first."); }
+    const plan = allocateItemsByTOS(total);
+
+    // Build strict tasks
+    const model = document.getElementById("model").value;
+    const meta = {subject, topic, grade, content};
+    const tasks = buildCellTasks(plan, selectedFormats, meta);
+
+    // Execute tasks
+    setLoader("Generating exam from TOS…");
+    const blocks = [];
+    for (const t of tasks){
+      const items = await generateCellExactly(t, model);
+      blocks.push({ topic: t.topic, format: t.format, items });
+    }
+
+    // Assemble paper
+    const paper = renderExamFromBlocks(blocks, {subject, topic});
+    // Optionally get answer key
+    const includeKey = document.getElementById('answerKey').checked;
+    const key = includeKey ? await generateAnswerKeyFromPaper(paper, model) : "";
+
+    hideLoader();
+    const finalText = includeKey ? `${paper}\n\nAnswer Key\n${key}` : paper;
+    const safe = DOMPurify.sanitize(finalText.replace(/\n/g, "<br>"));
+    document.getElementById("output").innerHTML = safe;
+
+    // (Nice) Show allocation preview
+    document.getElementById('tosStatus').textContent =
+      'Allocation → ' + plan.map(p => `${p.topic}: ${p.total} (RU ${p.RU}, AA ${p.AA}, HOTS ${p.HOTS})`).join(' | ');
+
+  } catch (e){
     hideLoader();
     console.error(e);
     alert("Error: " + (e?.message || e));
