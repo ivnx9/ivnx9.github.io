@@ -32,7 +32,7 @@
   <title>Exam Prompt Generator with TOS</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px;  margin: auto; }
-    secTitle { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    #secTitle { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
     label { display: block; margin-top: 10px; }
     input, select, textarea { width: 100%; padding: 6px; margin-top: 5px; }
     .checkbox-group, .difficulty-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
@@ -438,6 +438,10 @@ function readTOS(){
   return tos;
 }
 
+// live validation update
+document.getElementById('tosBody').addEventListener('input', () => validateTOS());
+
+      
 function validateTOS(){
   const tos = readTOS();
   const status = document.getElementById('tosStatus');
@@ -666,20 +670,31 @@ async function generateExam() {
     if (!extractedText || !extractedText.trim()) {
       hideLoader(); return alert("Could not extract any text from the file.");
     }
-
+/*
     setLoader("Summarizing content…");
     const cleanedContent = await summarizeContent(extractedText);
     if (!cleanedContent) {
       hideLoader(); return alert("Summarization failed.");
     }
+*/
+    // Auto mode: summarize only if very long
+    const NEED_SUMMARY = extractedText.length > 10000;  // tweak threshold as needed
+    setLoader(NEED_SUMMARY ? "Summarizing content…" : "Using full content…");
+    const cleanedContent = NEED_SUMMARY ? (await summarizeContent(extractedText)) : extractedText;
+    if (!cleanedContent) { hideLoader(); return alert("Summarization failed."); }
 
+    
     setLoader("Generating exam from TOS…");
     const prompt = buildPrompt(cleanedContent);
     const aiResponse = await sendToAI(prompt);
 
     hideLoader();
-    document.getElementById("output").innerHTML =
-      (aiResponse || "No response from AI.").replace(/\n/g, "<br>");
+    
+    //document.getElementById("output").innerHTML =
+     // (aiResponse || "No response from AI.").replace(/\n/g, "<br>");
+
+    const safe = DOMPurify.sanitize((aiResponse || "No response").replace(/\n/g, "<br>"));
+    document.getElementById("output").innerHTML = safe;
   } catch (e) {
     hideLoader();
     console.error(e);
@@ -709,8 +724,13 @@ function buildPrompt(content) {
     `- ${p.topic}: total ${p.total} items → RU=${p.RU}, AA=${p.AA}, HOTS=${p.HOTS}`
   ).join('\n');
 
+if (!formats.length) throw new Error('Select at least one exam format.');
+
+const onlyThese = formats.join(', ');
+  
   return `You are an Exam Generator AI. Generate ONLY the exam (plain text, printable). No markdown, no extra commentary.
-Layout rules:
+  
+STRUCTURE & STYLE:
 - Title centered on top (include Topic and Grade if provided).
 - Create sections for the selected formats only (${formats.join(', ')||'none specified'}).
 - Multiple Choice: A–D choices.
@@ -719,10 +739,21 @@ Layout rules:
 - Do NOT add markdown, bold, hashes, or separators.
 - If a field is empty, omit it.
 
+STRICT FORMAT RULE:
+- Generate sections for these formats ONLY: ${onlyThese}.
+- Do NOT include or mention any unselected format. Do NOT print lines like "omitted" or "not included".
+
+
 STRICT TOS ALLOCATION (non-negotiable):
 Total items: ${questionCount}
 Distribute items exactly by topic and cognitive level as follows:
 ${tosBlock}
+
+GROUPING:
+- Create separate subsections per Topic.
+- Within each Topic, produce exactly the allocated counts for RU, AA, HOTS (you may mix levels, but final counts must match).
+- Do not print the labels RU/AA/HOTS in the final exam; just ensure the questions reflect those levels.
+
 
 Cognitive level mapping:
 - RU = Remember/Understand
@@ -805,6 +836,7 @@ ${content}
         })
       });
       const data = await res.json();
+      if (data.error) throw new Error(data.error.message || 'Model error');
       console.log(data);
       return data.choices?.[0]?.message?.content || null;
     }
@@ -828,6 +860,7 @@ ${content}
         })
       });
       const data = await res.json();
+      if (data.error) throw new Error(data.error.message || 'Model error');
       return data.choices?.[0]?.message?.content || null;
     }
   </script>
