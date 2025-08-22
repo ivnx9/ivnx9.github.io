@@ -383,6 +383,96 @@ function setLoader(message) {
 function hideLoader() {
   document.getElementById("loader").style.display = "none";
 }
+// ============= new extractor markdown =======
+  // Helpers
+  const readAsArrayBuffer = f => new Promise((res, rej) => {
+    const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsArrayBuffer(f);
+  });
+  const readAsText = f => new Promise((res, rej) => {
+    const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(f);
+  });
+
+  // ---- File-type specific extractors (return PLAIN TEXT for your AI) ----
+  async function extractDOCX(file){
+    const ab = await readAsArrayBuffer(file);
+    // Raw text (no HTML) fits your “plain text to AI” flow best:
+    const { value } = await window.mammoth.extractRawText({ arrayBuffer: ab });
+    return (value || "").trim();
+  }
+
+  async function extractXLSX_CSV(file, ext){
+    let wb;
+    if (ext === 'csv'){
+      const text = await readAsText(file);
+      wb = XLSX.read(text, { type: 'string' });
+    } else {
+      const ab = await readAsArrayBuffer(file);
+      wb = XLSX.read(ab, { type: 'array' });
+    }
+    // First sheet → TSV-like plain text
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+    return rows.map(r => r.map(c => (c == null ? "" : String(c))).join("\t")).join("\n");
+  }
+
+  async function extractPPTX(file){
+    const ab = await readAsArrayBuffer(file);
+    const zip = await JSZip.loadAsync(ab);
+    const slideFiles = Object.keys(zip.files)
+      .filter(p => /^ppt\/slides\/slide\d+\.xml$/.test(p))
+      .sort((a,b) =>
+        parseInt(a.match(/slide(\d+)\.xml/)[1],10) -
+        parseInt(b.match(/slide(\d+)\.xml/)[1],10)
+      );
+
+    let out = [];
+    for (let i=0;i<slideFiles.length;i++){
+      const xml = await zip.files[slideFiles[i]].async('text');
+      const runs = Array.from(xml.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)).map(m=>m[1]);
+      const text = runs.map(t => t.replace(/&lt;|&gt;|&amp;/g, s => ({'&lt;':'<','&gt;':'>','&amp;':'&'}[s])))
+                       .map(s => s.trim()).filter(Boolean);
+      if (text.length){
+        out.push(`Slide ${i+1}:\n- ` + text.join("\n- "));
+      }
+    }
+    return out.join("\n\n") || "(No extractable text)";
+  }
+
+  async function extractPDF(file){
+    const ab = await readAsArrayBuffer(file);
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    let pages = [];
+    for (let p=1; p<=pdf.numPages; p++){
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      const strings = content.items.map(it => (it.str||"").trim()).filter(Boolean);
+      const text = strings.join(" ").replace(/\s{2,}/g," ").trim();
+      if (text) pages.push(`Page ${p}:\n${text}`);
+    }
+    return pages.join("\n\n") || "(No extractable text)";
+  }
+
+  async function extractHTML(file){
+    const html = await readAsText(file);
+    // Strip tags to plain text
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return (doc.body?.innerText || "").trim();
+  }
+
+  // ---- Main router: returns CLEAN PLAIN TEXT ----
+  async function extractLocally(file){
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'docx') return extractDOCX(file);
+    if (ext === 'xlsx' || ext === 'csv') return extractXLSX_CSV(file, ext);
+    if (ext === 'pptx') return extractPPTX(file);
+    if (ext === 'pdf')  return extractPDF(file);
+    if (ext === 'html' || ext === 'htm') return extractHTML(file);
+    if (ext === 'txt')  return readAsText(file);
+    throw new Error("Unsupported file type: ." + ext);
+  }
+
+// ======= end of new extractor ======
+    
 
 async function generateExam() {
   const fileInput = document.getElementById('material');
