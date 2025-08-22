@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
+  <!---script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.4/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-pdfmake/2.1.1/html-to-pdfmake.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <title>Exam Prompt Generator with TOS</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px;  margin: auto; }
+    secTitle { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea { width: 100%; padding: 6px; margin-top: 5px; }
+    .checkbox-group, .difficulty-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
+    button { padding: 10px 15px; margin-top: 20px; }
+    pre { background: #f0f0f0; padding: 10px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+<div style="margin-left: 30%; max-width: 700px;">
+<b style="color: red">Welcome to ExamMiner 2.0!</b>
+  <p>System version 1.0.2</p>
+  <h2 id="secTitle">Section A: Upload Learning Material</h2>
+  <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
+  <label>Subject: <input type="text" id="subject" /></label>
+  <label>Topic/Title: <input type="text" id="topic" /></label>
+  <label>Grade Level: <input type="text" id="grade" /></label>
+
+  <h2>Section B: Choose Exam Type</h2>
+  <div class="checkbox-group">
+    <label><input type="checkbox" value="Multiple Choice" class="format" /> Multiple Choice</label>
+    <label><input type="checkbox" value="True or False" class="format" /> True or False</label>
+    <label><input type="checkbox" value="Identification" class="format" /> Identification</label>
+    <label><input type="checkbox" value="Matching Type" class="format" /> Matching Type</label>
+    <label><input type="checkbox" value="Essay" class="format" /> Essay</label>
+  </div>
+
+  <h2>Section C: Configure Exam</h2>
+  <label>Number of Questions: <input type="number" value="20" id="questionCount" min="1" /></label>
+
+  <label>Difficulty:
+    <div class="difficulty-group">
+      <label><input type="radio" name="difficulty" value="Easy" /> Easy</label>
+      <label><input type="radio" name="difficulty" value="Medium" /> Medium</label>
+      <label><input type="radio" name="difficulty" value="Hard" /> Hard</label>
+    </div>
+  </label>
+
+  <label><input type="checkbox" id="shuffle" /> Shuffle Questions</label>
+  <label><input type="checkbox" id="answerKey" /> Include Answer Key</label>
+
+  <h2>Select AI Model</h2>
+  <select id="model">
+    <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+    <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3</option>
+    <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral 3.1</option>
+    <option value="google/gemini-2.5-pro-exp-03-25:free">Gemini 2.5 Pro</option>
+    <option value="bytedance-research/ui-tars-72b:free">UI-TARS 72B</option>
+  </select>
+
+  <h2>Section D: Generate & Edit</h2>
+  <button onclick="generateExam()">Generate Exam</button>
+
+  <h3>Generated Exam:</h3>
+  <button onclick="downloadPDF()">Download exam as PDF</button>
+  <button onclick="downloadDOCX()">Download as DOCX</button>
+
+  <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
+  <!-- Advanced Toolbar -->
+<div style="margin-bottom: 10px;">
+  <button onclick="exec('bold')"><b><i class="fas fa-bold"></i></b></button>
+  <button onclick="exec('italic')"><i><i class="fas fa-italic"></i></i></button>
+  <button onclick="exec('underline')"><u><i class="fas fa-underline"></i></u></button>
+  
+  <select style="width:100px" onchange="changeFontSize(this.value)">
+    <option value="">Font Size</option>
+    <option value="12px">6px</option>
+    <option value="14px">7px</option>
+    <option value="16px">8px</option>
+    <option value="18px">9px</option>
+    <option value="20px">10px</option>
+    <option value="22px">11px</option>
+    <option value="24px">12px</option>
+    <option value="26px">13px</option>
+    <option value="28px">14px</option>
+    <option value="30px">15px</option>
+    <option value="32px">16px</option>
+    <option value="36px">18px</option>
+    <option value="48px">24px</option>
+    <option value="64px">32px</option>
+    <option value="72px">36px</option>
+  </select>
+  
+  <button onclick="exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+  <button onclick="exec('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+  
+  <button onclick="toggleHeading('H1')">H1</button>
+  <button onclick="toggleHeading('H2')">H2</button>
+  <button onclick="toggleHeading('H3')">H3</button>
+  
+  <button onclick="exec('justifyLeft')"><i class="fas fa-align-left"></i></button>
+  <button onclick="exec('justifyCenter')"><i class="fas fa-align-center"></i></button>
+  <button onclick="exec('justifyRight')"><i class="fas fa-align-right"></i></button>
+  
+  <button onclick="copyToClipboard()"><i class="fas fa-copy"></i></button>
+  
+  </div>
+  
+</div>
+  <!-- Editable Exam Output -->
+    <page size="A4" id="pdf-output" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 100px; "><div id="output" contenteditable="true" style="outline: none; font-family: Arial, sans-serif; font-size: 14pt; line-height: 1.6;"></div></page>
+  
+  <!---div id="pdf-output" style="white-space: pre-wrap;">
+  <pre id="output"></pre>
+  </div-->
+
+  <style>
+page {
+  background: white;
+  display: block;
+  margin: 10px 10%;
+  margin-bottom: 0.5cm;
+  box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+}
+page[size="A4"] {  
+  width: 21cm;
+  height: 29.7cm;
+}
+
+    button {
+      padding: 6px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+      cursor: pointer;
+    }
+  
+    button:hover {
+      background: #e0e0e0;
+    }
+  
+    #output:focus {
+      outline: none;
+    }
+  </style>
+  
+  <script>
+function exec(command, value = null) {
+    document.execCommand(command, false, value);
+  }
+
+  function copyToClipboard() {
+    const el = document.getElementById("output");
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.execCommand("copy");
+    selection.removeAllRanges();
+    alert("Copied to clipboard!");
+  }
+
+  function toggleHeading(tag) {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+
+  const range = selection.getRangeAt(0);
+  let node = range.startContainer;
+
+  if (node.nodeType === 3) node = node.parentNode;
+
+  // Walk up DOM to find a block element
+  while (node && node !== document && !/^H[1-6]$/.test(node.tagName)) {
+    node = node.parentNode;
+  }
+
+  if (node && node.tagName === tag) {
+    // Remove heading by replacing with span (no margin)
+    const span = document.createElement("span");
+    span.innerHTML = node.innerHTML;
+    node.parentNode.replaceChild(span, node);
+
+    // Restore cursor position
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  } else {
+    document.execCommand("formatBlock", false, tag);
+  }
+}
+
+
+
+  function changeFontSize(size) {
+    const span = document.createElement("span");
+    span.style.fontSize = size;
+    span.textContent = window.getSelection().toString();
+    const range = window.getSelection().getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(span);
+  }
+  /*
+    function toggleAlign(alignment) {
+      const current = document.queryCommandValue("justifyCenter");
+      if (alignment === 'center') {
+        document.execCommand("justifyCenter", false, null);
+      } else if (alignment === 'left') {
+        document.execCommand("justifyLeft", false, null);
+      }
+    }
+    
+    function toggleBold() {
+      document.execCommand("bold", false, null);
+    }
+    
+    function toggleItalic() {
+      document.execCommand("italic", false, null);
+    } */
+    </script>
+    
+
+
+    <script>
+
+function downloadDOCX() {
+  const content = document.getElementById("output").innerHTML;
+  const fname = document.getElementById("topic").value || "exam_paper";
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 14pt;
+            line-height: 1.6;
+          }
+          h1, h2, h3 {
+            font-weight: bold;
+            margin: 1em 0 0.5em;
+          }
+          ul, ol {
+            margin-left: 20px;
+          }
+          p, span, div {
+            margin: 0;
+            padding: 0;
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+        </style>
+      </head>
+      <body>${content}</body>
+    </html>
+  `;
+
+  try {
+    const converted = window.htmlDocx.asBlob(html);
+    window.saveAs(converted, fname + ".docx");
+  } catch (e) {
+    alert("Failed to export DOCX. Check html-docx-js and FileSaver.js are loaded.");
+    console.error(e);
+  }
+}
+
+
+
+async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+    const content = document.getElementById("output").innerText.trim();
+
+    // Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(title, 105, 20, { align: "center" });
+
+    // Body
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+
+    const lines = doc.splitTextToSize(content, 180); // Wrap text within 180mm
+    doc.text(lines, 15, 30);
+
+    // Save the PDF
+    doc.save(`${title}.pdf`);
+  }
+
+/*
+function downloadPDF() {
+  const fname = document.getElementById("topic").value || "exam_paper";
+  const content = document.getElementById("output").innerHTML;
+
+  // Create a temporary element to parse the HTML
+  const temp = document.createElement("div");
+  temp.innerHTML = content;
+
+  // Convert using htmlToPdfmake
+  const pdfContent = htmlToPdfmake(temp.innerHTML);
+
+  const docDefinition = {
+    content: [
+      { text: fname.toUpperCase(), style: 'header', alignment: 'center', margin: [0, 0, 0, 10] },
+      ...pdfContent
+    ],
+    styles: {
+      header: { fontSize: 16, bold: true }
+    },
+    defaultStyle: { fontSize: 12 },
+    pageSize: 'A4',
+    pageMargins: [40, 60, 40, 60]
+  };
+
+  pdfMake.createPdf(docDefinition).download(fname + ".pdf");
+} 
+  */
+
+        </script>
+        
+  <script>/*
+function downloadPDF() {
+  const element = document.getElementById("pdf-output");
+    setTimeout(() => {
+  var fname = document.getElementById("topic").value || "exam_paper";
+  if(fname == null) { fname = "exam_paper"; }
+  else { fname = fname + ".pdf"; }
+  
+  const opt = {
+    margin:       0.5,
+    filename:     fname,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, logging: true, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+    pagebreak: {mode: ['avoid-all', 'css', 'legacy']}
+  };
+  html2pdf().set(opt).from(element).save();
+    }, 200); // 200ms delay
+}
+*/
+    
+const apikey = "Bearer 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";
+
+
+function setLoader(message) {
+  const loader = document.getElementById("loader");
+  loader.textContent = message;
+  loader.style.display = "block";
+}
+
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
+}
+
+async function generateExam() {
+  const fileInput = document.getElementById('material');
+  const file = fileInput.files[0];
+  if (!file) return alert('Please upload a learning material file.');
+
+  setLoader("Extracting content from file...");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const extractRes = await fetch("https://pymultiextractor.onrender.com/extract", {
+    method: "POST",
+    body: formData
+  });
+
+  const extractData = await extractRes.json();
+  if (!extractData.content) {
+    hideLoader();
+    return alert("Failed to extract file content.");
+  }
+
+  setLoader("Summarizing content...");
+  const cleanedContent = await summarizeContent(extractData.content);
+  if (!cleanedContent) {
+    hideLoader();
+    return alert("Summarization failed.");
+  }
+
+  setLoader("Generating exam from TOS...");
+  const prompt = buildPrompt(cleanedContent);
+  const aiResponse = await sendToAI(prompt);
+
+  hideLoader();
+  document.getElementById("output").innerHTML = (aiResponse || "No response from AI.").replace(/\n/g, "<br>");
+
+  //document.getElementById("output").textContent = aiResponse || "No response from AI.";
+}
+
+
+    function buildPrompt(content) {
+      const subject = document.getElementById('subject').value;
+      const topic = document.getElementById('topic').value;
+      const grade = document.getElementById('grade').value;
+      const questionCount = document.getElementById('questionCount').value;
+      if (questionCount == null || questionCount == 0) {
+        const questionCount = 20;
+      }
+
+      const formats = Array.from(document.querySelectorAll('.format:checked'))
+                           .map(cb => cb.value).join(', ');
+
+      const difficulty = document.querySelector('input[name="difficulty"]:checked')?.value || "Any";
+      const shuffle = document.getElementById('shuffle').checked ? "Yes" : "No";
+      const answerKey = document.getElementById('answerKey').checked ? "Yes" : "No";
+
+      return `You are an Exam Generator AI. Based on the details below, generate a complete exam only. Strictly avoid and Do not use markdown formatting like **bold**, ## headings, or --- lines. Output plain text, neatly formatted like a printable exam paper. Avoid any instructions or message just the exam only. Follow this layout:
+
+- Title: Centered on top, include the topic and grade level if available.
+- For each section, add a clear heading (e.g., Multiple Choice).
+- For Multiple Choice: List questions with choices labeled A–D.
+- For True or False: Use the underscores before the number and question
+- For Identification & Essay: Leave underscores or blank space.
+- Do not add extra characters or markdown syntax.
+- don't use bold text or headings and don't add any message.
+- on below if its value/content is missing avoid to include it on the exam.
+
+Subject: ${subject}
+Topic: ${topic}
+Grade Level: ${grade}
+Exam Formats: ${formats}
+Number of Questions: ${questionCount}
+Difficulty: ${difficulty}
+Shuffle Questions: ${shuffle}
+Include Answer Key: ${answerKey}
+
+Learning Material:
+"""
+${content}
+"""`;
+    }
+
+    async function summarizeContent(text) {
+      const model = document.getElementById("model").value;
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": apikey,
+          "HTTP-Referer":"https://ivnx9.github.io",
+          "X-Title":" Exam Miner 2.0"
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: "system", content: "Summarize this learning material to include only the most important topics, keywords, concepts, and definitions. Ignore greetings or instructions." },
+            { role: "user", content: text }
+          ]
+        })
+      });
+      const data = await res.json();
+      console.log(data);
+      return data.choices?.[0]?.message?.content || null;
+    }
+
+    async function sendToAI(prompt) {
+      const model = document.getElementById("model").value;
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": apikey,
+          "HTTP-Referer":"https://ivnx9.github.io",
+          "X-Title":" Exam Miner 2.0"
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: "system", content: "You are an expert AI Exam Generator with the applied TOS." },
+            { role: "user", content: prompt }
+          ]
+        })
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    }
+  </script>
+
+</body>
+</html>
