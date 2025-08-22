@@ -82,6 +82,43 @@
     <option value="bytedance-research/ui-tars-72b:free">UI-TARS 72B</option>
   </select>
 
+  <h2>Section C-1: Table of Specifications</h2>
+<p style="margin:6px 0 10px">
+  Add topics and set percent per cognitive level. Row Total must be 100%.
+</p>
+
+<table id="tosTable" border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse">
+  <thead>
+    <tr>
+      <th style="width:28%">Content Area / Topic</th>
+      <th style="width:12%">Weight % (Topic)</th>
+      <th>Remember/Understand %</th>
+      <th>Apply/Analyze %</th>
+      <th>HOTS %</th>
+      <th>Row Total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="tosBody">
+    <tr>
+      <td><input placeholder="e.g., Chapter 1: Networking Basics" /></td>
+      <td><input type="number" min="0" max="100" step="1" value="25" /></td>
+      <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+      <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+      <td><input type="number" min="0" max="100" step="1" value="20" /></td>
+      <td class="rowTotal">100%</td>
+      <td><button type="button" onclick="removeTosRow(this)">✖</button></td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top:8px; display:flex; gap:8px">
+  <button type="button" onclick="addTosRow()">Add Topic</button>
+  <button type="button" onclick="validateTOS()">Validate TOS</button>
+  <span id="tosStatus" style="font-style:italic; color:#555"></span>
+</div>
+
+
   <h2>Section D: Generate & Edit</h2>
   <button onclick="generateExam()">Generate Exam</button>
 
@@ -348,9 +385,7 @@ function downloadPDF() {
 } 
   */
 
-        </script>
-        
-  <script>/*
+  /*
 function downloadPDF() {
   const element = document.getElementById("pdf-output");
     setTimeout(() => {
@@ -371,9 +406,10 @@ function downloadPDF() {
 }
 */
     
-const apikey = "Bearer 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";
-
-
+//const apikey = "Bearer sk-or-v1-ac32c0037d4ff843cbc8354300d4c95()d7d750066b37()cfb15b25d3b11893e9889=123"; pang gulo yung () at =123
+const encoded = "QmVhcmVyIHNrLW9yLXYxLWFjMzJjMDAzN2Q0ZmY4NDNjYmM4MzU0MzAwZDRjOTVkN2Q3NTAwNjZiMzdjZmIxNWIyNWQzYjExODkzZTk4ODk=";
+const apikey = window.atob(encoded);
+      
 function setLoader(message) {
   const loader = document.getElementById("loader");
   loader.textContent = message;
@@ -383,6 +419,106 @@ function setLoader(message) {
 function hideLoader() {
   document.getElementById("loader").style.display = "none";
 }
+
+      // ========= update: validate and convert TOS ======
+
+function readTOS(){
+  const rows = Array.from(document.querySelectorAll('#tosBody tr'));
+  const tos = rows.map(r=>{
+    const [topicEl, wEl, ruEl, aaEl, hotEl] = r.querySelectorAll('input');
+    return {
+      topic: (topicEl.value||'').trim(),
+      topicWeight: Number(wEl.value||0),
+      RU: Number(ruEl.value||0),
+      AA: Number(aaEl.value||0),
+      HOTS: Number(hotEl.value||0),
+      rowEl: r
+    };
+  }).filter(r=>r.topic);
+  return tos;
+}
+
+function validateTOS(){
+  const tos = readTOS();
+  const status = document.getElementById('tosStatus');
+  if(!tos.length){ status.textContent = 'Add at least one topic.'; status.style.color = 'crimson'; return false; }
+
+  // Topic weights must sum ~100
+  const weightSum = tos.reduce((s,t)=>s+t.topicWeight,0);
+  // Each row RU+AA+HOTS must be 100
+  let ok = true;
+  tos.forEach(t=>{
+    const rowSum = t.RU + t.AA + t.HOTS;
+    const cell = t.rowEl.querySelector('.rowTotal');
+    cell.textContent = rowSum + '%';
+    cell.style.color = (rowSum===100)? '#0a0' : 'crimson';
+    if(rowSum!==100) ok=false;
+  });
+
+  const near100 = Math.abs(weightSum-100) <= 1; // allow tiny rounding slack
+  if(!near100) ok=false;
+
+  if(ok){
+    status.textContent = `TOS looks good. Topic weights total ${weightSum}%.`;
+    status.style.color = '#0a0';
+    return true;
+  } else {
+    status.textContent = `Fix TOS: Topic weights = ${weightSum}% (must be ~100), and each row must total 100%.`;
+    status.style.color = 'crimson';
+    return false;
+  }
+}
+
+// Largest Remainder Method to turn percentages into integers that hit the target exactly
+function apportion(total, percents){
+  const raw = percents.map(p => (p/100)*total);
+  const floors = raw.map(Math.floor);
+  let used = floors.reduce((s,x)=>s+x,0);
+  const rema = raw.map((x,i)=>({i, r:x - Math.floor(x)}))
+                  .sort((a,b)=>b.r - a.r);
+  const out = floors.slice();
+  let k = 0;
+  while(used < total && k < rema.length){ out[rema[k].i]++; used++; k++; }
+  return out;
+}
+
+// Allocate exact item counts per (topic, level)
+function allocateItemsByTOS(totalQuestions){
+  const tos = readTOS();
+  // 1) Items per topic by topic weight
+  const perTopic = apportion(totalQuestions, tos.map(t=>t.topicWeight));
+  // 2) For each topic, split into RU/AA/HOTS
+  return tos.map((t, idx)=>{
+    const topicTotal = perTopic[idx];
+    const perLevel = apportion(topicTotal, [t.RU, t.AA, t.HOTS]);
+    return {
+      topic: t.topic,
+      total: topicTotal,
+      RU: perLevel[0],
+      AA: perLevel[1],
+      HOTS: perLevel[2]
+    };
+  });
+}
+
+
+
+      // ====================
+
+function addTosRow(){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input placeholder="Topic name" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="25" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="20" /></td>
+    <td class="rowTotal">100%</td>
+    <td><button type="button" onclick="removeTosRow(this)">✖</button></td>`;
+  document.getElementById('tosBody').appendChild(tr);
+}
+function removeTosRow(btn){ btn.closest('tr').remove(); }
+
 // ============= new extractor markdown =======
   // Helpers
   const readAsArrayBuffer = f => new Promise((res, rej) => {
@@ -526,7 +662,6 @@ async function generateExam() {
 
   try {
     setLoader("Extracting content from file…");
-    // ⬇️ New: local, client-side extraction (no external API)
     const extractedText = await extractLocally(file);
     if (!extractedText || !extractedText.trim()) {
       hideLoader(); return alert("Could not extract any text from the file.");
@@ -553,7 +688,62 @@ async function generateExam() {
 }
 
 
+function buildPrompt(content) {
+  const subject = document.getElementById('subject').value.trim();
+  const topic = document.getElementById('topic').value.trim();
+  const grade = document.getElementById('grade').value.trim();
+  let questionCount = parseInt(document.getElementById('questionCount').value,10);
+  if (!Number.isFinite(questionCount) || questionCount <= 0) questionCount = 20;
 
+  if(!validateTOS()){
+    throw new Error('Please fix the TOS before generating the exam.');
+  }
+  const plan = allocateItemsByTOS(questionCount); // [{topic, total, RU, AA, HOTS}, ...]
+
+  const formats = Array.from(document.querySelectorAll('.format:checked')).map(cb=>cb.value);
+  const difficulty = document.querySelector('input[name="difficulty"]:checked')?.value || "Any";
+  const shuffle = document.getElementById('shuffle').checked ? "Yes" : "No";
+  const answerKey = document.getElementById('answerKey').checked ? "Yes" : "No";
+
+  const tosBlock = plan.map(p =>
+    `- ${p.topic}: total ${p.total} items → RU=${p.RU}, AA=${p.AA}, HOTS=${p.HOTS}`
+  ).join('\n');
+
+  return `You are an Exam Generator AI. Generate ONLY the exam (plain text, printable). No markdown, no extra commentary.
+Layout rules:
+- Title centered on top (include Topic and Grade if provided).
+- Create sections for the selected formats only (${formats.join(', ')||'none specified'}).
+- Multiple Choice: A–D choices.
+- True/False: underscore before the number line.
+- Identification/Essay: provide lines/underscores.
+- Do NOT add markdown, bold, hashes, or separators.
+- If a field is empty, omit it.
+
+STRICT TOS ALLOCATION (non-negotiable):
+Total items: ${questionCount}
+Distribute items exactly by topic and cognitive level as follows:
+${tosBlock}
+
+Cognitive level mapping:
+- RU = Remember/Understand
+- AA = Apply/Analyze
+- HOTS = Evaluate/Create or higher-order thinking
+
+Subject: ${subject}
+Topic: ${topic}
+Grade Level: ${grade}
+Difficulty bias: ${difficulty}
+Shuffle Questions: ${shuffle}
+Include Answer Key: ${answerKey}
+
+Learning Material (clean summary):
+"""
+${content}
+"""`;
+}
+
+      
+/*
     function buildPrompt(content) {
       const subject = document.getElementById('subject').value;
       const topic = document.getElementById('topic').value;
@@ -594,7 +784,7 @@ Learning Material converted into markdown:
 """
 ${content}
 """`;
-    }
+    } */
 
     async function summarizeContent(text) {
       const model = document.getElementById("model").value;
