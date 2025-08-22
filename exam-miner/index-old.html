@@ -85,8 +85,8 @@ function downloadPDF() {
 }
 
     
-const apikey = "Bearer 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";
-
+const encoded = "QmVhcmVyIHNrLW9yLXYxLWFjMzJjMDAzN2Q0ZmY4NDNjYmM4MzU0MzAwZDRjOTVkN2Q3NTAwNjZiMzdjZmIxNWIyNWQzYjExODkzZTk4ODk=";
+const apikey = window.atob(encoded);
 
 function setLoader(message) {
   const loader = document.getElementById("loader");
