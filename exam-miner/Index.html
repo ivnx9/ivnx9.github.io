@@ -473,13 +473,19 @@ function hideLoader() {
 
 // ======= end of new extractor ======
     
-
+/*
 async function generateExam() {
   const fileInput = document.getElementById('material');
   const file = fileInput.files[0];
   if (!file) return alert('Please upload a learning material file.');
 
   setLoader("Extracting content from file...");
+    const extractedText = await extractLocally(file);
+    if (!extractedText || !extractedText.trim()) {
+      hideLoader(); return alert("Could not extract any text from the file.");
+    }
+  
+    
   const formData = new FormData();
   formData.append("file", file);
 
@@ -493,6 +499,7 @@ async function generateExam() {
     hideLoader();
     return alert("Failed to extract file content.");
   }
+  
 
   setLoader("Summarizing content...");
   const cleanedContent = await summarizeContent(extractData.content);
@@ -510,6 +517,41 @@ async function generateExam() {
 
   //document.getElementById("output").textContent = aiResponse || "No response from AI.";
 }
+*/
+
+async function generateExam() {
+  const fileInput = document.getElementById('material');
+  const file = fileInput.files?.[0];
+  if (!file) return alert('Please upload a learning material file.');
+
+  try {
+    setLoader("Extracting content from file…");
+    // ⬇️ New: local, client-side extraction (no external API)
+    const extractedText = await extractLocally(file);
+    if (!extractedText || !extractedText.trim()) {
+      hideLoader(); return alert("Could not extract any text from the file.");
+    }
+
+    setLoader("Summarizing content…");
+    const cleanedContent = await summarizeContent(extractedText);
+    if (!cleanedContent) {
+      hideLoader(); return alert("Summarization failed.");
+    }
+
+    setLoader("Generating exam from TOS…");
+    const prompt = buildPrompt(cleanedContent);
+    const aiResponse = await sendToAI(prompt);
+
+    hideLoader();
+    document.getElementById("output").innerHTML =
+      (aiResponse || "No response from AI.").replace(/\n/g, "<br>");
+  } catch (e) {
+    hideLoader();
+    console.error(e);
+    alert("Error: " + (e?.message || e));
+  }
+}
+
 
 
     function buildPrompt(content) {
