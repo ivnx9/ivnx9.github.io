@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Browser File → Markdown Converter</title>
+  <title>File → Markdown (Browser-Only)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 12px; }
+    body { font-family: system-ui, Arial, sans-serif; max-width: 920px; margin: 24px auto; padding: 0 12px; }
     .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-top: 12px; }
-    #out { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    textarea { width: 100%; min-height: 320px; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     button { padding: 10px 14px; border-radius: 10px; border: 1px solid #bbb; background: #f8f8f8; cursor: pointer; }
-    input[type=file] { padding: 8px; }
+    #status { color: #555; }
   </style>
 </head>
 <body>
@@ -19,49 +19,58 @@
     <input id="file" type="file" />
     <button id="convertBtn">Convert to Markdown</button>
     <button id="downloadBtn" disabled>Download .md</button>
-    <div id="status" style="margin-top:8px;color:#555;"></div>
+    <div id="status"></div>
   </div>
 
   <div class="card">
     <h3>Markdown Output</h3>
-    <textarea id="out" rows="20" style="width:100%;"></textarea>
+    <textarea id="out" placeholder="Your Markdown will appear here…"></textarea>
   </div>
 
-  <!-- Dependencies (CDN) -->
+  <!-- Pinned dependencies (UMD builds) -->
   <!-- DOCX -> HTML -->
-  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js" crossorigin="anonymous"></script>
   <!-- XLSX/CSV parsing -->
-  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-  <!-- PPTX read (zip -> xml) -->
-  <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
-  <!-- PDF.js (text extraction) -->
-  <script src="https://unpkg.com/pdfjs-dist/build/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" crossorigin="anonymous"></script>
+  <!-- PPTX: unzip + read XML -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
+  <!-- PDF.js (UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" crossorigin="anonymous"></script>
   <!-- HTML -> Markdown -->
-  <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.3/dist/turndown.js" crossorigin="anonymous"></script>
 
   <script>
-    // Configure PDF.js worker (same CDN)
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist/build/pdf.worker.min.js";
-
+    // --- Setup ---
     const fileEl = document.getElementById('file');
     const outEl = document.getElementById('out');
     const statusEl = document.getElementById('status');
     const convertBtn = document.getElementById('convertBtn');
     const downloadBtn = document.getElementById('downloadBtn');
 
+    // PDF.js worker (must match the pdf.min.js version above)
+    const pdfjsLib = window.pdfjsLib; // exposed by UMD build
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
     const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
 
-    function setStatus(msg) { statusEl.textContent = msg; }
-    const readAsArrayBuffer = (f) => new Promise((res, rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsArrayBuffer(f); });
-    const readAsText = (f) => new Promise((res, rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsText(f); });
+    function setStatus(msg) { statusEl.textContent = msg || ""; }
+    function escapeHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
+    const readAsArrayBuffer = (f) => new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsArrayBuffer(f);
+    });
+    const readAsText = (f) => new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(f);
+    });
+
+    // --- Converters to HTML ---
     async function docxToHtml(arrayBuffer) {
       const result = await window.mammoth.convertToHtml({ arrayBuffer });
       return result.value || "<p></p>";
     }
 
     function sheetToHtmlTable(workbook) {
-      // Use first sheet
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
@@ -79,81 +88,69 @@
       return html;
     }
 
-    async function xlsxCsvToHtml(arrayBuffer, ext) {
-      const wb = XLSX.read(arrayBuffer, { type: 'array' });
-      return sheetToHtmlTable(wb);
+    async function xlsxCsvToHtml(file, ext) {
+      if (ext === 'csv') {
+        const text = await readAsText(file);
+        const wb = XLSX.read(text, { type: 'string' });
+        return sheetToHtmlTable(wb);
+      } else {
+        const ab = await readAsArrayBuffer(file);
+        const wb = XLSX.read(ab, { type: 'array' });
+        return sheetToHtmlTable(wb);
+      }
     }
 
     async function pptxToHtml(arrayBuffer) {
-      // Text-only extraction: read ppt/slides/slide*.xml and pull <a:t> text runs
       const zip = await JSZip.loadAsync(arrayBuffer);
       const slideFiles = Object.keys(zip.files)
         .filter(p => /^ppt\/slides\/slide\d+\.xml$/.test(p))
-        .sort((a,b) => {
-          const na = parseInt(a.match(/slide(\d+)\.xml/)[1],10);
-          const nb = parseInt(b.match(/slide(\d+)\.xml/)[1],10);
-          return na - nb;
-        });
+        .sort((a,b) => parseInt(a.match(/slide(\d+)\.xml/)[1],10) - parseInt(b.match(/slide(\d+)\.xml/)[1],10));
 
       let html = "";
       for (let i = 0; i < slideFiles.length; i++) {
-        const xmlText = await zip.files[slideFiles[i]].async('text');
-        const texts = Array.from(xmlText.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)).map(m => m[1]);
-        const lines = texts.map(t => t.replace(/&lt;|&gt;|&amp;/g, s => ({'&lt;':'<','&gt;':'>','&amp;':'&'}[s])));
-        const items = lines.filter(s => s && s.trim().length);
+        const xml = await zip.files[slideFiles[i]].async('text');
+        const texts = Array.from(xml.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)).map(m => m[1]);
+        const lines = texts.map(t => t.replace(/&lt;|&gt;|&amp;/g, s => ({'&lt;':'<','&gt;':'>','&amp;':'&'}[s]))).filter(s => s.trim().length);
         html += `<h2>Slide ${i+1}</h2>\n<ul>\n`;
-        items.forEach(t => html += `<li>${escapeHtml(t)}</li>\n`);
+        lines.forEach(t => { html += `<li>${escapeHtml(t)}</li>\n`; });
         html += `</ul>\n`;
-      }
-      if (!html) html = "<p>(No extractable text)</p>";
-      return html;
-    }
-
-    async function pdfToHtml(arrayBuffer) {
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
-      let html = "";
-      for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const content = await page.getTextContent();
-        const strings = content.items.map(it => (it.str || "").trim());
-        const text = strings.join(" ").replace(/\s{2,}/g, " ");
-        if (text) {
-          html += `<h3>Page ${p}</h3>\n<p>${escapeHtml(text)}</p>\n`;
-        }
       }
       return html || "<p>(No extractable text)</p>";
     }
 
-    function txtToHtml(text) {
-      const safe = escapeHtml(text);
-      return `<pre>${safe}</pre>`;
+    async function pdfToHtml(arrayBuffer) {
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let html = "";
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        const strings = content.items.map(it => (it.str || "").trim()).filter(Boolean);
+        const text = strings.join(" ").replace(/\s{2,}/g, " ").trim();
+        if (text) html += `<h3>Page ${p}</h3>\n<p>${escapeHtml(text)}</p>\n`;
+      }
+      return html || "<p>(No extractable text)</p>";
     }
 
-    function htmlToMarkdown(html) {
-      return turndown.turndown(html);
-    }
+    function txtToHtml(text) { return `<pre>${escapeHtml(text)}</pre>`; }
+    function htmlToMarkdown(html) { return turndown.turndown(html); }
 
-    function escapeHtml(s){
-      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    }
-
+    // --- UI wiring ---
     convertBtn.addEventListener('click', async () => {
-      const f = fileEl.files && fileEl.files[0];
+      const f = fileEl.files?.[0];
       if (!f) { alert("Choose a file first."); return; }
-      setStatus("Converting… please wait.");
+      setStatus("Converting…");
       outEl.value = "";
       downloadBtn.disabled = true;
 
-      const name = f.name.toLowerCase();
-      const ext = (name.split('.').pop() || "").trim();
+      // extension (case-insensitive)
+      const ext = (f.name.split('.').pop() || '').toLowerCase();
 
       try {
         let html = "";
         if (ext === "docx") {
           html = await docxToHtml(await readAsArrayBuffer(f));
         } else if (ext === "xlsx" || ext === "csv") {
-          html = await xlsxCsvToHtml(await readAsArrayBuffer(f), ext);
+          html = await xlsxCsvToHtml(f, ext);
         } else if (ext === "pptx") {
           html = await pptxToHtml(await readAsArrayBuffer(f));
         } else if (ext === "pdf") {
@@ -163,8 +160,8 @@
         } else if (ext === "html" || ext === "htm") {
           html = await readAsText(f);
         } else {
-          alert("Unsupported file type: ." + ext);
           setStatus("");
+          alert("Unsupported file type: ." + ext);
           return;
         }
 
@@ -174,14 +171,13 @@
         downloadBtn.disabled = false;
       } catch (e) {
         console.error(e);
-        setStatus("Error: " + (e && e.message ? e.message : e));
+        setStatus("Error: " + (e?.message || e));
       }
     });
 
     downloadBtn.addEventListener('click', () => {
       const md = outEl.value || "";
-      const f = fileEl.files && fileEl.files[0];
-      const base = f ? f.name.replace(/\.[^.]+$/,'') : 'output';
+      const base = (fileEl.files?.[0]?.name || 'output').replace(/\.[^.]+$/, '');
       const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
