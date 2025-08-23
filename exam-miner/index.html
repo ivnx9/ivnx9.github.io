@@ -570,10 +570,10 @@ function buildCellTasks(plan, selectedFormats, meta){
 
         const fmtGuidance = (() => {
           if (fmt === "Multiple Choice") return "Multiple Choice with choices A–D.";
-          if (fmt === "True or False") return "True/False. Start each line with an underscore before the number.";
+          if (fmt === "True or False") return "True or False type. Output only the numbered statements, each line starting with an underscore (e.g., '_ 1. ...'). Do NOT add 'True or False' in front of each question — only once as the section title.";
           if (fmt === "Identification") return "Identification. Provide a short blank line for the answer.";
           if (fmt === "Matching Type") return "Matching Type. Provide pairs and clear instructions.";
-          if (fmt === "Essay") return "Essay. Provide 1–3 sentence prompts; include blank lines.";
+          if (fmt === "Essay") return "Essay. Provide 1–3 sentence prompts; include long blank lines like 2 sentences blank lines.";
           return fmt + ".";
         })();
 
