@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
-  <!---script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script><!-- this is commented -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.4/purify.min.js"></script>
@@ -43,7 +43,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.7</p>
+  <p>System version 1.0.8</p>
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -168,14 +168,24 @@
   </div>
   
 </div>
-  <!-- Editable Exam Output -->
+  <!-- Editable Exam Output -
     <page size="A4" id="pdf-output" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 100px; "><div id="output" contenteditable="true" style="outline: none; font-family: Arial, sans-serif; font-size: 14pt; line-height: 1.6;"></div></page>
+  -->
+
+  <!-- A4, auto-paging, still editable; keeps id="output" so your code continues to work -->
+<div id="paper" class="paper">
+  <div class="page">
+    <div class="content" id="output" contenteditable="true" style="outline:none; font-family:Arial, sans-serif; font-size:14pt; line-height:1.6; white-space:pre-wrap;"></div>
+  </div>
+</div>
+
   
   <!---div id="pdf-output" style="white-space: pre-wrap;">
   <pre id="output"></pre>
   </div-->
 
   <style>
+    /*
 page {
   background: white;
   display: block;
@@ -187,7 +197,28 @@ page[size="A4"] {
   width: 21cm;
   height: 29.7cm;
 }
+*/
 
+/* A4 UI pages */
+.paper { margin: 10px auto; }
+.page{
+  width:210mm; height:297mm; background:#fff;
+  margin:12px auto; box-shadow:0 0 6px rgba(0,0,0,.25);
+  overflow:hidden; position:relative; border:1px solid #ccc;
+}
+.page .content{
+  padding:20mm 18mm;           /* inner margins */
+  white-space:pre-wrap; word-wrap:break-word;
+  min-height:calc(297mm - 40mm); /* visual fill */
+}
+
+/* printing keeps page breaks */
+@media print {
+  .page{ box-shadow:none; margin:0 auto; page-break-after:always; border:none; }
+  .page:last-child{ page-break-after:auto; }
+}
+
+    
     button {
       padding: 6px 10px;
       font-size: 14px;
@@ -206,6 +237,102 @@ page[size="A4"] {
   </style>
   
   <script>
+
+    // ----- caret helpers -----
+function saveCaretOffset(rootId='paper'){
+  const sel = window.getSelection(); if (!sel.rangeCount) return null;
+  const r = sel.getRangeAt(0);
+  const root = document.getElementById(rootId);
+  const pre = document.createRange(); pre.selectNodeContents(root);
+  pre.setEnd(r.startContainer, r.startOffset);
+  return pre.toString().length;
+}
+function restoreCaretOffset(offset, rootId='paper'){
+  if (offset == null) return;
+  const root = document.getElementById(rootId);
+  const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  let n, count=0;
+  while ((n = tw.nextNode())){
+    const next = count + n.length;
+    if (offset <= next){
+      const sel = window.getSelection(); const r = document.createRange();
+      r.setStart(n, Math.max(0, offset - count)); r.collapse(true);
+      sel.removeAllRanges(); sel.addRange(r); return;
+    }
+    count = next;
+  }
+}
+
+// ----- paging core -----
+function addPage(){
+  const page = document.createElement('div');
+  page.className = 'page';
+  const content = document.createElement('div');
+  content.className = 'content';
+  content.contentEditable = 'true';
+  document.getElementById('paper').appendChild(page);
+  page.appendChild(content);
+  hook(content);
+  return page;
+}
+function hook(editable){
+  editable.addEventListener('input', ()=>requestAnimationFrame(paginate));
+  editable.addEventListener('paste', ()=>requestAnimationFrame(paginate));
+}
+function paginate(){
+  const caret = saveCaretOffset('paper');
+  const pages = Array.from(document.querySelectorAll('.page'));
+  for (let i=0;i<pages.length;i++){
+    const box = pages[i].querySelector('.content');
+    while (box.scrollHeight > box.clientHeight && box.lastChild){
+      const next = pages[i+1] || addPage();
+      const nextBox = next.querySelector('.content');
+
+      let node = box.lastChild;
+      // normalize: move inline text into a div for easier splitting
+      if (node.nodeType === 3){
+        const wrap = document.createElement('div');
+        wrap.textContent = node.textContent;
+        box.replaceChild(wrap, node);
+        node = wrap;
+      }
+
+      if (node.textContent && node.textContent.trim()){
+        const words = node.textContent.split(/\s+/);
+        let keep = words.length;
+        // trim until fits
+        do {
+          keep--;
+          node.textContent = words.slice(0, Math.max(0, keep)).join(' ');
+        } while (box.scrollHeight > box.clientHeight && keep>0);
+
+        const spill = document.createElement('div');
+        spill.textContent = words.slice(Math.max(0, keep)).join(' ');
+        nextBox.insertBefore(spill, nextBox.firstChild);
+        if (!node.textContent.trim()) box.removeChild(node);
+      } else {
+        nextBox.insertBefore(node, nextBox.firstChild);
+      }
+    }
+  }
+  // remove trailing empty pages
+  const all = Array.from(document.querySelectorAll('.page'));
+  for (let k=all.length-1; k>0; k--){
+    const c = all[k].querySelector('.content');
+    if (!c.textContent.trim()) all[k].remove();
+    else break;
+  }
+  restoreCaretOffset(caret, 'paper');
+}
+
+// init on load
+(function initPager(){
+  // keep your id="output" on first page content
+  hook(document.getElementById('output'));
+})();
+
+
+    // ===========================================
 function exec(command, value = null) {
     document.execCommand(command, false, value);
   }
@@ -285,6 +412,29 @@ function exec(command, value = null) {
 
 
     <script>
+function getEditorHTML(){
+  return Array.from(document.querySelectorAll('.page .content'))
+    .map((n,i) => n.innerHTML + (i < document.querySelectorAll('.page').length-1 ? '<br style="page-break-after:always">' : ''))
+    .join('');
+}
+
+function downloadDOCX() {
+  const titleText = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+  const fname = document.getElementById("topic").value || "exam_paper";
+  const html = `
+    <!DOCTYPE html>
+    <html><head><meta charset="utf-8">
+      <style>body{font-family:Arial,sans-serif;font-size:14pt;line-height:1.6}</style>
+    </head>
+    <body>
+      <div style="text-align:center;font-weight:bold;font-size:16pt;margin:0 0 12pt 0;">${titleText}</div>
+      ${getEditorHTML()}
+    </body></html>`;
+  const blob = window.htmlDocx.asBlob(html);
+  saveAs(blob, fname + ".docx");
+}
+
+/*      
 function downloadDOCX() {
   const rawContent = document.getElementById("output").innerHTML;
   const titleText = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
@@ -299,7 +449,7 @@ function downloadDOCX() {
         <style>
           body { font-family: Arial, sans-serif; font-size: 14pt; line-height: 1.6; }
           /* html-docx-js honors simple page-break rules if you need later:
-             .page-break { page-break-before: always; } */
+             .page-break { page-break-before: always; } * /
         </style>
       </head>
       <body>
@@ -320,7 +470,7 @@ function downloadDOCX() {
   }
 }
 
-      
+      */
       /*
 function downloadDOCX() {
   const content = document.getElementById("output").innerHTML;
@@ -368,8 +518,18 @@ function downloadDOCX() {
 }
       */
 
+function downloadPDF(){
+  const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+  html2pdf().set({
+    filename: title + ".pdf",
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak: { mode: ["css", "legacy"] }
+  }).from(document.getElementById("paper")).save();
+}
 
-
+/*
       async function downloadPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "mm", "a4"); // portrait, millimeters, A4
@@ -405,7 +565,7 @@ function downloadDOCX() {
   doc.save(`${title}.pdf`);
 }
 
-
+*/
 /*
 async function downloadPDF() {
     const { jsPDF } = window.jspdf;
@@ -1048,6 +1208,7 @@ async function generateExam() {
     const finalText = includeKey ? `${paper}\n\nAnswer Key\n${key}` : paper;
     const safe = DOMPurify.sanitize(finalText.replace(/\n/g, "<br>"));
     document.getElementById("output").innerHTML = safe;
+    paginate();
 
     // (Nice) Show allocation preview
     document.getElementById('tosStatus').textContent =
