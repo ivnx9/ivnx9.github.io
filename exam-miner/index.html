@@ -709,43 +709,6 @@ function renderExamFromBlocks(blocks, meta, selectedFormats = null){
   return lines.join("\n");
 }
 
-/*
-  for (const [topic, formats] of Object.entries(byTopic)){
-    lines.push(`${topic.toUpperCase()}`);
-    for (const [fmt, items] of Object.entries(formats)){
-      lines.push(`${fmt}`);
-      // Re-number within format section
-      items.forEach((txt, i) => {
-        // normalize leading number
-        const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, '');
-        lines.push(`${i+1}. ${body}`);
-      });
-      lines.push("");
-    }
-    lines.push("");
-  }
-*/
-  for (const [fmt, items] of Object.entries(formats)){
-  lines.push(`${fmt}`);
-  items.forEach((txt, i) => {
-    if (fmt === "True or False") {
-      // keep leading underscore and re-number with underscore
-      const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, ''); // strip any existing number/underscore
-      lines.push(`_ ${i+1}. ${body}`);
-    } else {
-      // normal numbering (no underscore)
-      const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, '');
-      lines.push(`${i+1}. ${body}`);
-    }
-  });
-  lines.push("");
-}
-
-  // We didn’t collect per-item answers here (MC/TF). If you want an answer key:
-  // Simple heuristic: pull lines like "A.", "B.", etc. from items is unreliable.
-  // Better: ask the model for answer key AFTER assembling—all at once, from the rendered paper.
-  return lines.join("\n");
-}
 
 async function generateAnswerKeyFromPaper(paperText, model){
   const prompt = `
