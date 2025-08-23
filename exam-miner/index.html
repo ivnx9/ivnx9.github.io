@@ -681,7 +681,7 @@ function renderExamFromBlocks(blocks, meta){
     byTopic[b.topic][b.format] ||= [];
     byTopic[b.topic][b.format].push(...b.items);
   }
-
+/*
   for (const [topic, formats] of Object.entries(byTopic)){
     lines.push(`${topic.toUpperCase()}`);
     for (const [fmt, items] of Object.entries(formats)){
@@ -696,6 +696,22 @@ function renderExamFromBlocks(blocks, meta){
     }
     lines.push("");
   }
+*/
+  for (const [fmt, items] of Object.entries(formats)){
+  lines.push(`${fmt}`);
+  items.forEach((txt, i) => {
+    if (fmt === "True or False") {
+      // keep leading underscore and re-number with underscore
+      const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, ''); // strip any existing number/underscore
+      lines.push(`_ ${i+1}. ${body}`);
+    } else {
+      // normal numbering (no underscore)
+      const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, '');
+      lines.push(`${i+1}. ${body}`);
+    }
+  });
+  lines.push("");
+}
 
   // We didn’t collect per-item answers here (MC/TF). If you want an answer key:
   // Simple heuristic: pull lines like "A.", "B.", etc. from items is unreliable.
