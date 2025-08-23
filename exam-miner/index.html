@@ -43,7 +43,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.6</p>
+  <p>System version 1.0.7</p>
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -285,7 +285,43 @@ function exec(command, value = null) {
 
 
     <script>
+function downloadDOCX() {
+  const rawContent = document.getElementById("output").innerHTML;
+  const titleText = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+  const fname = document.getElementById("topic").value || "exam_paper";
 
+  // Build HTML with a DOCX-friendly, inline-styled title
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 14pt; line-height: 1.6; }
+          /* html-docx-js honors simple page-break rules if you need later:
+             .page-break { page-break-before: always; } */
+        </style>
+      </head>
+      <body>
+        <div style="text-align:center; font-weight:bold; font-size:16pt; margin:0 0 12pt 0;">
+          ${titleText}
+        </div>
+        ${rawContent}
+      </body>
+    </html>
+  `;
+
+  try {
+    const blob = window.htmlDocx.asBlob(html);
+    window.saveAs(blob, fname + ".docx");
+  } catch (e) {
+    alert("Failed to export DOCX. Check html-docx-js and FileSaver.js are loaded.");
+    console.error(e);
+  }
+}
+
+      
+      /*
 function downloadDOCX() {
   const content = document.getElementById("output").innerHTML;
   const fname = document.getElementById("topic").value || "exam_paper";
@@ -330,9 +366,47 @@ function downloadDOCX() {
     console.error(e);
   }
 }
+      */
 
 
 
+      async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4"); // portrait, millimeters, A4
+
+  const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+  const content = document.getElementById("output").innerText.trim();
+
+  // Title
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 105, 20, { align: "center" });
+
+  // Body
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+
+  const marginLeft = 15;
+  const marginTop = 30;
+  const lineHeight = 7;
+  const pageHeight = doc.internal.pageSize.height; // ~297mm
+  const lines = doc.splitTextToSize(content, 180); // wrap text
+
+  let y = marginTop;
+  for (let i = 0; i < lines.length; i++) {
+    if (y + lineHeight > pageHeight - 15) {  
+      doc.addPage();
+      y = 20; // reset top margin for new page
+    }
+    doc.text(lines[i], marginLeft, y);
+    y += lineHeight;
+  }
+
+  doc.save(`${title}.pdf`);
+}
+
+
+/*
 async function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -355,6 +429,7 @@ async function downloadPDF() {
     // Save the PDF
     doc.save(`${title}.pdf`);
   }
+  */
 
 /*
 function downloadPDF() {
@@ -584,10 +659,12 @@ Course Topic: ${meta.topic || "(unspecified)"}
 Grade Level: ${meta.grade || "(unspecified)"}
 
 STRICT REQUIREMENTS:
+- Do not add the title in the exam.
 - Output ONLY the ${fmt} items, numbered 1..${cnt}, plain text (no markdown, no extra commentary).
 - ${fmtGuidance}
 - Do not include any other formats or sections.
 - Do not include an Answer Key for this block.
+- Do not add markdown or use markdown symbols on exam and in answer key.
 
 Style:
 - Clear, unambiguous wording.
