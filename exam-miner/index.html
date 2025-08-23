@@ -666,21 +666,49 @@ Do not repeat prior questions. Do not include an answer key.
 
 
 
-function renderExamFromBlocks(blocks, meta){
-  // blocks: array of {topic, format, items: [q1,q2,...]}
-  // Create Title
+function renderExamFromBlocks(blocks, meta, selectedFormats = null){
   const lines = [];
   const title = `${meta.topic || meta.subject || "Exam"}`.trim();
-  lines.push(`${title}`);
-  lines.push("");
+  lines.push(title, "");
 
-  // Render grouped by Topic, then by Format
+  // group by topic → format → items
   const byTopic = {};
   for (const b of blocks){
     byTopic[b.topic] ||= {};
     byTopic[b.topic][b.format] ||= [];
     byTopic[b.topic][b.format].push(...b.items);
   }
+
+  // if caller passes selectedFormats, use that order; else fall back to Object.keys
+  for (const [topic, formatsMap] of Object.entries(byTopic)){
+    lines.push(topic.toUpperCase());
+
+    const fmtOrder = selectedFormats?.length
+      ? selectedFormats
+      : Object.keys(formatsMap);
+
+    for (const fmt of fmtOrder){
+      const items = formatsMap[fmt];
+      if (!items || !items.length) continue;
+
+      lines.push(fmt);
+      items.forEach((txt, i) => {
+        const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/, ""); // strip any numbering/underscore
+        if (fmt === "True or False") {
+          lines.push(`_ ${i+1}. ${body}`);
+        } else {
+          lines.push(`${i+1}. ${body}`);
+        }
+      });
+      lines.push("");
+    }
+
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
 /*
   for (const [topic, formats] of Object.entries(byTopic)){
     lines.push(`${topic.toUpperCase()}`);
@@ -970,7 +998,8 @@ async function generateExam() {
     }
 
     // Assemble paper
-    const paper = renderExamFromBlocks(blocks, {subject, topic});
+   // const paper = renderExamFromBlocks(blocks, {subject, topic});
+    const paper = renderExamFromBlocks(blocks, { subject, topic }, selectedFormats);
     // Optionally get answer key
     const includeKey = document.getElementById('answerKey').checked;
     const key = includeKey ? await generateAnswerKeyFromPaper(paper, model) : "";
