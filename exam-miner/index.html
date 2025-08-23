@@ -43,7 +43,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.8</p>
+  <p>System version 1.0.9</p>
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -199,24 +199,34 @@ page[size="A4"] {
 }
 */
 
-/* A4 UI pages */
-.paper { margin: 10px auto; }
+/* A4 at ~96dpi ≈ 794×1123 px */
+.paper { margin: 12px auto; }
 .page{
-  width:210mm; height:297mm; background:#fff;
-  margin:12px auto; box-shadow:0 0 6px rgba(0,0,0,.25);
-  overflow:hidden; position:relative; border:1px solid #ccc;
+  width: 794px; height: 1123px;
+  background:#fff; margin:12px auto;
+  box-shadow:0 0 6px rgba(0,0,0,.25);
+  border:1px solid #ccc; box-sizing:border-box;
+  overflow:hidden;              /* no scrollbars per page */
+  position:relative;
 }
 .page .content{
-  padding:20mm 18mm;           /* inner margins */
+  padding:96px 72px;            /* ~25mm x 19mm margins */
   white-space:pre-wrap; word-wrap:break-word;
-  min-height:calc(297mm - 40mm); /* visual fill */
+  height: calc(100% - 192px);   /* fixed, not scrollable */
+  box-sizing:border-box;
 }
 
-/* printing keeps page breaks */
+/* print: real pages */
 @media print {
-  .page{ box-shadow:none; margin:0 auto; page-break-after:always; border:none; }
-  .page:last-child{ page-break-after:auto; }
+  @page { size: A4; margin: 20mm 18mm; }
+  body { background:#fff; }
+  .page{
+    width:auto; height:auto; box-shadow:none; border:0; margin:0;
+    page-break-after: always;
+  }
+  .page:last-child{ page-break-after: auto; }
 }
+
 
     
     button {
@@ -520,14 +530,39 @@ function downloadDOCX() {
 
 function downloadPDF(){
   const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+
+  // clone the paper to a clean container (prevents blank renders)
+  const paper = document.getElementById("paper");
+  const tmp = paper.cloneNode(true);
+  tmp.id = "paper-export";
+  // ensure everything is visible and fixed pixel size
+  tmp.style.position = "static";
+  tmp.style.transform = "none";
+  tmp.querySelectorAll(".page").forEach(p=>{
+    p.style.width  = "794px";
+    p.style.height = "1123px";
+    p.style.boxShadow = "none";
+    p.style.border = "0";
+    p.style.margin = "0 auto 0 auto";
+  });
+  const holder = document.createElement("div");
+  holder.style.position="fixed"; holder.style.left="0"; holder.style.top="0";
+  holder.style.width="1px"; holder.style.height="1px"; holder.style.overflow="visible";
+  holder.style.opacity="0"; // keep offscreen but renderable
+  holder.appendChild(tmp);
+  document.body.appendChild(holder);
+
   html2pdf().set({
     filename: title + ".pdf",
     image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     pagebreak: { mode: ["css", "legacy"] }
-  }).from(document.getElementById("paper")).save();
+  }).from(tmp).save().then(()=>{
+    document.body.removeChild(holder); // cleanup
+  });
 }
+
 
 /*
       async function downloadPDF() {
