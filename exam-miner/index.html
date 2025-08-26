@@ -43,7 +43,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.9</p>
+  <p>System version 1.0.10</p>
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -676,9 +676,7 @@ function downloadPDF() {
 }
 */
     
-const apikey = "Bearer sk-or-v1-ac32c0037d4ff84" + "3cbc8354300d4" + "c95d7d750066b37cfb15b" + "25d3b11893e9889";
-//const encoded = "QmVhcmVyIHNrLW9yLXYxLWFjMzJjMDAzN2Q0ZmY4NDNjYmM4MzU0MzAwZDRjOTVkN2Q3NTAwNjZiMzdjZmIxNWIyNWQzYjExODkzZTk4ODk=";
-//const apikey = window.atob(encoded);
+const apikey = "Bearer exam-miner";
       
 function setLoader(message) {
   const loader = document.getElementById("loader");
@@ -888,7 +886,7 @@ ${meta.content}
 
 
   async function callModelStrict(prompt, model){
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const res = await fetch("https://smarthydrofarm.com/api/v1/chat/completions.php", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1373,7 +1371,7 @@ ${content}
 
     async function summarizeContent(text) {
       const model = document.getElementById("model").value;
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const res = await fetch("https://smarthydrofarm.com/api/v1/chat/completions.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1397,7 +1395,7 @@ ${content}
 
     async function sendToAI(prompt) {
       const model = document.getElementById("model").value;
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const res = await fetch("https://smarthydrofarm.com/api/v1/chat/completions.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
