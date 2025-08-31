@@ -9,7 +9,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
 <!-- Use the browser build so it exposes a global: htmlToPdfmake(...) -->
-<script src="https://cdn.jsdelivr.net/npm/html-to-pdfmake@2.1.1/browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-pdfmake@2.4.5/browser.js"></script>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.4/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
@@ -65,7 +67,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
   <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.17</p>
+  <p>System version 1.0.18</p>
 
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
@@ -254,22 +256,22 @@ function downloadDOCX(){
 function downloadPDF(){
   const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
 
-  // clone + clean the editor
+  // clone & strip unsafe nodes
   const node = document.getElementById("output").cloneNode(true);
   node.querySelectorAll("script,style").forEach(el => el.remove());
 
-  // IMPORTANT: pass a STRING to htmlToPdfmake
+  // IMPORTANT: html-to-pdfmake expects a STRING
   const html = DOMPurify.sanitize(node.innerHTML, { ADD_ATTR: ["style"] });
 
-  // convert HTML -> pdfmake nodes (note { window })
-  const pdfContent = htmlToPdfmake(html, { window });
+  // Use the browser build function from the global
+  const pdfContent = window.htmlToPdfmake(html, { window });
 
   const docDefinition = {
     info: { title },
     pageSize: "A4",
-    pageMargins: [40, 60, 40, 60],
+    pageMargins: [40,60,40,60],
     content: [
-      { text: title, style: "header", alignment: "center", margin: [0, 0, 0, 12] },
+      { text: title, style: "header", alignment: "center", margin: [0,0,0,12] },
       ...pdfContent
     ],
     styles: { header: { fontSize: 16, bold: true } },
@@ -278,6 +280,7 @@ function downloadPDF(){
 
   pdfMake.createPdf(docDefinition).download(title + ".pdf");
 }
+
 
 
 /* ---------- TOS + Extraction + AI (unchanged logic) ---------- */
