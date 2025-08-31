@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" name="viewport"/>
+
+  <!-- libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.4/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-pdfmake/2.1.1/html-to-pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+
+  <title>Exam Prompt Generator with TOS</title>
+  <style>
+    :root { --editor-width: 794px; } /* nice readable width */
+    body { font-family: Arial, sans-serif; padding: 20px; margin: auto; }
+    #secTitle { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea { width: 100%; padding: 6px; margin-top: 5px; }
+    .checkbox-group, .difficulty-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; }
+    button { padding: 10px 15px; margin-top: 20px; }
+    pre { background: #f0f0f0; padding: 10px; white-space: pre-wrap; }
+
+    /* Simple long editor (no pages) */
+    .editor-wrap { margin: 16px auto; max-width: var(--editor-width); }
+    #output {
+      outline: none;
+      font-family: Arial, sans-serif;
+      font-size: 14pt;
+      line-height: 1.6;
+      white-space: pre-wrap;      /* keep pasted newlines */
+      word-wrap: break-word;
+      min-height: 900px;          /* big starting canvas */
+      padding: 72px 64px;         /* comfy margins */
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 6px rgba(0,0,0,.12);
+    }
+
+    /* PDF page breaks when exporting, if you ever insert them */
+    .page-break { page-break-before: always; }
+
+    button { border: 1px solid #ccc; background: #f9f9f9; cursor: pointer; }
+    button:hover { background: #e0e0e0; }
+    #output:focus { outline: none; }
+  </style>
+</head>
+<body>
+<div style="margin-left: 30%; max-width: 700px;">
+  <b style="color: red">Welcome to ExamMiner 2.0!</b>
+  <p>System version 1.0.12</p>
+
+  <h2 id="secTitle">Section A: Upload Learning Material</h2>
+  <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
+  <label>Subject: <input type="text" id="subject" /></label>
+  <label>Topic/Title: <input type="text" id="topic" /></label>
+  <label>Grade Level: <input type="text" id="grade" /></label>
+
+  <h2>Section B: Choose Exam Type</h2>
+  <div class="checkbox-group">
+    <label><input type="checkbox" value="Multiple Choice" class="format" /> Multiple Choice</label>
+    <label><input type="checkbox" value="True or False" class="format" /> True or False</label>
+    <label><input type="checkbox" value="Identification" class="format" /> Identification</label>
+    <label><input type="checkbox" value="Matching Type" class="format" /> Matching Type</label>
+    <label><input type="checkbox" value="Essay" class="format" /> Essay</label>
+  </div>
+
+  <h2>Section C: Configure Exam</h2>
+  <label>Number of Questions: <input type="number" value="20" id="questionCount" min="1" /></label>
+  <label>Difficulty:
+    <div class="difficulty-group">
+      <label><input type="radio" name="difficulty" value="Easy" /> Easy</label>
+      <label><input type="radio" name="difficulty" value="Medium" /> Medium</label>
+      <label><input type="radio" name="difficulty" value="Hard" /> Hard</label>
+    </div>
+  </label>
+
+  <label><input type="checkbox" id="shuffle" /> Shuffle Questions</label>
+  <label><input type="checkbox" id="answerKey" /> Include Answer Key</label>
+
+  <h2>Select AI Model</h2>
+  <select id="model">
+    <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+    <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3</option>
+    <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral 3.1</option>
+    <option value="google/gemini-2.5-pro-exp-03-25:free">Gemini 2.5 Pro</option>
+    <option value="bytedance-research/ui-tars-72b:free">UI-TARS 72B</option>
+  </select>
+
+  <h2>Section C-1: Table of Specifications</h2>
+  <p style="margin:6px 0 10px">Add topics and set percent per cognitive level. Row Total must be 100%.</p>
+
+  <table id="tosTable" border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse">
+    <thead>
+      <tr>
+        <th style="width:28%">Content Area / Topic</th>
+        <th style="width:12%">Weight % (Topic)</th>
+        <th>Remember/Understand %</th>
+        <th>Apply/Analyze %</th>
+        <th>HOTS %</th>
+        <th>Row Total</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tosBody">
+      <tr>
+        <td><input placeholder="e.g., Chapter 1: Networking Basics" /></td>
+        <td><input type="number" min="0" max="100" step="1" value="25" /></td>
+        <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+        <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+        <td><input type="number" min="0" max="100" step="1" value="20" /></td>
+        <td class="rowTotal">100%</td>
+        <td><button type="button" onclick="removeTosRow(this)">✖</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:8px; display:flex; gap:8px">
+    <button type="button" onclick="addTosRow()">Add Topic</button>
+    <button type="button" onclick="validateTOS()">Validate TOS</button>
+    <span id="tosStatus" style="font-style:italic; color:#555"></span>
+  </div>
+
+  <h2>Section D: Generate & Edit</h2>
+  <button onclick="generateExam()">Generate Exam</button>
+
+  <h3>Generated Exam:</h3>
+  <button onclick="downloadPDF()">Download exam as PDF</button>
+  <button onclick="downloadDOCX()">Download as DOCX</button>
+
+  <div id="loader" style="display:none; margin-top: 20px; font-style: italic; color: gray;"></div>
+
+  <!-- Toolbar -->
+  <div style="margin-bottom: 10px;">
+    <button onclick="exec('bold')"><b><i class="fas fa-bold"></i></b></button>
+    <button onclick="exec('italic')"><i class="fas fa-italic"></i></button>
+    <button onclick="exec('underline')"><i class="fas fa-underline"></i></button>
+
+    <select style="width:100px" onchange="changeFontSize(this.value)">
+      <option value="">Font Size</option>
+      <option value="12px">6px</option>
+      <option value="14px">7px</option>
+      <option value="16px">8px</option>
+      <option value="18px">9px</option>
+      <option value="20px">10px</option>
+      <option value="22px">11px</option>
+      <option value="24px">12px</option>
+      <option value="26px">13px</option>
+      <option value="28px">14px</option>
+      <option value="30px">15px</option>
+      <option value="32px">16px</option>
+      <option value="36px">18px</option>
+      <option value="48px">24px</option>
+      <option value="64px">32px</option>
+      <option value="72px">36px</option>
+    </select>
+
+    <button onclick="exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+    <button onclick="exec('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+
+    <button onclick="toggleHeading('H1')">H1</button>
+    <button onclick="toggleHeading('H2')">H2</button>
+    <button onclick="toggleHeading('H3')">H3</button>
+
+    <button onclick="exec('justifyLeft')"><i class="fas fa-align-left"></i></button>
+    <button onclick="exec('justifyCenter')"><i class="fas fa-align-center"></i></button>
+    <button onclick="exec('justifyRight')"><i class="fas fa-align-right"></i></button>
+
+    <button onclick="copyToClipboard()"><i class="fas fa-copy"></i></button>
+  </div>
+</div>
+
+<!-- The single, long editor -->
+<div class="editor-wrap">
+  <div id="output" contenteditable="true"></div>
+</div>
+
+<script>
+/* ---------- Basic editor helpers (no paging) ---------- */
+function exec(cmd, value=null){ document.execCommand(cmd, false, value); }
+
+function copyToClipboard(){
+  const el = document.getElementById("output");
+  const sel = window.getSelection();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  sel.removeAllRanges(); sel.addRange(range);
+  document.execCommand("copy");
+  sel.removeAllRanges();
+  alert("Copied to clipboard!");
+}
+
+function toggleHeading(tag){
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  let node = range.startContainer;
+  if (node.nodeType === 3) node = node.parentNode;
+  while (node && node !== document && !/^H[1-6]$/.test(node.tagName)) node = node.parentNode;
+  if (node && node.tagName === tag){
+    const span = document.createElement("span");
+    span.innerHTML = node.innerHTML;
+    node.parentNode.replaceChild(span, node);
+    const r = document.createRange(); r.selectNodeContents(span); r.collapse(true);
+    sel.removeAllRanges(); sel.addRange(r);
+  } else {
+    document.execCommand("formatBlock", false, tag);
+  }
+}
+
+function changeFontSize(size){
+  if (!size) return;
+  const span = document.createElement("span");
+  span.style.fontSize = size;
+  span.textContent = window.getSelection().toString();
+  const range = window.getSelection().getRangeAt(0);
+  range.deleteContents(); range.insertNode(span);
+}
+
+/* ---------- Export helpers ---------- */
+function getEditorHTML(){ return document.getElementById('output').innerHTML; }
+
+function downloadDOCX(){
+  const titleText = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+  const fname = document.getElementById("topic").value || "exam_paper";
+  const html = `
+  <!DOCTYPE html><html><head><meta charset="utf-8">
+  <style>body{font-family:Arial,sans-serif;font-size:14pt;line-height:1.6}</style>
+  </head><body>
+    <div style="text-align:center;font-weight:bold;font-size:16pt;margin:0 0 12pt">${titleText}</div>
+    ${getEditorHTML()}
+  </body></html>`;
+  const blob = window.htmlDocx.asBlob(html);
+  saveAs(blob, fname + ".docx");
+}
+
+function downloadPDF(){
+  const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
+  const node = document.getElementById("output").cloneNode(true);
+  // add a title at top for PDF only
+  const titleDiv = document.createElement('div');
+  titleDiv.style.textAlign='center'; titleDiv.style.fontWeight='bold'; titleDiv.style.fontSize='16pt';
+  titleDiv.style.margin = '0 0 12pt'; titleDiv.textContent = title;
+  const wrapper = document.createElement('div');
+  wrapper.appendChild(titleDiv); wrapper.appendChild(node);
+
+  html2pdf().set({
+    filename: title + ".pdf",
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak: { mode: ["css","legacy"] } // honors .page-break if you insert
+  }).from(wrapper).save();
+}
+
+/* ---------- TOS + Extraction + AI (unchanged logic) ---------- */
+const apikey = "Bearer exam-miner";
+
+function setLoader(msg){ const l=document.getElementById("loader"); l.textContent=msg; l.style.display="block"; }
+function hideLoader(){ document.getElementById("loader").style.display="none"; }
+
+function addTosRow(){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input placeholder="Topic name" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="25" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="40" /></td>
+    <td><input type="number" min="0" max="100" step="1" value="20" /></td>
+    <td class="rowTotal">100%</td>
+    <td><button type="button" onclick="removeTosRow(this)">✖</button></td>`;
+  document.getElementById('tosBody').appendChild(tr);
+}
+function removeTosRow(btn){ btn.closest('tr').remove(); }
+
+function readTOS(){
+  const rows = Array.from(document.querySelectorAll('#tosBody tr'));
+  return rows.map(r=>{
+    const [topicEl, wEl, ruEl, aaEl, hotEl] = r.querySelectorAll('input');
+    return {
+      topic:(topicEl.value||'').trim(),
+      topicWeight:Number(wEl.value||0),
+      RU:Number(ruEl.value||0),
+      AA:Number(aaEl.value||0),
+      HOTS:Number(hotEl.value||0),
+      rowEl:r
+    };
+  }).filter(r=>r.topic);
+}
+document.getElementById('tosBody').addEventListener('input',()=>validateTOS());
+
+function validateTOS(){
+  const tos = readTOS(); const status = document.getElementById('tosStatus');
+  if(!tos.length){ status.textContent='Add at least one topic.'; status.style.color='crimson'; return false; }
+  const weightSum = tos.reduce((s,t)=>s+t.topicWeight,0);
+  let ok = true;
+  tos.forEach(t=>{
+    const rowSum = t.RU + t.AA + t.HOTS;
+    const cell = t.rowEl.querySelector('.rowTotal');
+    cell.textContent = rowSum + '%';
+    cell.style.color = (rowSum===100)? '#0a0' : 'crimson';
+    if(rowSum!==100) ok=false;
+  });
+  const near100 = Math.abs(weightSum-100) <= 1;
+  if(!near100) ok=false;
+  if(ok){ status.textContent=`TOS looks good. Topic weights total ${weightSum}%.`; status.style.color='#0a0'; }
+  else { status.textContent=`Fix TOS: Topic weights = ${weightSum}% (must be ~100), and each row must total 100%.`; status.style.color='crimson'; }
+  return ok;
+}
+
+function apportion(total, percents){
+  const raw = percents.map(p => (p/100)*total);
+  const floors = raw.map(Math.floor);
+  let used = floors.reduce((s,x)=>s+x,0);
+  const rema = raw.map((x,i)=>({i, r:x - Math.floor(x)})).sort((a,b)=>b.r-a.r);
+  const out = floors.slice(); let k=0;
+  while(used<total && k<rema.length){ out[rema[k].i]++; used++; k++; }
+  return out;
+}
+
+function allocateItemsByTOS(totalQuestions){
+  const tos = readTOS();
+  const perTopic = apportion(totalQuestions, tos.map(t=>t.topicWeight));
+  return tos.map((t, idx)=>{
+    const topicTotal = perTopic[idx];
+    const perLevel = apportion(topicTotal, [t.RU, t.AA, t.HOTS]);
+    return { topic:t.topic, total:topicTotal, RU:perLevel[0], AA:perLevel[1], HOTS:perLevel[2] };
+  });
+}
+
+function distributeAcrossFormats(total, formats){
+  if (formats.length===1) return {[formats[0]]:total};
+  const pct = Array(formats.length).fill(100/formats.length);
+  const counts = apportion(total, pct);
+  const out={}; formats.forEach((f,i)=>out[f]=counts[i]); return out;
+}
+
+function extractQuestions(block){
+  const lines = block.split(/\r?\n/); const q=[]; const answerLines=[]; let inKey=false;
+  for (let line of lines){
+    const t=line.trim(); if(!t) continue;
+    if(/^answer\s*key[:\s]?$/i.test(t)){ inKey=true; continue; }
+    if(inKey){ answerLines.push(t); continue; }
+    if(/^\d+[\.\)]\s+/.test(t) || /^_+\s*\d+[\.\)]\s+/.test(t)) q.push(t);
+    else if(q.length) q[q.length-1]+="\n"+t;
+  }
+  return {items:q, answerKeyText:answerLines.join("\n")};
+}
+
+function buildCellTasks(plan, selectedFormats, meta){
+  const tasks=[];
+  for (const row of plan){
+    const levels=[
+      {key:'RU',label:'Remember/Understand',count:row.RU},
+      {key:'AA',label:'Apply/Analyze',count:row.AA},
+      {key:'HOTS',label:'Higher-Order',count:row.HOTS},
+    ];
+    for (const L of levels){
+      if (L.count<=0) continue;
+      const perFormat = distributeAcrossFormats(L.count, selectedFormats);
+      for (const [fmt,cnt] of Object.entries(perFormat)){
+        if (cnt<=0) continue;
+        const fmtGuidance = fmt==="Multiple Choice" ? "Multiple Choice with choices A–D."
+          : fmt==="True or False" ? "True or False type. Output only the numbered statements, each line starting with an underscore (e.g., '_ 1. ...')."
+          : fmt==="Identification" ? "Identification. Provide a short blank line for the answer."
+          : fmt==="Matching Type" ? "Matching Type. Provide pairs and clear instructions."
+          : fmt==="Essay" ? "Essay. Provide 1–3 sentence prompts; include long blank lines."
+          : fmt + ".";
+        const prompt = `
+Generate exactly ${cnt} ${fmt} questions for the topic "${row.topic}" at cognitive level "${L.label}".
+Subject: ${meta.subject || "(unspecified)"}
+Course Topic: ${meta.topic || "(unspecified)"}
+Grade Level: ${meta.grade || "(unspecified)"}
+
+STRICT REQUIREMENTS:
+- Output ONLY the ${fmt} items, numbered 1..${cnt}, plain text (no markdown or commentary).
+- ${fmtGuidance}
+- Do not include other formats or an Answer Key.
+
+Style:
+- ${L.key==='RU'?'Factual recall.':L.key==='AA'?'Application and scenarios.':'Higher-order reasoning.'}
+
+Learning Material:
+"""${meta.content}"""`.trim();
+        tasks.push({topic:row.topic, level:L.key, format:fmt, count:cnt, prompt});
+      }
+    }
+  }
+  return tasks;
+}
+
+async function callModelStrict(prompt, model){
+  const res = await fetch("https://smarthydrofarm.com/api/v1/chat/completions.php", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":apikey,
+      "HTTP-Referer":"https://ivnx9.github.io",
+      "X-Title":"Exam Miner 2.0"
+    },
+    body: JSON.stringify({ model, messages:[
+      {role:"system", content:"You generate exam items only, following instructions exactly."},
+      {role:"user", content:prompt}
+    ]})
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "Model error");
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function generateCellExactly(task, model){
+  let text = await callModelStrict(task.prompt, model);
+  let {items} = extractQuestions(text);
+  if (items.length===task.count) return items;
+  if (items.length>task.count) return items.slice(0, task.count);
+  const missing = task.count - items.length;
+  if (missing>0){
+    const follow = `Earlier you produced ${items.length} ${task.format} for "${task.topic}" (${task.level}). Generate exactly ${missing} MORE, continuing numbering from ${items.length+1}.`;
+    const more = await callModelStrict(follow, model);
+    const parsed = extractQuestions(more).items;
+    return items.concat(parsed.slice(0, missing));
+  }
+  return items;
+}
+
+function renderExamFromBlocks(blocks, meta, selectedFormats=null){
+  const lines=[]; const title=`${meta.topic || meta.subject || "Exam"}`.trim();
+  lines.push(title, "");
+  const byTopic={};
+  for (const b of blocks){
+    byTopic[b.topic] ||= {};
+    byTopic[b.topic][b.format] ||= [];
+    byTopic[b.topic][b.format].push(...b.items);
+  }
+  for (const [topic, map] of Object.entries(byTopic)){
+    lines.push(topic.toUpperCase());
+    const order = selectedFormats?.length ? selectedFormats : Object.keys(map);
+    for (const fmt of order){
+      const items = map[fmt]; if (!items?.length) continue;
+      lines.push(fmt);
+      items.forEach((txt,i)=>{
+        const body = txt.replace(/^\s*_?\s*\d+[\.\)]\s*/,"");
+        lines.push(fmt==="True or False" ? `_ ${i+1}. ${body}` : `${i+1}. ${body}`);
+      });
+      lines.push("");
+    }
+    lines.push("");
+  }
+  return lines.join("\n");
+}
+
+async function generateAnswerKeyFromPaper(paperText, model){
+  const prompt = `Produce ONLY the answer key for the exam below.\n\nExam:\n"""${paperText}"""`;
+  const key = await callModelStrict(prompt, model);
+  return key.trim();
+}
+
+/* file extractors (unchanged) */
+const readAsArrayBuffer = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsArrayBuffer(f); });
+const readAsText = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsText(f); });
+
+async function extractDOCX(file){ const ab=await readAsArrayBuffer(file); const {value}=await window.mammoth.extractRawText({arrayBuffer:ab}); return (value||"").trim(); }
+async function extractXLSX_CSV(file, ext){
+  let wb; if (ext==='csv'){ const text=await readAsText(file); wb=XLSX.read(text,{type:'string'}); }
+  else { const ab=await readAsArrayBuffer(file); wb=XLSX.read(ab,{type:'array'}); }
+  const sheet=wb.Sheets[wb.SheetNames[0]]; const rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:true});
+  return rows.map(r=>r.map(c=>c==null?"":String(c)).join("\t")).join("\n");
+}
+async function extractPPTX(file){
+  const ab=await readAsArrayBuffer(file); const zip=await JSZip.loadAsync(ab);
+  const slideFiles=Object.keys(zip.files).filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p))
+    .sort((a,b)=>parseInt(a.match(/slide(\d+)\.xml/)[1]) - parseInt(b.match(/slide(\d+)\.xml/)[1]));
+  let out=[]; for (let i=0;i<slideFiles.length;i++){
+    const xml=await zip.files[slideFiles[i]].async('text');
+    const runs=Array.from(xml.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)).map(m=>m[1]);
+    const text=runs.map(t=>t.replace(/&lt;|&gt;|&amp;/g,s=>({'&lt;':'<','&gt;':'>','&amp;':'&'}[s]))).map(s=>s.trim()).filter(Boolean);
+    if (text.length) out.push(`Slide ${i+1}:\n- `+text.join("\n- "));
+  }
+  return out.join("\n\n") || "(No extractable text)";
+}
+async function extractPDF(file){
+  const ab=await readAsArrayBuffer(file); const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  let pages=[]; for (let p=1;p<=pdf.numPages;p++){ const page=await pdf.getPage(p); const content=await page.getTextContent();
+    const strings=content.items.map(it=>(it.str||"").trim()).filter(Boolean);
+    const text=strings.join(" ").replace(/\s{2,}/g," ").trim(); if (text) pages.push(`Page ${p}:\n${text}`); }
+  return pages.join("\n\n") || "(No extractable text)";
+}
+async function extractHTML(file){ const html=await readAsText(file); const doc=new DOMParser().parseFromString(html,"text/html"); return (doc.body?.innerText||"").trim(); }
+async function extractLocally(file){
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if (ext==='docx') return extractDOCX(file);
+  if (ext==='xlsx'||ext==='csv') return extractXLSX_CSV(file,ext);
+  if (ext==='pptx') return extractPPTX(file);
+  if (ext==='pdf')  return extractPDF(file);
+  if (ext==='html'||ext==='htm') return extractHTML(file);
+  if (ext==='txt')  return readAsText(file);
+  throw new Error("Unsupported file type: ."+ext);
+}
+
+/* Generate flow (no paginate call anymore) */
+async function summarizeContent(text){
+  const model=document.getElementById("model").value;
+  const res=await fetch("https://smarthydrofarm.com/api/v1/chat/completions.php",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json","Authorization":apikey,"HTTP-Referer":"https://ivnx9.github.io","X-Title":" Exam Miner 2.0"},
+    body: JSON.stringify({model, messages:[
+      {role:"system", content:"Summarize this learning material to the most important topics, keywords, concepts, and definitions."},
+      {role:"user", content:text}
+    ]})
+  });
+  const data=await res.json(); if (data.error) throw new Error(data.error.message||'Model error');
+  return data.choices?.[0]?.message?.content || null;
+}
+
+async function generateExam(){
+  const fileInput=document.getElementById('material');
+  const file=fileInput.files?.[0];
+  if (!file) return alert('Please upload a learning material file.');
+
+  const subject=document.getElementById('subject').value.trim();
+  const topic=document.getElementById('topic').value.trim();
+  const grade=document.getElementById('grade').value.trim();
+  let total=parseInt(document.getElementById('questionCount').value,10);
+  if (!Number.isFinite(total)||total<=0) total=20;
+
+  const selectedFormats=Array.from(document.querySelectorAll('.format:checked')).map(cb=>cb.value);
+  if (!selectedFormats.length) return alert('Select at least one exam format.');
+
+  try{
+    setLoader("Extracting content…");
+    const extractedText=await extractLocally(file);
+    if (!extractedText || !extractedText.trim()){ hideLoader(); return alert("No extractable text."); }
+
+    const NEED_SUMMARY = extractedText.length > 10000;
+    setLoader(NEED_SUMMARY ? "Summarizing content…" : "Using full content…");
+    const content = NEED_SUMMARY ? (await summarizeContent(extractedText)) : extractedText;
+    if (!content){ hideLoader(); return alert("Summarization failed."); }
+
+    if (!validateTOS()){ hideLoader(); return alert("Fix TOS first."); }
+    const plan=allocateItemsByTOS(total);
+
+    const model=document.getElementById("model").value;
+    const meta={subject, topic, grade, content};
+    const tasks=buildCellTasks(plan, selectedFormats, meta);
+
+    setLoader("Generating exam from TOS…");
+    const blocks=[];
+    for (const t of tasks){
+      const items=await generateCellExactly(t, model);
+      blocks.push({topic:t.topic, format:t.format, items});
+    }
+
+    const paper=renderExamFromBlocks(blocks, {subject, topic}, selectedFormats);
+    const includeKey=document.getElementById('answerKey').checked;
+    const key = includeKey ? await generateAnswerKeyFromPaper(paper, model) : "";
+
+    hideLoader();
+    const finalText = includeKey ? `${paper}\n\nAnswer Key\n${key}` : paper;
+    const safe = DOMPurify.sanitize(finalText.replace(/\n/g,"<br>"));
+    document.getElementById("output").innerHTML = safe;
+
+    document.getElementById('tosStatus').textContent =
+      'Allocation → ' + plan.map(p => `${p.topic}: ${p.total} (RU ${p.RU}, AA ${p.AA}, HOTS ${p.HOTS})`).join(' | ');
+  } catch(e){
+    hideLoader(); console.error(e); alert("Error: " + (e?.message || e));
+  }
+}
+</script>
+</body>
+</html>
