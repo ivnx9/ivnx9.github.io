@@ -43,7 +43,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.11</p>
+  <p>System version 1.0.12</p>
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -288,11 +288,122 @@ function addPage(){
   return page;
 }
 
+
+// =================
+
+// place caret at start/end of a node
+function placeCaret(node, atEnd=false){
+  const r = document.createRange();
+  const sel = window.getSelection();
+  r.selectNodeContents(node);
+  r.collapse(atEnd);
+  sel.removeAllRanges();
+  sel.addRange(r);
+}
+
+// find the block <div> paragraph that contains the caret
+function currentParagraph(){
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return null;
+  let n = sel.getRangeAt(0).startContainer;
+  if (n.nodeType === 3) n = n.parentNode;
+  while (n && !(n.classList && n.classList.contains('content')) && n.tagName !== 'DIV') {
+    n = n.parentNode;
+  }
+  return (n && n.tagName === 'DIV') ? n : null;
+}
+
+// split a paragraph at the current caret into two <div>s
+function splitAtCaret(par){
+  const sel = window.getSelection();
+  const r = sel.getRangeAt(0).cloneRange();
+  const before = par.cloneNode(false);
+  const after  = par.cloneNode(false);
+
+  // move content into before/after using the range
+  r.setStart(par, 0);
+  before.appendChild(r.cloneContents());
+
+  const r2 = sel.getRangeAt(0).cloneRange();
+  r2.setEndAfter(par.lastChild || par);
+  after.appendChild(r2.cloneContents());
+
+  // replace original with before + after
+  par.replaceWith(before, after);
+
+  // ensure they’re not empty
+  if (!before.textContent.trim()) before.innerHTML = '<br>';
+  if (!after.textContent.trim())  after.innerHTML  = '<br>';
+
+  return {before, after};
+}
+
+// merge this paragraph with previous one
+function mergeWithPrevious(par){
+  const prev = par.previousElementSibling;
+  if (!prev) return;
+  // move children
+  while (par.firstChild) prev.appendChild(par.firstChild);
+  par.remove();
+  placeCaret(prev, true);
+}
+
+function hook(editable){
+  // paginate after changes/paste
+  editable.addEventListener('input', ()=>requestAnimationFrame(paginate));
+  editable.addEventListener('paste', ()=>requestAnimationFrame(paginate));
+
+  // handle Enter / Backspace
+  editable.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      let par = currentParagraph();
+      if (!par){
+        // create first paragraph if none
+        par = document.createElement('div');
+        par.innerHTML = '<br>';
+        editable.appendChild(par);
+        placeCaret(par, false);
+        return;
+      }
+      const {after} = splitAtCaret(par);
+      // caret to start of new line
+      placeCaret(after, false);
+      requestAnimationFrame(paginate);
+    }
+
+    if (e.key === 'Backspace'){
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      const r = sel.getRangeAt(0);
+      // if selection spans text, let default delete it
+      if (!r.collapsed) return;
+
+      const par = currentParagraph();
+      if (!par) return;
+
+      // at very start of this paragraph?
+      const test = r.cloneRange();
+      test.selectNodeContents(par);
+      test.setEnd(r.startContainer, r.startOffset);
+      const atStart = !test.toString().length;
+
+      if (atStart && par.previousElementSibling){
+        e.preventDefault();
+        mergeWithPrevious(par);
+        requestAnimationFrame(paginate);
+      }
+    }
+  });
+}
+
+// =================
+    /*
 function hook(editable){
   editable.addEventListener('input', ()=>requestAnimationFrame(paginate));
   editable.addEventListener('paste', ()=>requestAnimationFrame(paginate));
 }
-
+*/
 /* Ensure content is made of block paragraphs so we can split cleanly */
 function normalizeBlocks(box){
   // Turn trailing text nodes into <div>paragraphs</div>
