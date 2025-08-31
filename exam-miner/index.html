@@ -43,7 +43,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
 <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.10</p>
+  <p>System version 1.0.11</p>
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
   <label>Subject: <input type="text" id="subject" /></label>
@@ -210,11 +210,14 @@ page[size="A4"] {
   position:relative;
 }
 .page .content{
-  padding:96px 72px;            /* ~25mm x 19mm margins */
-  white-space:pre-wrap; word-wrap:break-word;
-  height: calc(100% - 192px);   /* fixed, not scrollable */
-  box-sizing:border-box;
+  padding: 72px 64px;             /* choose margins you like */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  height: calc(100% - 144px);     /* = 2 * vertical padding above */
+  box-sizing: border-box;
 }
+.page .content:after{ content:""; display:block; height:1px; }
+
 
 /* print: real pages */
 @media print {
@@ -272,74 +275,129 @@ function restoreCaretOffset(offset, rootId='paper'){
     count = next;
   }
 }
-
-// ----- paging core -----
+   
 function addPage(){
   const page = document.createElement('div');
   page.className = 'page';
   const content = document.createElement('div');
   content.className = 'content';
   content.contentEditable = 'true';
-  document.getElementById('paper').appendChild(page);
   page.appendChild(content);
+  document.getElementById('paper').appendChild(page);
   hook(content);
   return page;
 }
+
 function hook(editable){
   editable.addEventListener('input', ()=>requestAnimationFrame(paginate));
   editable.addEventListener('paste', ()=>requestAnimationFrame(paginate));
 }
+
+/* Ensure content is made of block paragraphs so we can split cleanly */
+function normalizeBlocks(box){
+  // Turn trailing text nodes into <div>paragraphs</div>
+  const nodes = Array.from(box.childNodes);
+  nodes.forEach(n=>{
+    if (n.nodeType === 3 && n.textContent.trim() !== '') {
+      const d = document.createElement('div');
+      d.textContent = n.textContent;
+      box.replaceChild(d, n);
+    }
+    if (n.nodeName === 'BR') {
+      const d = document.createElement('div'); d.innerHTML = '<br>';
+      box.replaceChild(d, n);
+    }
+  });
+  if (!box.lastChild) {
+    const d = document.createElement('div'); d.innerHTML = '<br>';
+    box.appendChild(d);
+  }
+}
+
+/* Split one paragraph into two so the first fits inside box */
+function splitParagraphToFit(par, box, nextBox){
+  // words array including spaces to keep spacing
+  const text = par.textContent;
+  const words = text.split(/\s+/);
+  if (words.length <= 1){ nextBox.insertBefore(par, nextBox.firstChild); return; }
+
+  // Binary search: largest prefix that still overflows? move that prefix out instead.
+  // Easier logic: find largest prefix that FITS and keep it; rest goes next page.
+  let lo = 0, hi = words.length; // number of words to keep
+  const clone = par.cloneNode(false);
+
+  while (lo < hi){
+    const mid = Math.ceil((lo + hi) / 2);
+    clone.textContent = words.slice(0, mid).join(' ');
+    par.replaceWith(clone);
+    // measure
+    if (box.scrollHeight > box.clientHeight){
+      hi = mid - 1;
+    } else {
+      lo = mid;
+    }
+  }
+
+  // Apply final split
+  const keep = Math.max(1, lo); // keep at least one word to make progress
+  const first = par.cloneNode(false);
+  first.textContent = words.slice(0, keep).join(' ');
+  const rest = par.cloneNode(false);
+  const restText = words.slice(keep).join(' ').trim();
+  rest.innerHTML = restText ? restText : '<br>';
+
+  clone.replaceWith(first);
+  nextBox.insertBefore(rest, nextBox.firstChild);
+}
+
+/* Main paginate */
 function paginate(){
   const caret = saveCaretOffset('paper');
+
   const pages = Array.from(document.querySelectorAll('.page'));
+  pages.forEach(p => normalizeBlocks(p.querySelector('.content')));
+
   for (let i=0;i<pages.length;i++){
     const box = pages[i].querySelector('.content');
-    while (box.scrollHeight > box.clientHeight && box.lastChild){
+    while (box.scrollHeight > box.clientHeight){
       const next = pages[i+1] || addPage();
       const nextBox = next.querySelector('.content');
 
-      let node = box.lastChild;
-      // normalize: move inline text into a div for easier splitting
-      if (node.nodeType === 3){
-        const wrap = document.createElement('div');
-        wrap.textContent = node.textContent;
-        box.replaceChild(wrap, node);
-        node = wrap;
-      }
+      normalizeBlocks(box);
 
-      if (node.textContent && node.textContent.trim()){
-        const words = node.textContent.split(/\s+/);
-        let keep = words.length;
-        // trim until fits
-        do {
-          keep--;
-          node.textContent = words.slice(0, Math.max(0, keep)).join(' ');
-        } while (box.scrollHeight > box.clientHeight && keep>0);
+      // Work from the last paragraph back
+      let par = box.lastElementChild;
+      if (!par) break;
 
-        const spill = document.createElement('div');
-        spill.textContent = words.slice(Math.max(0, keep)).join(' ');
-        nextBox.insertBefore(spill, nextBox.firstChild);
-        if (!node.textContent.trim()) box.removeChild(node);
-      } else {
-        nextBox.insertBefore(node, nextBox.firstChild);
+      // Try moving the whole paragraph first
+      box.removeChild(par);
+      nextBox.insertBefore(par, nextBox.firstChild);
+
+      if (box.scrollHeight > box.clientHeight){
+        // Still overflowing: split the new last paragraph
+        par = box.lastElementChild;
+        if (par){
+          splitParagraphToFit(par, box, nextBox);
+        }
       }
     }
   }
+
   // remove trailing empty pages
   const all = Array.from(document.querySelectorAll('.page'));
   for (let k=all.length-1; k>0; k--){
     const c = all[k].querySelector('.content');
-    if (!c.textContent.trim()) all[k].remove();
-    else break;
+    if (!c.textContent.trim()) all[k].remove(); else break;
   }
+
   restoreCaretOffset(caret, 'paper');
 }
 
-// init on load
+/* init */
 (function initPager(){
-  // keep your id="output" on first page content
   hook(document.getElementById('output'));
 })();
+
 
 
     // ===========================================
