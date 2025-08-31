@@ -67,7 +67,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
   <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.19</p>
+  <p>System version 1.0.20</p>
 
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
@@ -252,7 +252,12 @@ function downloadDOCX(){
   const blob = window.htmlDocx.asBlob(html);
   saveAs(blob, fname + ".docx");
 }
-  
+
+function stripUnsupportedFonts(html){
+  // remove any inline font-family so pdfMake falls back to Roboto
+  return html.replace(/font-family\s*:\s*[^;"]+;?/gi, '');
+}
+
 function downloadPDF(){
   const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
 
