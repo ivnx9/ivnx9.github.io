@@ -62,7 +62,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
   <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.13</p>
+  <p>System version 1.0.14</p>
 
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
@@ -250,21 +250,33 @@ function downloadDOCX(){
 
 function downloadPDF(){
   const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
-  const node = document.getElementById("output").cloneNode(true);
-  // add a title at top for PDF only
-  const titleDiv = document.createElement('div');
-  titleDiv.style.textAlign='center'; titleDiv.style.fontWeight='bold'; titleDiv.style.fontSize='16pt';
-  titleDiv.style.margin = '0 0 12pt'; titleDiv.textContent = title;
-  const wrapper = document.createElement('div');
-  wrapper.appendChild(titleDiv); wrapper.appendChild(node);
+  const raw = document.getElementById("output").innerHTML;
 
-  html2pdf().set({
-    filename: title + ".pdf",
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    pagebreak: { mode: ["css","legacy"] } // honors .page-break if you insert
-  }).from(wrapper).save();
+  // keep inline <b>, <i>, lists, simple spans, etc.
+  const clean = DOMPurify.sanitize(raw, { ADD_ATTR: ["style"] });
+
+  // convert HTML → pdfMake nodes (text, lists, etc.)
+  const pdfContent = htmlToPdfmake(clean);
+
+  const docDefinition = {
+    info: { title },
+    pageSize: "A4",
+    pageMargins: [40, 60, 40, 60],
+    content: [
+      { text: title, style: "header", alignment: "center", margin: [0, 0, 0, 12] },
+      ...pdfContent
+    ],
+    styles: {
+      header: { fontSize: 16, bold: true },
+      // You can map more styles here if you want
+    },
+    defaultStyle: {
+      fontSize: 12, // pdfmake uses embedded Roboto from vfs_fonts.js you already included
+      lineHeight: 1.4
+    }
+  };
+
+  pdfMake.createPdf(docDefinition).download(title + ".pdf");
 }
 
 /* ---------- TOS + Extraction + AI (unchanged logic) ---------- */
