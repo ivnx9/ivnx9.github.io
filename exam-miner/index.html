@@ -65,7 +65,7 @@
 <body>
 <div style="margin-left: 30%; max-width: 700px;">
   <b style="color: red">Welcome to ExamMiner 2.0!</b>
-  <p>System version 1.0.15</p>
+  <p>System version 1.0.16</p>
 
   <h2 id="secTitle">Section A: Upload Learning Material</h2>
   <label>Upload File (PDF, DOCX, PPTX): <input type="file" id="material" /></label>
@@ -253,14 +253,17 @@ function downloadDOCX(){
 
 function downloadPDF(){
   const title = (document.getElementById("topic").value || "Exam Paper").toUpperCase();
-  const raw = document.getElementById("output").innerHTML;
 
-  // keep inline <b>, <i>, lists, simple spans, etc.
-  const clean = DOMPurify.sanitize(raw, { ADD_ATTR: ["style"] });
+  // 1) clone the editor DOM (safer than passing HTML string)
+  const node = document.getElementById("output").cloneNode(true);
 
-  // convert HTML → pdfMake nodes (text, lists, etc.)
-  const pdfContent = htmlToPdfmake(clean);
+  // 2) remove things html-to-pdfmake can choke on
+  node.querySelectorAll("script, style").forEach(el => el.remove());
 
+  // 3) convert DOM -> pdfmake content (IMPORTANT: pass {window})
+  const pdfContent = htmlToPdfmake(node, { window });
+
+  // 4) build pdfmake doc
   const docDefinition = {
     info: { title },
     pageSize: "A4",
@@ -269,14 +272,8 @@ function downloadPDF(){
       { text: title, style: "header", alignment: "center", margin: [0, 0, 0, 12] },
       ...pdfContent
     ],
-    styles: {
-      header: { fontSize: 16, bold: true },
-      // You can map more styles here if you want
-    },
-    defaultStyle: {
-      fontSize: 12, // pdfmake uses embedded Roboto from vfs_fonts.js you already included
-      lineHeight: 1.4
-    }
+    styles: { header: { fontSize: 16, bold: true } },
+    defaultStyle: { fontSize: 12, lineHeight: 1.4 }
   };
 
   pdfMake.createPdf(docDefinition).download(title + ".pdf");
