@@ -53,6 +53,21 @@ body::before {
   }
 }
 
+  /* --- FIX: make JS hearts visible behind content --- */
+.hearts{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;               /* was -1 (hidden behind the page) */
+}
+
+/* ensure your card/content sits above the hearts */
+.card, .hero, .title, .player{
+  position: relative;
+  z-index: 1;
+}
+
+
 
     *{box-sizing:border-box}
     html,body{
