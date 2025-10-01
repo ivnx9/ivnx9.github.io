@@ -24,6 +24,36 @@
       --spotify-2:#1db954;
     }
 
+  /* === Falling hearts background === */
+body {
+  position: relative;
+  
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24' fill='%23ff2b6a'>❤</text></svg>");
+  background-repeat: repeat;
+  background-size: 32px 32px;
+  animation: fall 15s linear infinite;
+  opacity: 0.4;
+  z-index: -1;
+}
+
+@keyframes fall {
+  0% {
+    background-position: 0 -100%;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+
     *{box-sizing:border-box}
     html,body{
       height:100%;
@@ -32,7 +62,7 @@
       background: linear-gradient(135deg,var(--bg-1),var(--bg-2) 40%, var(--bg-3));
       overflow-x:hidden;
     }
-
+/*
     body::before{
       content:"";
       position:fixed; inset:-20vmax;
@@ -43,7 +73,7 @@
       filter: blur(40px) saturate(120%);
       z-index:-2;
       animation: drift 18s ease-in-out infinite alternate;
-    }
+    } */
     @keyframes drift{to{transform:translate3d(2vmax,-2vmax,0) scale(1.02)}}
 
     .hearts{
