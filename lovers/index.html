@@ -10,229 +10,6 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 
-  <!--style>
-    :root{
-      --bg-1:#ff9aa2;
-      --bg-2:#ffb3c1;
-      --bg-3:#ffd1dc;
-      --heart:#ff2b6a;
-      --accent:#ff4d6d;
-      --accent-2:#c9184a;
-      --white:#fff;
-      --shadow:0 10px 30px rgba(0,0,0,.15);
-      --spotify:#121212;
-      --spotify-2:#1db954;
-    }
-
-  /* === Falling hearts background === */
-body {
-  position: relative;
-  
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24' fill='%23ff2b6a'>❤</text></svg>");
-  background-repeat: repeat;
-  background-size: 32px 32px;
-  animation: fall 15s linear infinite;
-  opacity: 0.4;
-  z-index: -1;
-}
-
-@keyframes fall {
-  0% {
-    background-position: 0 -100%;
-  }
-  100% {
-    background-position: 0 100%;
-  }
-}
-
-  /* --- FIX: make JS hearts visible behind content --- */
-.hearts{
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;               /* was -1 (hidden behind the page) */
-}
-
-/* ensure your card/content sits above the hearts */
-.card, .hero, .title, .player{
-  position: relative;
-  z-index: 1;
-}
-
-
-
-    *{box-sizing:border-box}
-    html,body{
-      height:100%;
-      margin:0;
-      font-family:"Poppins",sans-serif;
-      background: linear-gradient(135deg,var(--bg-1),var(--bg-2) 40%, var(--bg-3));
-      overflow-x:hidden;
-    }
-/*
-    body::before{
-      content:"";
-      position:fixed; inset:-20vmax;
-      background:
-        radial-gradient(40vmax 40vmax at 15% 20%, rgba(255,255,255,.25), transparent 60%),
-        radial-gradient(35vmax 35vmax at 85% 10%, rgba(255,0,128,.18), transparent 60%),
-        radial-gradient(30vmax 30vmax at 70% 80%, rgba(255,255,255,.18), transparent 60%);
-      filter: blur(40px) saturate(120%);
-      z-index:-2;
-      animation: drift 18s ease-in-out infinite alternate;
-    } */
-    @keyframes drift{to{transform:translate3d(2vmax,-2vmax,0) scale(1.02)}}
-
-    .hearts{
-      position:fixed; inset:0;
-      pointer-events:none;
-      z-index:-1;
-      overflow:hidden;
-    }
-    .heart{
-      position:absolute;
-      top:-10vh;
-      font-size:24px;
-      color:var(--heart);
-      opacity:.9;
-      animation: fall linear forwards, sway ease-in-out infinite;
-    }
-    @keyframes fall{
-      to{ transform:translateY(120vh) rotate(360deg); opacity:.95; }
-    }
-    @keyframes sway{
-      0%{ margin-left:0 }
-      50%{ margin-left:20px }
-      100%{ margin-left:0 }
-    }
-
-    .wrap{
-      min-height:100svh;
-      display:grid;
-      place-items:center;
-      padding:20px;
-    }
-
-    .card{
-      position:relative;
-      width:min(960px, 95vw);
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:28px;
-      padding:28px;
-      background: rgba(255,255,255,.65);
-      backdrop-filter: blur(10px);
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-    }
-
-    .hero{
-      position:relative;
-      display:grid;
-      place-items:center;
-    }
-    .photo-wrap{
-      position:relative;
-      width:min(360px, 70vw);
-      aspect-ratio: 1/1;
-      border-radius: 28px;
-      overflow:hidden;
-      box-shadow: 0 20px 50px rgba(36,10,17,.25);
-    }
-    .photo-wrap img{
-      width:100%; height:100%; object-fit:cover;
-      transition: transform .5s ease;
-    }
-    .photo-wrap:hover img{ transform:scale(1.06); }
-
-    .side-heart{
-      position:absolute;
-      width:80px; height:80px;
-      display:grid; place-items:center;
-      color:#fff;
-      background: radial-gradient(80% 80% at 30% 30%, #ff6b9a, #ff2b6a 60%, #b90e42 100%);
-      clip-path: path("M 50 15 C 35 -5, 0 0, 0 30 C 0 55, 25 70, 50 90 C 75 70, 100 55, 100 30 C 100 0, 65 -5, 50 15 Z");
-      animation: pulse 1.6s ease-in-out infinite;
-    }
-    .side-heart i{ font-size:24px }
-    .left-heart{ left:-20px; top:50%; transform: translate(-30%,-50%) }
-    .right-heart{ right:-20px; top:50%; transform: translate(30%,-50%) }
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-
-    .title{
-      text-align:center;
-    }
-    .title h1{
-      margin:0 0 6px;
-      font-size: 36px;
-      font-weight:800;
-      color:#7a1030;
-    }
-    .title p{
-      margin:0;
-      font-size:16px;
-      color:#6b1840;
-    }
-
-    .player{
-      display:flex; align-items:center; gap:14px;
-      background: var(--spotify);
-      border-radius: 18px;
-      padding:14px;
-      color:#eee;
-    }
-    .cover{
-      width:56px; height:56px; border-radius: 10px; overflow:hidden;
-    }
-    .cover img{ width:100%; height:100%; object-fit:cover; }
-
-    .meta{ flex:1; }
-    .track{ font-weight:700; font-size:14px; }
-    .artist{ font-size:12px; color:#bbb;}
-
-    .controls{
-      display:flex; align-items:center; gap:10px;
-    }
-    .btn{
-      width:40px; height:40px; border-radius:999px; border:none;
-      display:grid; place-items:center; cursor:pointer;
-      background:#1f1f1f; color:#eee;
-    }
-    .btn.play{
-      width:48px; height:48px;
-      background: var(--spotify-2);
-      color:#000;
-    }
-
-    .progress{
-      display:flex; align-items:center; gap:10px;
-      width:100%;
-      margin-top:6px;
-    }
-    .time{ font-size:10px; color:#aaa; width:36px; text-align:center }
-    .bar{
-      position:relative; height:6px; border-radius:999px; background:#2a2a2a; flex:1; cursor:pointer;
-    }
-    .bar-fill{
-      position:absolute; inset:0 auto 0 0; width:0%;
-      background: var(--spotify-2);
-    }
-    .bar-knob{
-      position:absolute; top:50%; transform:translate(-50%,-50%);
-      width:12px; height:12px; border-radius:50%;
-      background:#fff;
-      left:0%;
-    }
-</style-->
-
   <style>
     /* ===============  Design Tokens (responsive via clamp)  =============== */
     :root{
@@ -507,6 +284,37 @@ body::before {
     @media (prefers-color-scheme: dark){
       .card{ background: rgba(255,255,255,.64) }
     }
+
+
+    /* === Falling hearts background === */
+body {
+  position: relative;
+  
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24' fill='%23ff2b6a'>❤</text></svg>");
+  background-repeat: repeat;
+  background-size: 32px 32px;
+  animation: fall 15s linear infinite;
+  opacity: 0.4;
+  z-index: -1;
+}
+
+@keyframes fall {
+  0% {
+    background-position: 0 -100%;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
   </style>
 </head>
 <body>
