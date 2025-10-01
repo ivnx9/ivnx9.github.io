@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Valentine Card • Falling Hearts + Spotify Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Font: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --bg-1:#ff9aa2;
+      --bg-2:#ffb3c1;
+      --bg-3:#ffd1dc;
+      --heart:#ff2b6a;
+      --accent:#ff4d6d;
+      --accent-2:#c9184a;
+      --white:#fff;
+      --shadow:0 10px 30px rgba(0,0,0,.15);
+      --spotify:#121212;
+      --spotify-2:#1db954;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:"Poppins",sans-serif;
+      background: linear-gradient(135deg,var(--bg-1),var(--bg-2) 40%, var(--bg-3));
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed; inset:-20vmax;
+      background:
+        radial-gradient(40vmax 40vmax at 15% 20%, rgba(255,255,255,.25), transparent 60%),
+        radial-gradient(35vmax 35vmax at 85% 10%, rgba(255,0,128,.18), transparent 60%),
+        radial-gradient(30vmax 30vmax at 70% 80%, rgba(255,255,255,.18), transparent 60%);
+      filter: blur(40px) saturate(120%);
+      z-index:-2;
+      animation: drift 18s ease-in-out infinite alternate;
+    }
+    @keyframes drift{to{transform:translate3d(2vmax,-2vmax,0) scale(1.02)}}
+
+    .hearts{
+      position:fixed; inset:0;
+      pointer-events:none;
+      z-index:-1;
+      overflow:hidden;
+    }
+    .heart{
+      position:absolute;
+      top:-10vh;
+      font-size:24px;
+      color:var(--heart);
+      opacity:.9;
+      animation: fall linear forwards, sway ease-in-out infinite;
+    }
+    @keyframes fall{
+      to{ transform:translateY(120vh) rotate(360deg); opacity:.95; }
+    }
+    @keyframes sway{
+      0%{ margin-left:0 }
+      50%{ margin-left:20px }
+      100%{ margin-left:0 }
+    }
+
+    .wrap{
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      padding:20px;
+    }
+
+    .card{
+      position:relative;
+      width:min(960px, 95vw);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:28px;
+      padding:28px;
+      background: rgba(255,255,255,.65);
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero{
+      position:relative;
+      display:grid;
+      place-items:center;
+    }
+    .photo-wrap{
+      position:relative;
+      width:min(360px, 70vw);
+      aspect-ratio: 1/1;
+      border-radius: 28px;
+      overflow:hidden;
+      box-shadow: 0 20px 50px rgba(36,10,17,.25);
+    }
+    .photo-wrap img{
+      width:100%; height:100%; object-fit:cover;
+      transition: transform .5s ease;
+    }
+    .photo-wrap:hover img{ transform:scale(1.06); }
+
+    .side-heart{
+      position:absolute;
+      width:80px; height:80px;
+      display:grid; place-items:center;
+      color:#fff;
+      background: radial-gradient(80% 80% at 30% 30%, #ff6b9a, #ff2b6a 60%, #b90e42 100%);
+      clip-path: path("M 50 15 C 35 -5, 0 0, 0 30 C 0 55, 25 70, 50 90 C 75 70, 100 55, 100 30 C 100 0, 65 -5, 50 15 Z");
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .side-heart i{ font-size:24px }
+    .left-heart{ left:-20px; top:50%; transform: translate(-30%,-50%) }
+    .right-heart{ right:-20px; top:50%; transform: translate(30%,-50%) }
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+    .title{
+      text-align:center;
+    }
+    .title h1{
+      margin:0 0 6px;
+      font-size: 36px;
+      font-weight:800;
+      color:#7a1030;
+    }
+    .title p{
+      margin:0;
+      font-size:16px;
+      color:#6b1840;
+    }
+
+    .player{
+      display:flex; align-items:center; gap:14px;
+      background: var(--spotify);
+      border-radius: 18px;
+      padding:14px;
+      color:#eee;
+    }
+    .cover{
+      width:56px; height:56px; border-radius: 10px; overflow:hidden;
+    }
+    .cover img{ width:100%; height:100%; object-fit:cover; }
+
+    .meta{ flex:1; }
+    .track{ font-weight:700; font-size:14px; }
+    .artist{ font-size:12px; color:#bbb;}
+
+    .controls{
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn{
+      width:40px; height:40px; border-radius:999px; border:none;
+      display:grid; place-items:center; cursor:pointer;
+      background:#1f1f1f; color:#eee;
+    }
+    .btn.play{
+      width:48px; height:48px;
+      background: var(--spotify-2);
+      color:#000;
+    }
+
+    .progress{
+      display:flex; align-items:center; gap:10px;
+      width:100%;
+      margin-top:6px;
+    }
+    .time{ font-size:10px; color:#aaa; width:36px; text-align:center }
+    .bar{
+      position:relative; height:6px; border-radius:999px; background:#2a2a2a; flex:1; cursor:pointer;
+    }
+    .bar-fill{
+      position:absolute; inset:0 auto 0 0; width:0%;
+      background: var(--spotify-2);
+    }
+    .bar-knob{
+      position:absolute; top:50%; transform:translate(-50%,-50%);
+      width:12px; height:12px; border-radius:50%;
+      background:#fff;
+      left:0%;
+    }
+  </style>
+</head>
+<body>
+  <div class="hearts" id="hearts"></div>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="hero">
+        <div class="photo-wrap">
+          <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=1200&auto=format&fit=crop" alt="Valentine Photo" />
+          <div class="side-heart left-heart"><i class="fa-solid fa-heart"></i></div>
+          <div class="side-heart right-heart"><i class="fa-solid fa-heart"></i></div>
+        </div>
+      </div>
+
+      <div class="title">
+        <h1>Congratulations!</h1>
+        <p>Here’s a little page with love, music, and a shower of hearts—just for you. 💝</p>
+      </div>
+
+      <div class="player" id="player">
+        <div class="cover">
+          <img src="https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=800&auto=format&fit=crop" alt="Cover">
+        </div>
+        <div class="meta">
+          <div class="track" id="trackTitle">Valentine Melody</div>
+          <div class="artist" id="trackArtist">By Your Love</div>
+          <div class="progress">
+            <div class="time" id="currentTime">0:00</div>
+            <div class="bar" id="bar">
+              <div class="bar-fill" id="barFill"></div>
+              <div class="bar-knob" id="barKnob"></div>
+            </div>
+            <div class="time" id="duration">0:00</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn play" id="playBtn"><i class="fa-solid fa-play"></i></button>
+          <button class="btn" id="muteBtn"><i class="fa-solid fa-volume-high"></i></button>
+        </div>
+        <audio id="audio">
+          <source src="song.mp3" type="audio/mpeg">
+        </audio>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const container = document.getElementById('hearts');
+    const HEARTS = 20;
+    function spawnHeart(){
+      const span = document.createElement('span');
+      span.className = 'heart';
+      span.innerHTML = '<i class="fa-solid fa-heart"></i>';
+      const size = Math.floor(Math.random()*20)+14;
+      const left = Math.random()*100;
+      const dur = 8 + Math.random()*10;
+      span.style.left = left + 'vw';
+      span.style.fontSize = size + 'px';
+      span.style.animationDuration = dur + 's, ' + (3.5 + Math.random()*3) + 's';
+      container.appendChild(span);
+      setTimeout(()=>span.remove(), dur*1000);
+    }
+    setInterval(spawnHeart, 800);
+
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('playBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const barFill = document.getElementById('barFill');
+    const barKnob = document.getElementById('barKnob');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    let isPlaying = false;
+    let raf = null;
+
+    function formatTime(sec){
+      if(!isFinite(sec)) return '0:00';
+      const m = Math.floor(sec/60);
+      const s = Math.floor(sec%60).toString().padStart(2,'0');
+      return `${m}:${s}`;
+    }
+    function updateProgress(){
+      const {currentTime, duration} = audio;
+      const pct = (currentTime / (duration || 1)) * 100;
+      barFill.style.width = `${pct}%`;
+      barKnob.style.left = `${pct}%`;
+      currentTimeEl.textContent = formatTime(currentTime);
+      durationEl.textContent = formatTime(duration);
+      if(isPlaying) raf = requestAnimationFrame(updateProgress);
+    }
+
+    playBtn.addEventListener('click', () => {
+      if(!isPlaying){
+        audio.play().then(()=>{
+          isPlaying = true;
+          playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+          raf = requestAnimationFrame(updateProgress);
+        });
+      }else{
+        audio.pause();
+        isPlaying = false;
+        playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        cancelAnimationFrame(raf);
+      }
+    });
+
+    muteBtn.addEventListener('click', ()=>{
+      audio.muted = !audio.muted;
+      muteBtn.innerHTML = audio.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+    });
+
+    audio.addEventListener('loadedmetadata', updateProgress);
+    audio.addEventListener('ended', ()=>{
+      isPlaying = false;
+      playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+      cancelAnimationFrame(raf);
+      updateProgress();
+    });
+  </script>
+</body>
+</html>
