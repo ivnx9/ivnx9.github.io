@@ -315,6 +315,61 @@ body::before {
   }
 }
 
+
+
+
+
+
+    /* ===== Raining hearts (background layer) — paste at the END ===== */
+body {
+  position: relative;        /* create a stacking context */
+  overflow-x: hidden;
+}
+
+/* Put hearts on ::after so it won't conflict with any glow on ::before */
+body::after{
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;                /* above the body background, below your content */
+  opacity: .45;
+
+  /* Editable heart color via URL-encoded hex */
+  --heart-color: %23ff2b6a;  /* #ff2b6a */
+
+  /* Repeating SVG heart tile */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><text y='22' font-size='22' fill='VARCOLOR'>❤</text></svg>"
+    .replace('VARCOLOR', var(--heart-color)));
+  background-repeat: repeat;
+  background-size: 28px 28px;
+
+  /* Smooth vertical scroll = raining effect */
+  animation: heartsRain 14s linear infinite;
+}
+
+/* Ensure your main content sits above the hearts */
+.wrap, .card, .hero, .title, .player {
+  position: relative;
+  z-index: 1;
+}
+
+/* Use a unique keyframe name to avoid conflict with your other 'fall' */
+@keyframes heartsRain {
+  0%   { background-position: 0 -100%; }
+  100% { background-position: 0 100%; }
+}
+
+/* Optional: tweak density/speed by viewport */
+@media (max-width: 500px){
+  body::after{ animation-duration: 10s; background-size: 24px 24px; opacity:.5; }
+}
+@media (min-width: 1200px){
+  body::after{ animation-duration: 18s; background-size: 32px 32px; opacity:.4; }
+}
+
+
   </style>
 </head>
 <body>
