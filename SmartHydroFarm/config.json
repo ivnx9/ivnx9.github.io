@@ -4,5 +4,7 @@
   "host":"https://smarthydrofarm.com",
   "PATH":"/api",
   "webpage": ["about.html","chatbot.html","control&config.html","Count.html","dboard.html","gauge.html","Temperature.html","webhooks.html","gauge.js"],
-  "appjs": ["appUI.js"]
+  "appjs": ["appUI.js"],
+  "testA":["a.txt","b.txt","c.txt"],
+  "testB":["d.txt","e.txt","f.txt"]
 }
