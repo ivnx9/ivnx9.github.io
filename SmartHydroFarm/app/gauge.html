@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi Gauges (2 Columns)</title>
+
+  <!-- Make sure this path is correct -->
+  <script src="gauge.js"></script>
+
+  <style>
+    body { padding: 12px; margin: 0; font-family: Arial, sans-serif; background:#f2f2f2; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 5px;
+      text-align: center;
+    }
+    canvas { width: 150px; height: 150px; }
+    @media (max-width: 420px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  gap: 5px;
+}
+
+@media (max-width: 420px) {
+  .grid {
+    /* grid-template-columns: 1fr; * 1 column on small screens */
+  }
+}
+  </style>
+
+  <script>
+    // Keep references if you want to update values later:
+    const gauges = {};
+
+    function createGauge(canvasId, options) {
+      const el = document.getElementById(canvasId);
+      if (!el) {
+        console.error("Canvas not found:", canvasId);
+        return null;
+      }
+
+      const g = new Gauge(Object.assign({
+        renderTo: canvasId,
+        width: 150,
+        height: 150,
+        glow: true,
+        strokeTicks: false,
+        animation: { delay: 10, duration: 300, fn: "bounce" }
+      }, options));
+
+      g.draw();
+      gauges[canvasId] = g;
+      return g;
+    }
+
+    // =========================
+    // INDIVIDUAL DRAW FUNCTIONS
+    // =========================
+
+    function DrawGauge_Air(canvasId, title) {
+      const minValue = -20;
+      const maxValue = 50;
+
+      return createGauge(canvasId, {
+        units: "°C",
+        title: title ?? "Air Temperature",
+        minValue,
+        maxValue,
+        majorTicks: ["-20","0","10","15","20","25","30","35","40","45","50"],
+        minorTicks: 5,
+        highlights: [
+          { from: minValue, to: 0, color: "rgba(0,0,255,.3)" },
+          { from: 0, to: maxValue, color: "rgba(255,0,0,.3)" }
+        ],
+        colors: {
+          plate: "#f5f5f5",
+          majorTicks: "#000",
+          minorTicks: "#222",
+          title: "#222",
+          units: "#666",
+          numbers: "#222",
+          needle: { start: "rgba(240,128,128,1)", end: "rgba(255,160,122,.9)" }
+        },
+        animation: { delay: 25, duration: 500, fn: "bounce" }
+      });
+    }
+
+    function DrawGauge_WaterTemp(canvasId, title) {
+      const minValue = -20;
+      const maxValue = 80;
+
+      return createGauge(canvasId, {
+        units: "°C",
+        title: title ?? "Water Temperature",
+        minValue,
+        maxValue,
+        majorTicks: ["-20","0","20","40","60","80"],
+        minorTicks: 5,
+        highlights: [
+          { from: minValue, to: 0, color: "rgba(0,0,255,.3)" },
+          { from: 0, to: maxValue, color: "rgba(255,0,0,.3)" }
+        ],
+        colors: {
+          plate: "#f5f5f5",
+          majorTicks: "#000",
+          minorTicks: "#222",
+          title: "#222",
+          units: "#666",
+          numbers: "#222",
+          needle: { start: "rgba(240,128,128,1)", end: "rgba(255,160,122,.9)" }
+        },
+        animation: { delay: 25, duration: 500, fn: "bounce" }
+      });
+    }
+
+    function DrawGaugePh(canvasId, title) {
+      return createGauge(canvasId, {
+        units: "",
+        title: title ?? "pH Level",
+        minValue: 0,
+        maxValue: 10,
+        majorTicks: ["0","1","2","3","4","5","6","7","8","9","10"],
+        minorTicks: 5,
+        highlights: [
+          { from: 0, to: 4, color: "PaleGreen" },
+          { from: 4, to: 7, color: "Khaki" },
+          { from: 7, to: 10, color: "LightSalmon" }
+        ]
+      });
+    }
+
+    function DrawGaugeTds(canvasId, title) {
+      return createGauge(canvasId, {
+        units: "",
+        title: title ?? "TDS Level",
+        minValue: 0,
+        maxValue: 2500,
+        majorTicks: ["0","100","200","300","400","500","600","700","800","900","1000","1500","2000","2500"],
+        minorTicks: 5,
+        highlights: [
+          { from: 0, to: 1000, color: "PaleGreen" },
+          { from: 1000, to: 1500, color: "Khaki" },
+          { from: 1500, to: 2500, color: "LightSalmon" }
+        ]
+      });
+    }
+
+    function DrawGaugeWaterLevel(canvasId, title) {
+      return createGauge(canvasId, {
+        units: "",
+        title: title ?? "Water Level",
+        minValue: 0,
+        maxValue: 200,
+        majorTicks: ["0","10","20","30","40","50","60","70","80","90","100","120","130","140","150","170","180","190","200"],
+        minorTicks: 5,
+        highlights: [
+          { from: 0, to: 50, color: "PaleGreen" },
+          { from: 50, to: 150, color: "Khaki" },
+          { from: 150, to: 200, color: "LightSalmon" }
+        ]
+      });
+    }
+
+    function DrawGaugeHumidity(canvasId, title) {
+      return createGauge(canvasId, {
+        units: "%",
+        title: title ?? "Humidity",
+        minValue: 0,
+        maxValue: 100,
+        majorTicks: ["0","10","20","30","40","50","60","70","80","90","100"],
+        minorTicks: 5,
+        highlights: [
+          { from: 0,  to: 30,  color: "rgba(255,165,0,.3)" },
+          { from: 30, to: 60,  color: "rgba(0,255,0,.3)" },
+          { from: 60, to: 100, color: "rgba(0,0,255,.3)" }
+        ]
+      });
+    }
+
+    // Helper: update later from sensors
+    function setGaugeValue(canvasId, value) {
+      if (gauges[canvasId]) gauges[canvasId].setValue(value);
+    }
+
+    /* ===== OPTIONAL DEMO INIT (remove if main code calls your draw functions) =====
+    document.addEventListener("DOMContentLoaded", () => {
+  DrawGaugePh("g_ph", "pH Level");
+  DrawGaugeTds("g_tds", "TDS Level");
+  DrawGauge_WaterTemp("g_waterTemp", "Water Temp");
+  DrawGaugeWaterLevel("g_waterLevel", "Water Level");
+  DrawGauge_Air("g_air", "Air Temp");
+  DrawGaugeHumidity("g_humidity", "Humidity");
+
+  // Example values
+  setGaugeValue("g_ph", 6.4);
+  setGaugeValue("g_tds", 850);
+  setGaugeValue("g_waterTemp", 30);
+  setGaugeValue("g_waterLevel", 120);
+  setGaugeValue("g_air", 27);
+  setGaugeValue("g_humidity", 55);
+});
+*/
+  </script>
+</head>
+
+<body>
+<div class="grid">
+  <div class="card"><canvas id="g_ph"></canvas></div>
+  <div class="card"><canvas id="g_tds"></canvas></div>
+
+  <div class="card"><canvas id="g_waterTemp"></canvas></div>
+  <div class="card"><canvas id="g_waterLevel"></canvas></div>
+
+  <div class="card"><canvas id="g_air"></canvas></div>
+  <div class="card"><canvas id="g_humidity"></canvas></div>
+</div>
+
+
+</body>
+</html>
