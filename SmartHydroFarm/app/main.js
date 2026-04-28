@@ -120,7 +120,11 @@ function InitAuth()
        //  ClearToken(); 
           }
          else {   app.ShowPopup( "Welcome to SmartHydroFarm!") }
-           
+
+        layHome.SetVisibility("Hide");
+        removeDrawer();
+        resetToDashboardPage();
+        layLogin.SetVisibility("Show");
     }
    // }, 500);
 
@@ -217,6 +221,7 @@ function ClearToken() {
     app.SaveText("shvf_device_id", "");
     app.SaveText("shvf_device_code", "");
     } catch(e) {}
+    syncWebhooksSession("", true);
 }
 
 
@@ -295,12 +300,66 @@ function ApiGet(url, cb) {
 
 
 
- function grantLogin() { 
+var _drawerAdded = false;
+
+function jsSingleQuoteEscape(v) {
+    return String(v || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function syncWebhooksSession(jwtValue, forceLoad) {
+    try {
+        if (!webhooksWebView) return;
+        var jwt = jsSingleQuoteEscape(jwtValue);
+        var js = "if(window.SHVF){SHVF.setJwtToken('" + jwt + "');";
+        if (forceLoad) js += "SHVF.loadDevices();";
+        js += "}";
+        webhooksWebView.Execute(js);
+    } catch(e) {}
+}
+
+function ensureDrawer() {
+    if (_drawerAdded) return;
+    app.AddDrawer(drawerScroll, "Left", drawerWidth);
+    _drawerAdded = true;
+}
+
+function removeDrawer() {
+    if (!_drawerAdded) return;
+    app.RemoveDrawer(drawerScroll);
+    _drawerAdded = false;
+}
+
+function resetToDashboardPage() {
+    try { txtBarTitle.SetText("Dashboard"); } catch(e) {}
+
+    try { if (lstMenu1) lstMenu1.SelectItemByIndex(0, true); } catch(e) {}
+    try { if (lstMenu2) lstMenu2.SelectItemByIndex(-1); } catch(e) {}
+
+    try { layPage.RemoveChild(layContent_Control_config); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Webhooks); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Chatbot); } catch(e) {}
+    try { layPage.RemoveChild(layContent_About); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Settings); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Dashboard); } catch(e) {}
+    try { layPage.AddChild(layContent_Dashboard); } catch(e) {}
+}
+
+function grantLogin() { 
 // app.HideKeyboard(); 
  
 // layHome.Animate( "FadeIn");	
-layHome.Animate("FadeIn", null, 300);
-app.AddDrawer( drawerScroll, "Left", drawerWidth )  
+if (typeof layLogin !== "undefined" && layLogin) layLogin.SetVisibility("Hide");
+if (typeof layHome !== "undefined" && layHome) {
+    layHome.SetVisibility("Show");
+    layHome.Animate("FadeIn", null, 300);
+}
+ensureDrawer();
+resetToDashboardPage();
+
+// Push fresh JWT into webhooks page (retry because WebView may still be initializing).
+syncWebhooksSession(token, true);
+setTimeout(function(){ syncWebhooksSession(token, true); }, 400);
+setTimeout(function(){ syncWebhooksSession(token, true); }, 1200);
 
  //  if(webhooksWebView.GetVisibility() == "Show") {
     //   webhooksWebView.Execute( "if (typeof setJwtToken === 'function') {setJwtToken('"+app.LoadText(TOKEN_KEY, "", "token")+"')}")
@@ -451,11 +510,16 @@ function lstMenu_OnTouch( title, body, type, index )
     app.CloseDrawer( "Left" )
     
     if(title=="Logout"){
-    layHome.Animate( "FadeOut" )
-    layHome.SetVisibility("Hide")
-    app.RemoveDrawer( drawerScroll )
     // app.SaveText(TOKEN_KEY, null);
     ClearToken();
+    resetToDashboardPage();
+    layHome.Animate( "FadeOut" )
+    layHome.SetVisibility("Hide")
+    removeDrawer();
+    layLogin.SetVisibility("Show");
+    username.SetText("");
+    password.SetText("");
+    return;
     }
     
     //Highlight the chosen menu item in the appropriate list.
@@ -492,6 +556,7 @@ function lstMenu_OnTouch( title, body, type, index )
    layPage.RemoveChild( layContent_Settings )
 
    layPage.AddChild( layContent_Webhooks )
+   syncWebhooksSession(token, true);
 
   } else if(title== "Chatbot"){
   layPage.RemoveChild(layContent_Dashboard)
