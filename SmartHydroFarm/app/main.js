@@ -216,14 +216,18 @@ function LoadToken() {
     try { token = app.LoadText(TOKEN_KEY, ""); } catch(e) { token = ""; }
 }
 
+function setDrawerUserName(name){
+    usernme = (name && String(name).trim()) ? String(name).trim() : "Welcome!";
+    if (typeof txtUser !== "undefined" && txtUser) txtUser.SetText(usernme);
+}
+
 function ClearToken() {
     token = "";
     try { app.SaveText(TOKEN_KEY, ""); 
     app.SaveText("shvf_device_id", "");
     app.SaveText("shvf_device_code", "");
     } catch(e) {}
-    usernme = "Welcome!";
-    try { if (txtUser) txtUser.SetText(usernme); } catch(e) {}
+    try { setDrawerUserName("Welcome!"); } catch(e) {}
     syncWebhooksSession("", true);
 }
 
@@ -360,7 +364,7 @@ if (typeof layHome !== "undefined" && layHome) {
 }
 ensureDrawer();
 resetToDashboardPage();
-try { if (txtUser) txtUser.SetText(usernme || "Welcome!"); } catch(e) {}
+try { setDrawerUserName(usernme || "Welcome!"); } catch(e) {}
 
 // Push fresh JWT into webhooks page (retry because WebView may still be initializing).
 syncWebhooksSession(token, true);
@@ -615,8 +619,7 @@ function LoadMe(cb) {
             if (obj.status === "success" && obj.user) {
                 // Example: set drawer name
 
-                usernme = obj.user.name;
-                if (txtUser) txtUser.SetText(usernme);
+                setDrawerUserName(obj.user.name);
                 grantLogin();
                  //txtUser.SetText(obj.user.name);
                  
