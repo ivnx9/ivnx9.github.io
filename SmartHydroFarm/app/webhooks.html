@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Webhooks (Mobile App Page)</title>
   <script src="ds:/Sys/app.js"></script>
+ <script src="variables.js"></script>
   <style>
     :root{
       --bg:#f6f7fb;
@@ -121,7 +122,7 @@
       <div class="mcard-head">
         <div>
           <div class="mcard-title">API Webhooks & Device Manager</div>
-          <div class="mcard-sub">Manage devices tied to the logged-in user (JWT) and test webhook endpoints.</div>
+          <div class="mcard-sub">Manage devices and test webhook endpoints.</div>
         </div>
         <span class="badge" id="whBadge">JWT: not set</span>
       </div>
@@ -223,7 +224,7 @@
     // JWT variable (NOT auto-loaded from localStorage)
     let JWT_TOKEN = ""; // <-- set using setJwtToken()
   
-         app.LoadScript( "variables.js" );
+   
     function setJwtToken(){ 
    
           var token = app.LoadText(TOKEN_KEY, "");
@@ -252,8 +253,8 @@
     ============================================================ */
 
     let ACTIVE_DEVICE = {
-      device_id: localStorage.getItem("shvf_device_id") || "",
-      device_code: localStorage.getItem("shvf_device_code") || ""
+      device_id: app.LoadText( "shvf_device_id" ) || "",   //localStorage.getItem("shvf_device_id") || "",
+      device_code: app.LoadText("shvf_device_code") || ""  // localStorage.getItem("shvf_device_code") || ""
     };
 
     function setActiveDevice(device_id, device_code){
@@ -261,10 +262,15 @@
       ACTIVE_DEVICE.device_code = device_code || "";
 
       // optional persistence for other pages
-      localStorage.setItem("shvf_device_id", ACTIVE_DEVICE.device_id);
-      localStorage.setItem("shvf_device_code", ACTIVE_DEVICE.device_code);
+     app.SaveText( "shvf_device_id", ACTIVE_DEVICE.device_id )
+     app.SaveText( "shvf_device_code", ACTIVE_DEVICE.device_code )
+     //app.ShowPopup( "Device '"+ app.LoadText( "shvf_device_id" )+"' loaded successfuly!" )
+    //app.ShowPopup( "device saved." )
+   //   localStorage.setItem("shvf_device_id", ACTIVE_DEVICE.device_id);
+      // localStorage.setItem("shvf_device_code", ACTIVE_DEVICE.device_code);
 
       renderActiveDeviceUI();
+       
     }
 
     // ✅ This is the function you asked for (returns name/id + code)
