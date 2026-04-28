@@ -120,7 +120,11 @@ function InitAuth()
        //  ClearToken(); 
           }
          else {   app.ShowPopup( "Welcome to SmartHydroFarm!") }
-           
+
+        layHome.SetVisibility("Hide");
+        removeDrawer();
+        resetToDashboardPage();
+        layLogin.SetVisibility("Show");
     }
    // }, 500);
 
@@ -217,6 +221,15 @@ function ClearToken() {
     app.SaveText("shvf_device_id", "");
     app.SaveText("shvf_device_code", "");
     } catch(e) {}
+
+    // Also clear webhooks page runtime state (JWT + cached devices) if loaded.
+    try {
+        if (webhooksWebView) {
+            webhooksWebView.Execute(
+                "if(window.SHVF){ SHVF.setJwtToken(''); SHVF.setActiveDevice('',''); }"
+            );
+        }
+    } catch(e) {}
 }
 
 
@@ -295,12 +308,44 @@ function ApiGet(url, cb) {
 
 
 
- function grantLogin() { 
+var _drawerAdded = false;
+
+function ensureDrawer() {
+    if (_drawerAdded) return;
+    app.AddDrawer(drawerScroll, "Left", drawerWidth);
+    _drawerAdded = true;
+}
+
+function removeDrawer() {
+    if (!_drawerAdded) return;
+    app.RemoveDrawer(drawerScroll);
+    _drawerAdded = false;
+}
+
+function resetToDashboardPage() {
+    try { txtBarTitle.SetText("Dashboard"); } catch(e) {}
+
+    try { if (lstMenu1) lstMenu1.SelectItemByIndex(0, true); } catch(e) {}
+    try { if (lstMenu2) lstMenu2.SelectItemByIndex(-1); } catch(e) {}
+
+    try { layPage.RemoveChild(layContent_Control_config); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Webhooks); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Chatbot); } catch(e) {}
+    try { layPage.RemoveChild(layContent_About); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Settings); } catch(e) {}
+    try { layPage.RemoveChild(layContent_Dashboard); } catch(e) {}
+    try { layPage.AddChild(layContent_Dashboard); } catch(e) {}
+}
+
+function grantLogin() { 
 // app.HideKeyboard(); 
  
 // layHome.Animate( "FadeIn");	
+layLogin.SetVisibility("Hide");
+layHome.SetVisibility("Show");
 layHome.Animate("FadeIn", null, 300);
-app.AddDrawer( drawerScroll, "Left", drawerWidth )  
+ensureDrawer();
+resetToDashboardPage();
 
  //  if(webhooksWebView.GetVisibility() == "Show") {
     //   webhooksWebView.Execute( "if (typeof setJwtToken === 'function') {setJwtToken('"+app.LoadText(TOKEN_KEY, "", "token")+"')}")
@@ -451,11 +496,16 @@ function lstMenu_OnTouch( title, body, type, index )
     app.CloseDrawer( "Left" )
     
     if(title=="Logout"){
-    layHome.Animate( "FadeOut" )
-    layHome.SetVisibility("Hide")
-    app.RemoveDrawer( drawerScroll )
     // app.SaveText(TOKEN_KEY, null);
     ClearToken();
+    resetToDashboardPage();
+    layHome.Animate( "FadeOut" )
+    layHome.SetVisibility("Hide")
+    removeDrawer();
+    layLogin.SetVisibility("Show");
+    username.SetText("");
+    password.SetText("");
+    return;
     }
     
     //Highlight the chosen menu item in the appropriate list.
