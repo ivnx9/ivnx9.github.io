@@ -108,7 +108,7 @@ function InitAuth()
 // 0970 remove the true to get back the functionality
 // setTimeout( ()=>{
     if  (IsTokenValid(token)) {
-      //  grantLogin();
+       grantLogin();
        app.ShowProgress( "Logging in.." )
         app.ShowPopup("Logged in (saved session).");
         LoadMe(LoadData)
@@ -169,6 +169,7 @@ function handleLoginReply(error, reply, status)
             return;
         }
 
+        grantLogin();
         app.ShowProgress("Loading profile...");
         LoadMe(LoadData);
         app.ShowPopup("Access Granted.");
@@ -360,7 +361,7 @@ function grantLogin() {
 if (typeof layLogin !== "undefined" && layLogin) layLogin.SetVisibility("Hide");
 if (typeof layHome !== "undefined" && layHome) {
     layHome.SetVisibility("Show");
-    layHome.Animate("FadeIn", null, 300);
+    layHome.Animate("FadeIn");
 }
 ensureDrawer();
 resetToDashboardPage();
@@ -620,7 +621,6 @@ function LoadMe(cb) {
                 // Example: set drawer name
 
                 setDrawerUserName(obj.user.name);
-                grantLogin();
                  //txtUser.SetText(obj.user.name);
                  
                  app.HideProgress()
