@@ -169,7 +169,8 @@ function handleLoginReply(error, reply, status)
             return;
         }
 
-        grantLogin();
+        app.ShowProgress("Loading profile...");
+        LoadMe(LoadData);
         app.ShowPopup("Access Granted.");
         return;
     }
@@ -221,6 +222,8 @@ function ClearToken() {
     app.SaveText("shvf_device_id", "");
     app.SaveText("shvf_device_code", "");
     } catch(e) {}
+    usernme = "Welcome!";
+    try { if (txtUser) txtUser.SetText(usernme); } catch(e) {}
     syncWebhooksSession("", true);
 }
 
@@ -319,6 +322,8 @@ function syncWebhooksSession(jwtValue, forceLoad) {
 
 function ensureDrawer() {
     if (_drawerAdded) return;
+    if (typeof drawerScroll === "undefined" || !drawerScroll) return;
+    if (typeof drawerWidth === "undefined" || drawerWidth === null) return;
     app.AddDrawer(drawerScroll, "Left", drawerWidth);
     _drawerAdded = true;
 }
@@ -355,6 +360,7 @@ if (typeof layHome !== "undefined" && layHome) {
 }
 ensureDrawer();
 resetToDashboardPage();
+try { if (txtUser) txtUser.SetText(usernme || "Welcome!"); } catch(e) {}
 
 // Push fresh JWT into webhooks page (retry because WebView may still be initializing).
 syncWebhooksSession(token, true);
