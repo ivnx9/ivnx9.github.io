@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Control & Config (Mobile App Page)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+<script src="ds:/Sys/app.js"></script>
   <style>
     :root{
       --bg: #f6f7fb;
@@ -251,12 +251,55 @@
     @media (max-width: 360px){
       .form-grid, .kv-grid, .relay-badges{ grid-template-columns: 1fr; }
     }
+
+
+
+/* cover */
+    #cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background-color: #55555590;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 999;
+      font-weight: bold;
+      color: #000;
+    }
+    #refreshBtn {
+      border-radius: 15px;
+      background-color: #008080;
+      padding: 15px 25px;
+      margin-top: 15px;
+      border: none;
+      font-size: 16px;
+      color: #fff;
+    }
+    #cover-bg {
+      border-radius: 30px;
+      background-color: #fef9f9;
+      padding: 30px;
+    }
   </style>
 </head>
 
 <body>
 
   <!-- MOBILE CONTROL & CONFIG PAGE (NO TOP HEADER) -->
+<div id="cover">
+  <div id="cover-bg">
+    <h2>Welcome!</h2></br>
+    <p>Set your device first on API Webhooks tab.</p></br>
+    <button id="refreshBtn" onclick="refreshDevice()">Refresh</button>
+  </div>
+</div>
+
+
   <div class="app-scroll" id="controlPage">
 
     <!-- Automation & Relays -->
@@ -463,19 +506,73 @@
   </div>
 
   <script>
-    /* ============================================================
-      FULL PAGE SCRIPT
-      - Uses your existing API: api/webhook.php (cmd=panel + POST set_commands)
-      - If you paste this into your app project, it should work.
-      - You can remove the "demo defaults" below and rely on your app's globals.
-    ============================================================ */
 
     /* ====== CONFIG ====== */
     const API_BASE = "https://smarthydrofarm.com/api/webhook.php";
+   let _syncingUI = false; // guard
 
-    // Active device (load from storage if you already store it)
-    let CURRENT_DEVICE_ID   = "SHVF-V1"; // localStorage.getItem("shvf_device_id")   || "SHVF-V1";
-    let CURRENT_DEVICE_CODE = "12345"; // localStorage.getItem("shvf_device_code") || "12345";
+  /* ====== DroidScript-safe storage helpers ====== */
+function showCover(show){
+  const cover = document.getElementById("cover");
+  if (!cover) return;
+  cover.style.display = show ? "flex" : "none";
+}
+
+function refreshDevice(){
+  // re-check saved values and re-run poll
+  syncDeviceFromStorage();
+  pollPanel();
+}
+
+function hasApp(){
+  try { return (typeof app !== "undefined" && app && typeof app.LoadText === "function"); }
+  catch(e){ return false; }
+}
+function safeLoadText(key, def){
+  try{
+    if (hasApp()) {
+      let v = app.LoadText(key);
+      if (v === undefined || v === null) return def;
+      v = String(v).trim();
+      return v === "" ? def : v;
+    }
+  }catch(e){}
+  return def;
+}
+function safeSaveText(key, val){
+  try{
+    if (hasApp() && typeof app.SaveText === "function") app.SaveText(key, String(val ?? ""));
+  }catch(e){}
+}
+
+/* ====== Active device (shared keys with your dashboard) ====== */
+function getActiveDevice(){
+  const device_id   = safeLoadText("shvf_device_id", "default").trim();
+  const device_code = safeLoadText("shvf_device_code", "").trim();
+  return { device_id, device_code };
+}
+function hasActiveDevice(){
+  const dev = getActiveDevice();
+  return !!(dev.device_id && dev.device_id !== "default" && dev.device_code);
+}
+
+/* Keep globals, but always refresh from storage before API calls */
+let CURRENT_DEVICE_ID = "";
+let CURRENT_DEVICE_CODE = "";
+
+function syncDeviceFromStorage(){
+  const dev = getActiveDevice();
+  CURRENT_DEVICE_ID = dev.device_id;
+  CURRENT_DEVICE_CODE = dev.device_code;
+
+  const badge = document.getElementById("ccDeviceBadge");
+  if (badge) badge.textContent = "Device: " + (CURRENT_DEVICE_ID || "--");
+
+  // ✅ show cover when no valid device
+  showCover(!hasActiveDevice());
+}
+
+
 
     /* ====== Helpers ====== */
     function ccSetStatus(elId, text){
@@ -491,34 +588,47 @@
     }
 
     /* ====== API calls ====== */
-    async function apiPanel(){
-      const url = `${API_BASE}?cmd=panel`
-        + `&device_id=${encodeURIComponent(CURRENT_DEVICE_ID)}`
-        + `&device_code=${encodeURIComponent(CURRENT_DEVICE_CODE)}`;
+async function apiPanel(){
+  syncDeviceFromStorage();
 
-      const res = await fetch(url, { credentials: "same-origin" });
-      if (!res.ok) throw new Error("panel fetch failed: " + res.status);
-      return await res.json();
-    }
+  if (!hasActiveDevice()){
+    throw new Error("No active device set.");
+  }
 
-    async function apiSetCommands(body){
-      const payload = {
-        device_id:   CURRENT_DEVICE_ID,
-        device_code: CURRENT_DEVICE_CODE,
-        action:      "set_commands",
-        ...body
-      };
+  const url = `${API_BASE}?cmd=panel`
+    + `&device_id=${encodeURIComponent(CURRENT_DEVICE_ID)}`
+    + `&device_code=${encodeURIComponent(CURRENT_DEVICE_CODE)}`;
 
-      const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify(payload),
-        credentials: "same-origin"
-      });
+  const res = await fetch(url, { credentials: "same-origin" });
+  if (!res.ok) throw new Error("panel fetch failed: " + res.status);
+  return await res.json();
+}
 
-      if (!res.ok) throw new Error("set_commands failed: " + res.status);
-      return await res.json();
-    }
+async function apiSetCommands(body){
+  syncDeviceFromStorage();
+
+  if (!hasActiveDevice()){
+    throw new Error("No active device set.");
+  }
+
+  const payload = {
+    device_id:   CURRENT_DEVICE_ID,
+    device_code: CURRENT_DEVICE_CODE,
+    action:      "set_commands",
+    ...body
+  };
+
+  const res = await fetch(API_BASE, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify(payload),
+    credentials: "same-origin"
+  });
+
+  if (!res.ok) throw new Error("set_commands failed: " + res.status);
+  return await res.json();
+}
+
 
     /* ====== UI Bindings ====== */
     function bindControlMobilePage(){
@@ -532,20 +642,20 @@
       const sEl    = document.getElementById("ccSolenoidToggle");
       const mEl    = document.getElementById("ccMixerToggle");
 
-      autoEl.onchange = async () => {
-        try{
-          await apiSetCommands({ auto: autoEl.checked });
-          ccSetStatus("ccRelayInfo", "Saved: Automation " + (autoEl.checked ? "ON" : "OFF"));
-        }catch(e){
-          ccSetStatus("ccRelayInfo", "Error: " + e.message);
-        }
-      };
+  autoEl.onchange = async () => {
+  if (_syncingUI) return;
+  try{
+    await apiSetCommands({ auto: autoEl.checked });
+    ccSetStatus("ccRelayInfo", "Saved: Automation " + (autoEl.checked ? "ON" : "OFF"));
+  }catch(e){
+    ccSetStatus("ccRelayInfo", "Error: " + e.message);
+  }
+};
 
-      wEl.onchange = async () => { try{ await apiSetCommands({ water:    wEl.checked }); }catch(e){ console.error(e); } };
-      gEl.onchange = async () => { try{ await apiSetCommands({ grow:     gEl.checked }); }catch(e){ console.error(e); } };
-      sEl.onchange = async () => { try{ await apiSetCommands({ solenoid: sEl.checked }); }catch(e){ console.error(e); } };
-      mEl.onchange = async () => { try{ await apiSetCommands({ mixer:    mEl.checked }); }catch(e){ console.error(e); } };
-
+wEl.onchange = async () => { if (_syncingUI) return; try{ await apiSetCommands({ water:    wEl.checked }); }catch(e){ ccSetStatus("ccRelayInfo","Error: "+e.message);} };
+gEl.onchange = async () => { if (_syncingUI) return; try{ await apiSetCommands({ grow:     gEl.checked }); }catch(e){ ccSetStatus("ccRelayInfo","Error: "+e.message);} };
+sEl.onchange = async () => { if (_syncingUI) return; try{ await apiSetCommands({ solenoid: sEl.checked }); }catch(e){ ccSetStatus("ccRelayInfo","Error: "+e.message);} };
+mEl.onchange = async () => { if (_syncingUI) return; try{ await apiSetCommands({ mixer:    mEl.checked }); }catch(e){ ccSetStatus("ccRelayInfo","Error: "+e.message);} };
       // dosing
       document.getElementById("ccDoseBtn").onclick = async () => {
         const btn = document.getElementById("ccDoseBtn");
@@ -612,93 +722,120 @@
     }
 
     /* ====== Apply panel JSON to UI ====== */
-    function applyPanel(p){
-      if (!p) return;
 
-      // show active device
-      const badge = document.getElementById("ccDeviceBadge");
-      if (badge) badge.textContent = "Device: " + (CURRENT_DEVICE_ID || "--");
+function applyPanel(p){
+  if (!p) return;
 
-      // desired states -> toggles
-      const desiredAuto   = !!(p.desired?.auto     ?? p.auto);
-      const desiredWater  = !!(p.desired?.water    ?? p.water);
-      const desiredGrow   = !!(p.desired?.grow     ?? p.grow);
-      const desiredSol    = !!(p.desired?.solenoid ?? p.solenoid);
-      const desiredMixer  = !!(p.desired?.mixer    ?? p.mixer);
+  syncDeviceFromStorage();
 
-      const autoEl = document.getElementById("ccAutoToggle");
-      const wEl    = document.getElementById("ccWaterToggle");
-      const gEl    = document.getElementById("ccGrowToggle");
-      const sEl    = document.getElementById("ccSolenoidToggle");
-      const mEl    = document.getElementById("ccMixerToggle");
+  // show active device
+  const badge = document.getElementById("ccDeviceBadge");
+  if (badge) badge.textContent = "Device: " + (CURRENT_DEVICE_ID || "--");
 
-      if (autoEl) autoEl.checked = desiredAuto;
-      if (wEl) wEl.checked = desiredWater;
-      if (gEl) gEl.checked = desiredGrow;
-      if (sEl) sEl.checked = desiredSol;
-      if (mEl) mEl.checked = desiredMixer;
+  // desired states -> toggles (GUARDED, only once)
+  _syncingUI = true;
+  try{
+    const desiredAuto   = !!(p.desired?.auto     ?? p.auto);
+    const desiredWater  = !!(p.desired?.water    ?? p.water);
+    const desiredGrow   = !!(p.desired?.grow     ?? p.grow);
+    const desiredSol    = !!(p.desired?.solenoid ?? p.solenoid);
+    const desiredMixer  = !!(p.desired?.mixer    ?? p.mixer);
 
-      // plant config
-      if (p.plant){
-        const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v ?? ""); };
-        setVal("ccPlantName", p.plant.name);
-        setVal("ccPpmMin", p.plant.ppm_min);
-        setVal("ccPpmMax", p.plant.ppm_max);
-        setVal("ccPhTarget", p.plant.ph_target);
-        setVal("ccPhMin", p.plant.ph_min);
-        setVal("ccPhMax", p.plant.ph_max);
-        setVal("ccOnH", p.plant.on_h);
-        setVal("ccOnM", p.plant.on_m);
-        setVal("ccOffH", p.plant.off_h);
-        setVal("ccOffM", p.plant.off_m);
-      }
+    const autoEl = document.getElementById("ccAutoToggle");
+    const wEl    = document.getElementById("ccWaterToggle");
+    const gEl    = document.getElementById("ccGrowToggle");
+    const sEl    = document.getElementById("ccSolenoidToggle");
+    const mEl    = document.getElementById("ccMixerToggle");
 
-      // live sensor
-      if (p.latest_sensor){
-        const s = p.latest_sensor;
-        const put = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = (val ?? "--"); };
-        put("ccLsPh", s.ph);
-        put("ccLsTds", (s.tds ?? s.ppm));
-        put("ccLsWater", s.water_temp);
-        put("ccLsAir", s.air_temp);
-        put("ccLsHum", s.humidity);
-        put("ccLsDepth", s.drumDepth);
-        put("ccLsDrumD", s.drumD);
-        put("ccLsLiters", s.drumLiters);
+    if (autoEl) autoEl.checked = desiredAuto;
+    if (wEl) wEl.checked = desiredWater;
+    if (gEl) gEl.checked = desiredGrow;
+    if (sEl) sEl.checked = desiredSol;
+    if (mEl) mEl.checked = desiredMixer;
+  } finally {
+    _syncingUI = false;
+  }
 
-        const upd = document.getElementById("ccLastUpdate");
-        if (upd) upd.textContent = "Updated: " + (s.timestamp || "now");
-      }
+  // plant config
+  if (p.plant){
+    const setVal = (id, v) => {
+      const el = document.getElementById(id);
+      if (el) el.value = (v ?? "");
+    };
+    setVal("ccPlantName", p.plant.name);
+    setVal("ccPpmMin", p.plant.ppm_min);
+    setVal("ccPpmMax", p.plant.ppm_max);
+    setVal("ccPhTarget", p.plant.ph_target);
+    setVal("ccPhMin", p.plant.ph_min);
+    setVal("ccPhMax", p.plant.ph_max);
+    setVal("ccOnH", p.plant.on_h);
+    setVal("ccOnM", p.plant.on_m);
+    setVal("ccOffH", p.plant.off_h);
+    setVal("ccOffM", p.plant.off_m);
+  }
 
-      // actual relays
-      const a = p.actual || {};
-      ccSetStateBadge("ccActWater", !!a.water);
-      ccSetStateBadge("ccActGrow", !!a.grow);
-      ccSetStateBadge("ccActSol",  !!a.solenoid);
-      ccSetStateBadge("ccActMixer",!!a.mixer);
+  // live sensor
+  if (p.latest_sensor){
+    const s = p.latest_sensor;
+    const put = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = (val ?? "--");
+    };
+    put("ccLsPh", s.ph);
+    put("ccLsTds", (s.tds ?? s.ppm));
+    put("ccLsWater", s.water_temp);
+    put("ccLsAir", s.air_temp);
+    put("ccLsHum", s.humidity);
+    put("ccLsDepth", s.drumDepth);
+    put("ccLsDrumD", s.drumD);
+    put("ccLsLiters", s.drumLiters);
 
-      const ackRev  = document.getElementById("ccAckRev");
-      const ackDose = document.getElementById("ccAckDose");
-      if (ackRev)  ackRev.textContent  = (a.ack_rev  ?? "--");
-      if (ackDose) ackDose.textContent = (a.dose_ack ?? "--");
-    }
+    const upd = document.getElementById("ccLastUpdate");
+    if (upd) upd.textContent = "Updated: " + (s.timestamp || "now");
+  }
 
-    /* ====== Poll loop ====== */
-    async function pollPanel(){
-      try{
-        const p = await apiPanel();
-        applyPanel(p);
-      }catch(e){
-        console.error("panel error:", e);
-      }
-    }
+  // actual relays
+  const a = p.actual || {};
+  ccSetStateBadge("ccActWater", !!a.water);
+  ccSetStateBadge("ccActGrow",  !!a.grow);
+  ccSetStateBadge("ccActSol",   !!a.solenoid);
+  ccSetStateBadge("ccActMixer", !!a.mixer);
+
+  const ackRev  = document.getElementById("ccAckRev");
+  const ackDose = document.getElementById("ccAckDose");
+  if (ackRev)  ackRev.textContent  = (a.ack_rev  ?? "--");
+  if (ackDose) ackDose.textContent = (a.dose_ack ?? "--");
+}
+
+async function pollPanel(){
+  syncDeviceFromStorage();
+
+  if (!hasActiveDevice()){
+    showCover(true);
+    ccSetStatus("ccRelayInfo", "Set your device first on webhook tab.");
+    const upd = document.getElementById("ccLastUpdate");
+    if (upd) upd.textContent = "Updated: --";
+    return; // ✅ NO HTTP
+  }
+
+  showCover(false);
+
+  try{
+    const p = await apiPanel();
+    applyPanel(p);
+    ccSetStatus("ccRelayInfo", "Live");
+  }catch(e){
+    ccSetStatus("ccRelayInfo", "Offline: " + e.message);
+  }
+}
 
     /* ====== Init ====== */
-    document.addEventListener("DOMContentLoaded", () => {
-      bindControlMobilePage();
-      pollPanel();
-      setInterval(pollPanel, 3000);
-    });
+document.addEventListener("DOMContentLoaded", () => {
+  syncDeviceFromStorage();
+  bindControlMobilePage();
+  pollPanel();
+  setInterval(pollPanel, 3000);
+});
   </script>
 
 </body>
