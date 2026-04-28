@@ -3,6 +3,6 @@
   "appName":"SmartHydroFarm",
   "host":"https://ivnx9.github.io",
   "PATH":"/SmartHydroFarm/app",
-  "webpage": ["about.html","chatbot.html","control_config.html","Count.html","dboard.html","gauge.html","Temperature.html","webhooks.html","gauge.js"],
+  "webpage": ["about.html","chatbot.html","data.txt","control_config.html","Count.html","dboard.html","gauge.html","Temperature.html","webhooks.html","gauge.js","loader.html"],
   "appjs": ["loadScript.js","variables.js","appUI.js","main.js"]
 }
