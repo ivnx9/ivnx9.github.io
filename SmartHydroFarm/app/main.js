@@ -221,15 +221,7 @@ function ClearToken() {
     app.SaveText("shvf_device_id", "");
     app.SaveText("shvf_device_code", "");
     } catch(e) {}
-
-    // Also clear webhooks page runtime state (JWT + cached devices) if loaded.
-    try {
-        if (webhooksWebView) {
-            webhooksWebView.Execute(
-                "if(window.SHVF){ SHVF.setJwtToken(''); SHVF.setActiveDevice('',''); }"
-            );
-        }
-    } catch(e) {}
+    syncWebhooksSession("", true);
 }
 
 
@@ -310,6 +302,21 @@ function ApiGet(url, cb) {
 
 var _drawerAdded = false;
 
+function jsSingleQuoteEscape(v) {
+    return String(v || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function syncWebhooksSession(jwtValue, forceLoad) {
+    try {
+        if (!webhooksWebView) return;
+        var jwt = jsSingleQuoteEscape(jwtValue);
+        var js = "if(window.SHVF){SHVF.setJwtToken('" + jwt + "');";
+        if (forceLoad) js += "SHVF.loadDevices();";
+        js += "}";
+        webhooksWebView.Execute(js);
+    } catch(e) {}
+}
+
 function ensureDrawer() {
     if (_drawerAdded) return;
     app.AddDrawer(drawerScroll, "Left", drawerWidth);
@@ -341,11 +348,18 @@ function grantLogin() {
 // app.HideKeyboard(); 
  
 // layHome.Animate( "FadeIn");	
-layLogin.SetVisibility("Hide");
-layHome.SetVisibility("Show");
-layHome.Animate("FadeIn", null, 300);
+if (typeof layLogin !== "undefined" && layLogin) layLogin.SetVisibility("Hide");
+if (typeof layHome !== "undefined" && layHome) {
+    layHome.SetVisibility("Show");
+    layHome.Animate("FadeIn", null, 300);
+}
 ensureDrawer();
 resetToDashboardPage();
+
+// Push fresh JWT into webhooks page (retry because WebView may still be initializing).
+syncWebhooksSession(token, true);
+setTimeout(function(){ syncWebhooksSession(token, true); }, 400);
+setTimeout(function(){ syncWebhooksSession(token, true); }, 1200);
 
  //  if(webhooksWebView.GetVisibility() == "Show") {
     //   webhooksWebView.Execute( "if (typeof setJwtToken === 'function') {setJwtToken('"+app.LoadText(TOKEN_KEY, "", "token")+"')}")
@@ -542,6 +556,7 @@ function lstMenu_OnTouch( title, body, type, index )
    layPage.RemoveChild( layContent_Settings )
 
    layPage.AddChild( layContent_Webhooks )
+   syncWebhooksSession(token, true);
 
   } else if(title== "Chatbot"){
   layPage.RemoveChild(layContent_Dashboard)
