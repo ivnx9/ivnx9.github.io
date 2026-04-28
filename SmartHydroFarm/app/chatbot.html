@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>AI Chat (Messenger Style)</title>
-
+<script src="ds:/Sys/app.js"></script>
   <!-- Markdown renderer (optional, same as your old code) -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -406,8 +406,14 @@
           const provider = data?.provider ? ("Model: " + data.provider) : "Connected";
           setHint(provider);
         } else {
-          addBotBubble("Hey grower! 🌾 The assistant is unavailable right now. Try again in a moment.", false);
-          setHint("No reply");
+            var offlineAI = answer(msg);
+            if(offlineAI != null || offlineAI != "") {
+                addBotBubble(offlineAI.text, false);
+                setHint("offline AI");
+            } else {
+                addBotBubble("Hey grower! 🌾 The assistant is unavailable right now. Try again in a moment.", false);
+                setHint("No reply");
+            }
         }
 
       }catch(err){
@@ -468,5 +474,101 @@
       scrollToBottom();
     };
   </script>
+  <script>
+
+var datas = app.ReadFile("data.txt");
+// `     `;
+
+
+let KB = []; // [{id,tags,text}]
+let ready = false;
+
+function normalize(s){
+  return s.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenize(s){
+  const stop = new Set(["the","a","an","and","or","to","of","in","on","for","is","are","was","were","it","this","that","with","as","at","by","from"]);
+  return normalize(s).split(" ").filter(w => w && w.length > 1 && !stop.has(w));
+}
+
+function parseTxt(txt){
+  const blocks = txt.split("=== TOPIC:").slice(1);
+  const items = [];
+  for(const b of blocks){
+    const id = b.split("\n")[0].trim();
+    const tagsLine = (b.match(/TAGS:\s*(.*)/) || [,""])[1];
+    const textMatch = b.match(/TEXT:\s*([\s\S]*?)=== END/);
+    const text = textMatch ? textMatch[1].trim() : "";
+    const tags = tagsLine.split(",").map(x=>normalize(x)).filter(Boolean);
+    if(id && text) items.push({id, tags, text});
+  }
+  return items;
+}
+
+function scoreItem(queryTokens, item){
+  // Score: token overlap with tags + text
+  const hay = tokenize(item.tags.join(" ") + " " + item.text);
+  const haySet = new Set(hay);
+  let hit = 0;
+  for(const t of queryTokens) if(haySet.has(t)) hit++;
+  // light weighting: tag matches count extra
+  const tagSet = new Set(tokenize(item.tags.join(" ")));
+  let tagHit = 0;
+  for(const t of queryTokens) if(tagSet.has(t)) tagHit++;
+  return hit + tagHit * 1.5;
+}
+
+function answer(query){
+  const qt = tokenize(query);
+  if(qt.length === 0) return {text:"Type a clearer question.", conf:0};
+
+  let best = null, bestScore = 0;
+  for(const item of KB){
+    const s = scoreItem(qt, item);
+    if(s > bestScore){
+      bestScore = s;
+      best = item;
+    }
+  }
+
+  // Confidence heuristic
+  const conf = best ? Math.min(1, bestScore / Math.max(4, qt.length*2)) : 0;
+
+  if(!best || conf < 0.35){
+    return {
+      text: "I’m not sure yet on that question, my knowledge is limited only about Hydroponics and Smart Hydro Farm. Please ask different question, Thankyou!",
+      conf
+    };
+  }
+
+  // Smart-ish formatting
+  let reply = best.text;
+
+  // Optional: if question sounds like “how/steps”, add bullets
+  if(/^how\b|steps|paano|process/.test(normalize(query))){
+    reply = "Here’s what I found:\n\n- " + best.text.split("\n").filter(Boolean).join("\n- ");
+  }
+
+  // If moderate confidence, ask a clarifying follow-up
+  if(conf < 0.55){
+    reply += "\n\nQuick check: what exact setup are you using (crop / sensor / range)?";
+  }
+
+  return {text: reply, conf};
+}
+
+async function init(){
+//  const r = await fetch("data.txt", {cache:"no-store"});
+ // const txt = await r.text() || datas;
+  KB = parseTxt(datas) ;
+  ready = true;
+}
+
+init();
+</script>
 </body>
 </html>
