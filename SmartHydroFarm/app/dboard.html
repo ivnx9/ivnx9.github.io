@@ -158,11 +158,22 @@
   </style> 
 
 
-  <script>
+<script>
 
 // GLOBALS
 let _snapInFlight = false;
 let _snapWanted = false;
+
+// Prevent DroidScript bridge callback-map crashes from surfacing as fatal UI errors.
+window.onerror = function(message){
+  const msg = String(message || "");
+  if (msg.indexOf("_cbMap.") !== -1 && msg.indexOf("is not a function") !== -1){
+    try { stopPolling(); } catch(e){}
+    try { setTimeout(function(){ if (typeof startPolling === "function") startPolling(); }, 500); } catch(e){}
+    return true;
+  }
+  return false;
+};
 
 
 
