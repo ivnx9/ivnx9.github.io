@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
   <title>About • SmartHydroFarm</title>
+ <script src="ds:/Sys/app.js"></script>
+<script>
+ function getActiveDevice() {
+      // IMPORTANT: never assume app is ready
+      const device_id = safeLoadText("shvf_device_id", "default");
+      const device_code = safeLoadText("shvf_device_code", "");
+
+      // cover depends on DOM, so guard
+      const ok = (device_id && device_id !== "default" && device_code);
+//      showCover(!ok);
+     app.Alert(device_id+" "+device_code);
+      //return { device_id, device_code };
+    }
+    function safeLoadText(key, def){
+      try{
+        if (hasApp()) return app.LoadText(key) || def;
+      }catch(e){}
+      return def;
+    }
+
+</script>
 </head>
 <body style="margin:0;">
  <!-- ABOUT PAGE (APP STYLE) -->
@@ -19,12 +40,20 @@
   <!-- Scrollable Body -->
   <div class="app-scroll">
 
+    <div class="grid">
+      <!-- Card Template: just change name, role, desc, img -->
+      <div class="card person" onclick="getActiveDevice()">
+          <center><h2>Welcome to SmartHydroFarm!</h2></center>
+        </div>
+       </div></br>
+
     <!-- Hero Card -->
     <div class="card hero-card">
       <div class="hero-row">
         <div class="app-logo">
-          <i class="fa-solid fa-seedling"></i>
-        </div>
+          <!--i class="fa-solid fa-seedling"></i-->
+          <img src="Img/SmartHydroFarm.png" style="width: 45px" alt="SmartHydroFarm" onerror="aboutFallback(this,'SHVF')">
+         </div>
         <div class="hero-text">
           <div class="hero-name">SmartHydroFarm</div>
           <div class="hero-tag">IoT Monitoring • Automation • AI Support</div>
