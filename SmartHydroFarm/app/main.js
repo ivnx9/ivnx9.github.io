@@ -1,6 +1,6 @@
 function main()
 {
-
+ 
 	//Create the main app layout.
 	layLogin = app.CreateLayout( "Linear", "Vertical,FillXY" );
 	layLogin.SetBackColor( "#454545" );
@@ -11,15 +11,15 @@ logo = app.CreateImage( "Img/SmartHydroFarm.png", 0.3,0.15)
   logo.SetMargins( 0, 0.2, 0,0)
   layLogin.AddChild( logo )
 
-  username = app.CreateTextEdit( "demo", 0.8, 0.05, "SingleLine" )
-//  username.SetBackColor( "#dddddd" )
-  username.SetBackground( "SmartHydroFarm_v2.png" )
+  username = app.CreateTextEdit( "", 0.8, 0.05, "SingleLine" )
+
+  username.SetBackColor( "#dddddd" )
   username.SetTextColor( "#000000" )
   username.SetHint( "Username.." )
   username.SetMargins( 0, 0.08, 0,0)
   layLogin.AddChild( username )
 
-  password = app.CreateTextEdit( "demo", 0.8, 0.05, "SingleLine,Password")
+  password = app.CreateTextEdit( "", 0.8, 0.05, "SingleLine,Password")
   password.SetBackColor( "#dddddd" )
   password.SetTextColor( "#000000" )
   password.SetHint( "Password.." )
@@ -27,10 +27,14 @@ logo = app.CreateImage( "Img/SmartHydroFarm.png", 0.3,0.15)
   layLogin.AddChild( password )
 
   loginBtn = app.CreateButton( "Login", 0.8, 0.07, "Custom")
-  loginBtn.SetOnTouch( loginBtn_OnTouch )
+  loginBtn.SetOnTouch( loginBtn_OnTouch ) 
   loginBtn.SetStyle( "#4285F4", "#4285F4", 20, null ,0, 0.2)
   layLogin.AddChild( loginBtn )
   
+  RegisterAcc = app.CreateText( "No Account? Register here.", 0.45, 0.25, "" )
+  RegisterAcc.SetOnTouch( () => { app.OpenUrl( "https://smarthydrofarm.com" )} )
+  RegisterAcc.SetMargins(0, 0.03, 0,0)
+  layLogin.AddChild( RegisterAcc )
 
    	//Create the main app layout.
 
@@ -53,25 +57,24 @@ logo = app.CreateImage( "Img/SmartHydroFarm.png", 0.3,0.15)
 
     //Create the app content layout.
   	layContent_Dashboard = app.CreateLayout( "Linear", "VCenter, FillXY" )
-    layPage.AddChild( layContent_Dashboard )
+   layPage.AddChild( layContent_Dashboard )
 
     layContent_Control_config = app.CreateLayout( "Linear", "VCenter, FillXY" )
     layContent_Webhooks = app.CreateLayout( "Linear", "VCenter, FillXY" )
+   // layPage.AddChild( layContent_Webhooks)
     layContent_Chatbot = app.CreateLayout( "Linear", "VCenter, FillXY" )
     layContent_About = app.CreateLayout( "Linear", "VCenter, FillXY" )
+  // layPage.AddChild( layContent_About)
     layContent_Settings = app.CreateLayout( "Linear", "VCenter, FillXY" )
 //   layContent_Webhooks.child
 
- //   layPage.AddChild( layContent_Webhooks )
-
-
      CreateContent()
-   //Create main content.
-    
+   //Create main content. 
     	//Add main layout and drawer to app.	
 	app.AddLayout( layMain ) // Do not remove this
   app.AddLayout( layLogin )
   app.AddLayout( layHome )
+ 
 }
 
 
@@ -103,15 +106,24 @@ function InitAuth()
 {
     LoadToken();
 // 0970 remove the true to get back the functionality
+// setTimeout( ()=>{
     if  (IsTokenValid(token)) {
-        //grantLogin();
+      //  grantLogin();
        app.ShowProgress( "Logging in.." )
         app.ShowPopup("Logged in (saved session).");
         LoadMe(LoadData)
     } else {
-        if (token) ClearToken(); // had token but expired/invalid
-        app.ShowPopup( "Token has expired.Please login again." )
+        if (token)  ClearToken(); // had token but expired/invalid 
+          
+        if(token !== null && token !== "") {
+         app.ShowPopup( "Token has expired. Please login again." ); 
+       //  ClearToken(); 
+          }
+         else {   app.ShowPopup( "Welcome to SmartHydroFarm!") }
+           
     }
+   // }, 500);
+
 }
 
 
@@ -201,7 +213,10 @@ function LoadToken() {
 
 function ClearToken() {
     token = "";
-    try { app.SaveText(TOKEN_KEY, ""); } catch(e) {}
+    try { app.SaveText(TOKEN_KEY, ""); 
+    app.SaveText("shvf_device_id", "");
+    app.SaveText("shvf_device_code", "");
+    } catch(e) {}
 }
 
 
@@ -267,14 +282,6 @@ function Base64DecodeToString(b64) {
 }
 
 
-// ============================
-// OPTIONAL: AUTHED API CALLS
-// ============================
-// Your server currently only sets CORS headers for login.php.
-// If you want to call protected endpoints from the app,
-// you'll need those endpoints to also allow Authorization header:
-//   header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
 function ApiGet(url, cb) {
     if (!IsTokenValid(token)) {
         ClearToken();
@@ -289,13 +296,16 @@ function ApiGet(url, cb) {
 
 
  function grantLogin() { 
-app.HideKeyboard(); 
- layHome.Animate( "FadeIn");	
-app.AddDrawer( drawerScroll, "Left", drawerWidth ) 
-   if(webhooksWebView.GetVisibility() == "Show") {
-       webhooksWebView.Execute( "if (typeof setJwtToken === 'function') {setJwtToken('"+app.LoadText(TOKEN_KEY, "", "token")+"')}")
+// app.HideKeyboard(); 
+ 
+// layHome.Animate( "FadeIn");	
+layHome.Animate("FadeIn", null, 300);
+app.AddDrawer( drawerScroll, "Left", drawerWidth )  
+
+ //  if(webhooksWebView.GetVisibility() == "Show") {
+    //   webhooksWebView.Execute( "if (typeof setJwtToken === 'function') {setJwtToken('"+app.LoadText(TOKEN_KEY, "", "token")+"')}")
   // app.Alert( app.LoadText(TOKEN_KEY, "", "token") )
-   }
+   // }
 }
 
 
@@ -340,15 +350,6 @@ function CreateActionBar()
     txtBurger.SetTextSize( 24 )
     txtBurger.SetTextColor( "#eeeeee" )
     txtBurger.SetOnTouchUp( function(){app.OpenDrawer()} )
-    /*
-    //Add menu icon.
-    txtMenu = app.AddText( layBarTitle, "[fa-ellipsis-v]", -1,-1, "FontAwesome,Right" );
-    txtMenu.SetPadding( 12,14,16,10, "dip" )
-    txtMenu.SetMargins( 0.8 )
-    txtMenu.SetTextSize( 24 )
-    txtMenu.SetTextColor( "#eeeeee" );
-    txtMenu.SetOnTouchUp( function(){app.ShowPopup("Todo!")} )
-*/
 }
 
 //Create the drawer contents.
@@ -373,7 +374,7 @@ function CreateDrawer()
 	img.SetPosition( drawerWidth*0.06, 0.08 )
 	
 	//Add user name to top layout.
-	var txtUser = app.CreateText(  usernme,-1,-1,"Bold")
+	txtUser = app.CreateText(  usernme,-1,-1,"Bold")
 	txtUser.SetPosition( drawerWidth*0.07, 0.155 )
 	txtUser.SetTextColor( "White" )
 	txtUser.SetTextSize( 13.7, "dip" )
@@ -401,10 +402,6 @@ Based on your hint with [fa-home], I'm assuming you're using Font Awesome icons.
 - *Settings*: [fa-cog]
 
 These icons are commonly used for these types of functions and should fit well with your existing design [1].
-
-
-
-
 */
     //Add a list to menu layout (with the menu style option).
     var listItems = "Dashboard::[fa-home],Control&Configuration::[fa-sliders],API Webhooks::[fa-link]";
@@ -436,13 +433,12 @@ These icons can represent artificial intelligence, chatbots, or automated system
 
 */
 
-    //Add a second list to menu layout.
-    var listItems = "Chatbot::[fa-comment],About::[fa-info-circle],Settings::[fa-cog],Logout::[fa-sign-out]";
+    //Add a second list to menu layout.      ,Settings::[fa-cog]
+    var listItems = "Chatbot::[fa-comment],About::[fa-info-circle],Logout::[fa-sign-out]";
     lstMenu2 = app.AddList( layMenu, listItems, drawerWidth, -1, "Menu,Expand" )
     lstMenu2.SetColumnWidths( -1, 0.35, 0.18 )
     lstMenu2.SetOnTouch( lstMenu_OnTouch )
 }
-
 
 
 
@@ -458,7 +454,8 @@ function lstMenu_OnTouch( title, body, type, index )
     layHome.Animate( "FadeOut" )
     layHome.SetVisibility("Hide")
     app.RemoveDrawer( drawerScroll )
-    app.SaveText(TOKEN_KEY, null);
+    // app.SaveText(TOKEN_KEY, null);
+    ClearToken();
     }
     
     //Highlight the chosen menu item in the appropriate list.
@@ -468,17 +465,14 @@ function lstMenu_OnTouch( title, body, type, index )
     
     //Update title and page contents.
       txtBarTitle.SetText( title )
-//     txtIcon.SetText( type )
- //   txtContent.SetHtml( "<p><font color=#4285F4><big>"+title+"</big></font></p>" )
-    //     var listItems = "Dashboard::[fa-home],Control&Configuration::[fa-sliders],API Webhooks::[fa-link]";
-  
+ 
     if(title == "Dashboard") {
    layPage.RemoveChild( layContent_Control_config )
    layPage.RemoveChild( layContent_Webhooks)
    layPage.RemoveChild( layContent_Chatbot )
    layPage.RemoveChild( layContent_About )
    layPage.RemoveChild( layContent_Settings )
- 
+
    layPage.AddChild(  layContent_Dashboard )
 
  
@@ -497,7 +491,7 @@ function lstMenu_OnTouch( title, body, type, index )
    layPage.RemoveChild( layContent_About )
    layPage.RemoveChild( layContent_Settings )
 
-  layPage.AddChild( layContent_Webhooks )
+   layPage.AddChild( layContent_Webhooks )
 
   } else if(title== "Chatbot"){
   layPage.RemoveChild(layContent_Dashboard)
@@ -524,7 +518,7 @@ layPage.RemoveChild(layContent_Dashboard)
 
    layPage.AddChild( layContent_Settings )
  }else {
-       app.ShowPopup( "Invalid" )
+    //   app.ShowPopup( "Invalid" )
   }
     console.log( title )
 }
@@ -549,8 +543,10 @@ function LoadMe(cb) {
 
             if (obj.status === "success" && obj.user) {
                 // Example: set drawer name
-                 usernme = obj.user.name;
-                 grantLogin();
+
+                usernme = obj.user.name;
+                if (txtUser) txtUser.SetText(usernme);
+                grantLogin();
                  //txtUser.SetText(obj.user.name);
                  
                  app.HideProgress()
