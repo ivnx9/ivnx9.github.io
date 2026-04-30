@@ -9,7 +9,6 @@
   <script src="ds:/Sys/app.js"></script>
   <!-- Gauge engine -->
   <script src="gauge.js"></script>
- <script src="main.js"></script>
 
   <style>
     :root{
@@ -158,11 +157,22 @@
   </style> 
 
 
-  <script>
+<script>
 
 // GLOBALS
 let _snapInFlight = false;
 let _snapWanted = false;
+
+// Prevent DroidScript bridge callback-map crashes from surfacing as fatal UI errors.
+window.onerror = function(message){
+  const msg = String(message || "");
+  if (msg.indexOf("_cbMap.") !== -1 && msg.indexOf("is not a function") !== -1){
+    try { stopPolling(); } catch(e){}
+    try { setTimeout(function(){ if (typeof startPolling === "function") startPolling(); }, 500); } catch(e){}
+    return true;
+  }
+  return false;
+};
 
 
 
@@ -635,6 +645,7 @@ let _snapTimer = null;
 
 let _inFlight = false;
 let _lastKey = "";
+let _lastDeviceSig = "";
 
 function pollOnce(){
   // Gate: if no active device, do NOTHING (no HTTP), keep cover visible
@@ -642,8 +653,21 @@ function pollOnce(){
   if (!dev.device_id || dev.device_id === "default" || !dev.device_code){
     setText("connPill", "No device");
     _lastKey = ""; // so when device becomes valid, first poll updates
+    _lastDeviceSig = "";
   stopSnapshot();     
     return;
+  }
+
+  const devSig = (dev.device_id + "|" + dev.device_code);
+  if (devSig !== _lastDeviceSig){
+    _lastDeviceSig = devSig;
+    _lastKey = "";
+    setText("lastSeen", "Last update: --");
+    // Optional: clear old trend points so graph reflects current device only.
+    history.ph = []; history.tds = [];
+    history.waterTemp = []; history.airTemp = [];
+    history.humidity = []; history.waterLevel = [];
+    renderTrendChart();
   }
 
   if (_inFlight) return; // prevent overlapping requests

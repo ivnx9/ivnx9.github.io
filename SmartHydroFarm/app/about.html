@@ -3,456 +3,262 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
   <title>About • SmartHydroFarm</title>
- <script src="ds:/Sys/app.js"></script>
-<script>
- function getActiveDevice() {
-      // IMPORTANT: never assume app is ready
-      const device_id = safeLoadText("shvf_device_id", "default");
-      const device_code = safeLoadText("shvf_device_code", "");
-
-      // cover depends on DOM, so guard
-      const ok = (device_id && device_id !== "default" && device_code);
-//      showCover(!ok);
-     app.Alert(device_id+" "+device_code);
-      //return { device_id, device_code };
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" />
+  <script src="ds:/Sys/app.js"></script>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --shadow:0 6px 18px rgba(17,24,39,.06);
+      --radius:16px;
     }
-    function safeLoadText(key, def){
-      try{
-        if (hasApp()) return app.LoadText(key) || def;
-      }catch(e){}
-      return def;
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+
+    .app-page{height:100vh;display:flex;flex-direction:column}
+    .app-scroll{flex:1;overflow-y:auto;padding:12px 12px 24px}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+      margin-bottom:12px;
     }
 
-</script>
+    .hero-title{font-size:22px;font-weight:900;line-height:1.15}
+    .hero-sub{margin-top:6px;font-size:13px;color:var(--muted);font-weight:700}
+    .hero-desc{margin-top:12px;font-size:13px;line-height:1.55;color:#374151}
+
+    .brand-row{display:flex;gap:10px;align-items:center}
+    .brand-logo{
+      width:50px;height:50px;border-radius:14px;background:#111827;display:flex;align-items:center;justify-content:center;overflow:hidden
+    }
+    .brand-logo img{width:100%;height:100%;object-fit:contain;background:#111827}
+    .brand-name{font-size:16px;font-weight:900}
+    .brand-tag{margin-top:2px;font-size:12px;color:var(--muted);font-weight:700}
+    .chips{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+    .chip{
+      padding:7px 10px;border-radius:999px;background:#f3f4f6;border:1px solid var(--line);font-size:11px;font-weight:800
+    }
+
+    .section-head{display:flex;justify-content:space-between;align-items:flex-end;padding:0 4px;margin:14px 0 10px}
+    .section-title{font-size:13px;font-weight:900}
+    .section-label{font-size:11px;color:var(--muted);font-weight:700}
+
+    .team-grid,.origins-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .person{padding:12px}
+    .person-top{display:flex;gap:10px;align-items:center}
+    .avatar{
+      width:46px;height:46px;border-radius:999px;border:1px solid var(--line);background:#f3f4f6;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;font-weight:900;color:#111827;flex:0 0 auto
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .name{font-size:13px;font-weight:900}
+    .role{margin-top:2px;font-size:11px;color:var(--muted);font-weight:700}
+    .desc{margin-top:9px;font-size:12px;line-height:1.45;color:#374151}
+
+    .current-team .person{border:1px solid #dbe4ff;background:#fcfdff}
+    .origins-intro{font-size:12px;color:#4b5563;line-height:1.5;margin-bottom:10px;padding:0 4px}
+    .origins-grid .person{padding:10px}
+    .origins-grid .name{font-size:12px}
+    .origins-grid .desc{font-size:11.5px}
+
+    .tech-item{
+      display:flex;gap:10px;padding:10px;border-radius:13px;background:#f9fafb;border:1px solid var(--line);margin-bottom:9px
+    }
+    .tech-item:last-child{margin-bottom:0}
+    .tech-icon{
+      width:36px;height:36px;border-radius:12px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto
+    }
+    .tech-name{font-size:12px;font-weight:900}
+    .tech-desc{margin-top:2px;font-size:11px;color:var(--muted);line-height:1.35}
+
+    .footer-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+    .footer-line:last-of-type{border-bottom:none}
+    .footer-key{font-size:12px;color:var(--muted);font-weight:700}
+    .footer-val{font-size:12px;font-weight:900}
+    .footer-copy{margin-top:10px;font-size:11px;color:var(--muted);text-align:center;line-height:1.45}
+  </style>
 </head>
-<body style="margin:0;">
- <!-- ABOUT PAGE (APP STYLE) -->
-<div class="app-page" id="aboutPage">
-
-  <!-- Top App Title (no back/home buttons) -- 
-  <div class="app-topbar">
-    <div class="app-title">About</div>
-    <div class="app-subtitle">Smart HydroVertical Farm</div>
-  </div-->
-
-  <!-- Scrollable Body -->
+<body>
+<div class="app-page">
   <div class="app-scroll">
 
-    <div class="grid">
-      <!-- Card Template: just change name, role, desc, img -->
-      <div class="card person" onclick="getActiveDevice()">
-          <center><h2>Welcome to SmartHydroFarm!</h2></center>
-        </div>
-       </div></br>
-
-    <!-- Hero Card -->
-    <div class="card hero-card">
-      <div class="hero-row">
-        <div class="app-logo">
-          <!--i class="fa-solid fa-seedling"></i-->
-          <img src="Img/SmartHydroFarm.png" style="width: 45px" alt="SmartHydroFarm" onerror="aboutFallback(this,'SHVF')">
-         </div>
-        <div class="hero-text">
-          <div class="hero-name">SmartHydroFarm</div>
-          <div class="hero-tag">IoT Monitoring • Automation • AI Support</div>
-        </div>
-      </div>
-
-      <p class="hero-desc">
-        An IoT-powered solution for automated vertical hydroponics. Monitor pH, TDS, temperature,
-        humidity, and water level remotely with AI-powered support.
-      </p>
-
-      <div class="hero-chips">
-        <span class="chip"><i class="fa-solid fa-wifi"></i> Remote Access</span>
-        <span class="chip"><i class="fa-solid fa-microchip"></i> Sensors</span>
-        <span class="chip"><i class="fa-solid fa-robot"></i> AI Assistant</span>
+    <!-- 1) Hero Section -->
+    <div class="card">
+      <div class="hero-title">Welcome to SmartHydroFarm</div>
+      <div class="hero-sub">From research innovation to smart agriculture technology.</div>
+      <div class="hero-desc">
+        SmartHydroFarm is an IoT-powered smart agriculture solution designed for automated vertical hydroponics.
+        It monitors pH, TDS/EC, temperature, humidity, and water level while supporting remote access, automation,
+        and AI-assisted crop management.
       </div>
     </div>
 
-    <!-- Team -->
+    <!-- 2) Product / Company Overview Card -->
+    <div class="card">
+      <div class="brand-row">
+        <div class="brand-logo">
+          <img src="Img/SmartHydroFarm.png" alt="SmartHydroFarm" onerror="aboutFallback(this,'SH')" />
+        </div>
+        <div>
+          <div class="brand-name">SmartHydroFarm</div>
+          <div class="brand-tag">IoT Monitoring • Automation • AI Support</div>
+        </div>
+      </div>
+      <div class="hero-desc" style="margin-top:10px;">
+        Originally developed as an academic research project, SmartHydroFarm is now evolving into a scalable smart farming platform for hydroponic growers, students, and agriculture innovators.
+      </div>
+      <div class="chips">
+        <span class="chip">Remote Monitoring</span>
+        <span class="chip">Sensor Dashboard</span>
+        <span class="chip">Relay Automation</span>
+        <span class="chip">AI Assistant</span>
+        <span class="chip">Solar-ready System</span>
+      </div>
+    </div>
+
+    <!-- 3) Current Development Team -->
     <div class="section-head">
-      <div class="section-title">Team</div>
-      <div class="section-hint">Project Contributors</div>
+      <div class="section-title">Current Development Team</div>
+      <div class="section-label">Version 2 Development</div>
     </div>
-
-    <div class="grid">
-      <!-- Card Template: just change name, role, desc, img -->
+    <div class="team-grid current-team">
       <div class="card person">
         <div class="person-top">
           <div class="avatar"><img src="https://smarthydrofarm.com/images/ivan.jpg" alt="Ivan Abueg" onerror="aboutFallback(this,'IA')"></div>
-          <div class="person-meta">
-            <div class="person-name">Ivan Abueg</div>
-            <div class="person-role">Lead Developer</div>
+          <div>
+            <div class="name">Ivan Abueg</div>
+            <div class="role">Founder / Lead Developer</div>
           </div>
         </div>
-        <div class="person-desc">Full-stack programming, IoT & solar integration, electronics assembly</div>
+        <div class="desc">Leads software development, IoT system design, automation logic, solar integration, and overall product direction.</div>
       </div>
 
       <div class="card person">
         <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/james.jpg" alt="James Bondoc" onerror="aboutFallback(this,'JB')"></div>
-          <div class="person-meta">
-            <div class="person-name">James P. Bondoc</div>
-            <div class="person-role">Hardware Assistant</div>
+          <div class="avatar">AM</div>
+          <div>
+            <div class="name">[Name of Active Member]</div>
+            <div class="role">Co-Founder / Development Partner</div>
           </div>
         </div>
-        <div class="person-desc">Supported metalwork & full system development</div>
-      </div>
-
-      <div class="card person">
-        <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/arnold.jpg" alt="Arnold Cruz" onerror="aboutFallback(this,'AC')"></div>
-          <div class="person-meta">
-            <div class="person-name">Arnold John E. Cruz</div>
-            <div class="person-role">Chassis Fabrication</div>
-          </div>
-        </div>
-        <div class="person-desc">Helped with chassis & electronics assembly</div>
-      </div>
-
-      <div class="card person">
-        <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/vince.jpg" alt="Vince Nicodemus" onerror="aboutFallback(this,'VN')"></div>
-          <div class="person-meta">
-            <div class="person-name">Vince Jheriel C. Nicodemus</div>
-            <div class="person-role">Structural Support</div>
-          </div>
-        </div>
-        <div class="person-desc">Handled frame building</div>
-      </div>
-
-      <div class="card person">
-        <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/ellaiza.jpg" alt="Ellaiza Contreras" onerror="aboutFallback(this,'EC')"></div>
-          <div class="person-meta">
-            <div class="person-name">Ellaiza Anne T. Contreras</div>
-            <div class="person-role">Documentation</div>
-          </div>
-        </div>
-        <div class="person-desc">Project assistance & paperwork</div>
-      </div>
-
-      <div class="card person">
-        <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/isaac.jpg" alt="Isaac Sunpongco" onerror="aboutFallback(this,'IS')"></div>
-          <div class="person-meta">
-            <div class="person-name">Isaac B. Sunpongco</div>
-            <div class="person-role">Research Coordinator</div>
-          </div>
-        </div>
-        <div class="person-desc">Finalized and formatted research paper</div>
-      </div>
-
-      <div class="card person">
-        <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/adrian.jpg" alt="Adrian Perez" onerror="aboutFallback(this,'AP')"></div>
-          <div class="person-meta">
-            <div class="person-name">Adrian T. Perez</div>
-            <div class="person-role">Support</div>
-          </div>
-        </div>
-        <div class="person-desc">Helps in plumbing and fixing PVC pipes</div>
+        <div class="desc">Supports the continued development, improvement, testing, and future deployment of SmartHydroFarm Version 2.</div>
       </div>
     </div>
 
-    <!-- Technologies -->
-    <div class="section-head" style="margin-top:14px;">
+    <!-- 4) Project Origins -->
+    <div class="section-head">
+      <div class="section-title">Project Origins</div>
+      <div class="section-label">Research Team • Version 1</div>
+    </div>
+    <div class="origins-intro">
+      SmartHydroFarm began as a collaborative academic research project. The following contributors supported the development, fabrication, documentation, and completion of the original Version 1 prototype.
+    </div>
+    <div class="origins-grid">
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/ivan.jpg" alt="Ivan Abueg" onerror="aboutFallback(this,'IA')"></div>
+          <div><div class="name">Ivan Abueg</div><div class="role">Original Role: Lead Developer</div></div>
+        </div>
+        <div class="desc">Contribution: Full-stack programming, IoT and solar integration, electronics assembly, system design, and overall project leadership.</div>
+      </div>
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/james.jpg" alt="James P. Bondoc" onerror="aboutFallback(this,'JB')"></div>
+          <div><div class="name">James P. Bondoc</div><div class="role">Original Role: Hardware Assistant</div></div>
+        </div>
+        <div class="desc">Contribution: Supported metalwork, frame preparation, PVC work, and full system development.</div>
+      </div>
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/arnold.jpg" alt="Arnold John E. Cruz" onerror="aboutFallback(this,'AC')"></div>
+          <div><div class="name">Arnold John E. Cruz</div><div class="role">Original Role: Electronics / Chassis Fabrication</div></div>
+        </div>
+        <div class="desc">Contribution: Helped with chassis fabrication, wiring organization, soldering, electronics assembly, and system build support.</div>
+      </div>
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/vince.jpg" alt="Vince Jheriel C. Nicodemus" onerror="aboutFallback(this,'VN')"></div>
+          <div><div class="name">Vince Jheriel C. Nicodemus</div><div class="role">Original Role: Structural Support</div></div>
+        </div>
+        <div class="desc">Contribution: Handled frame building, welding assistance, and physical structure preparation.</div>
+      </div>
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/ellaiza.jpg" alt="Ellaiza Anne T. Contreras" onerror="aboutFallback(this,'EC')"></div>
+          <div><div class="name">Ellaiza Anne T. Contreras</div><div class="role">Original Role: Documentation Support</div></div>
+        </div>
+        <div class="desc">Contribution: Assisted with documentation, painting, project preparation, and paper-related tasks.</div>
+      </div>
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/isaac.jpg" alt="Isaac B. Sunpongco" onerror="aboutFallback(this,'IS')"></div>
+          <div><div class="name">Isaac B. Sunpongco</div><div class="role">Original Role: Research Coordinator</div></div>
+        </div>
+        <div class="desc">Contribution: Finalized, organized, and formatted the research paper and supported research documentation.</div>
+      </div>
+      <div class="card person">
+        <div class="person-top">
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/adrian.jpg" alt="Adrian T. Perez" onerror="aboutFallback(this,'AP')"></div>
+          <div><div class="name">Adrian T. Perez</div><div class="role">Original Role: Plumbing Support</div></div>
+        </div>
+        <div class="desc">Contribution: Helped with plumbing work, PVC pipe preparation, and system assembly support.</div>
+      </div>
+    </div>
+
+    <!-- 5) Technologies Used -->
+    <div class="section-head">
       <div class="section-title">Technologies Used</div>
-      <div class="section-hint">Tools & Stack</div>
+      <div class="section-label">Platform Stack</div>
     </div>
-
-    <div class="card tech-card">
-      <div class="tech-list">
-        <div class="tech-item">
-          <div class="tech-ico"><i class="fa-solid fa-microchip"></i></div>
-          <div class="tech-text">
-            <div class="tech-name">ESP32 / Arduino</div>
-            <div class="tech-desc">Automation, sensors, relay control, local AP portal</div>
-          </div>
-        </div>
-
-        <div class="tech-item">
-          <div class="tech-ico"><i class="fa-brands fa-html5"></i></div>
-          <div class="tech-text">
-            <div class="tech-name">HTML • CSS • Vanilla JavaScript</div>
-            <div class="tech-desc">App UI, dashboards, and client logic</div>
-          </div>
-        </div>
-
-        <div class="tech-item">
-          <div class="tech-ico"><i class="fa-brands fa-php"></i></div>
-          <div class="tech-text">
-            <div class="tech-name">PHP Backend API</div>
-            <div class="tech-desc">Webhooks, device manager, authentication (JWT)</div>
-          </div>
-        </div>
-
-        <div class="tech-item">
-          <div class="tech-ico"><i class="fa-solid fa-robot"></i></div>
-          <div class="tech-text">
-            <div class="tech-name">AI Chatbot Support</div>
-            <div class="tech-desc">OpenRouter integration for grower assistance</div>
-          </div>
-        </div>
-
-        <div class="tech-item">
-          <div class="tech-ico"><i class="fa-solid fa-chart-line"></i></div>
-          <div class="tech-text">
-            <div class="tech-name">Charts (SVG / Lightweight)</div>
-            <div class="tech-desc">Live metrics & trend visualization</div>
-          </div>
-        </div>
+    <div class="card">
+      <div class="tech-item">
+        <div class="tech-icon"><i class="fa-solid fa-microchip"></i></div>
+        <div><div class="tech-name">ESP32 / Arduino</div><div class="tech-desc">Automation, sensor reading, relay control, and local AP portal.</div></div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon"><i class="fa-brands fa-html5"></i></div>
+        <div><div class="tech-name">HTML • CSS • Vanilla JavaScript</div><div class="tech-desc">Mobile app interface, dashboard pages, charts, and client-side logic.</div></div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon"><i class="fa-brands fa-php"></i></div>
+        <div><div class="tech-name">PHP Backend API</div><div class="tech-desc">Webhooks, device manager, authentication, database connection, and command handling.</div></div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon"><i class="fa-solid fa-robot"></i></div>
+        <div><div class="tech-name">AI Chatbot Support</div><div class="tech-desc">OpenRouter-based assistant support for grower guidance and system interaction.</div></div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div><div class="tech-name">Lightweight Charts</div><div class="tech-desc">Live metrics, sensor trends, and dashboard visualization using SVG or lightweight JavaScript.</div></div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-icon"><i class="fa-solid fa-solar-panel"></i></div>
+        <div><div class="tech-name">Solar and IoT Integration</div><div class="tech-desc">Supports solar-powered operation, remote monitoring, and smart farming automation.</div></div>
       </div>
     </div>
 
-    <!-- Version / Footer -->
-    <div class="card footer-card">
-      <div class="footer-line">
-        <span class="footer-label">Version</span>
-        <span class="footer-value">1.0.0</span>
-      </div>
-      <div class="footer-line">
-        <span class="footer-label">Release</span>
-        <span class="footer-value">July 2025</span>
-      </div>
-      <div class="footer-copy">© 2025 Smart HydroVertical Farm Team</div>
+    <!-- 6) Version / Footer Card -->
+    <div class="card">
+      <div class="footer-line"><div class="footer-key">Version</div><div class="footer-val">2.0 Preparation</div></div>
+      <div class="footer-line"><div class="footer-key">Release</div><div class="footer-val">Research Version 1: July 2025<br>Company Version 2: In Development</div></div>
+      <div class="footer-copy">© 2025 SmartHydroFarm. Developed from an academic research project into a smart agriculture platform.</div>
     </div>
-
   </div>
 </div>
 
-<style>
-  /* ========== ABOUT PAGE APP STYLE (WHITE + CARDS) ========== */
-
-  /* Use this container as your page */
-  .app-page{
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #f6f7fb; /* app-like light gray */
-    color: #111827;
-  }
-
-  .app-topbar{
-    padding: 16px 16px 12px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  .app-title{
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 0.2px;
-  }
-  .app-subtitle{
-    margin-top: 2px;
-    font-size: 12px;
-    color: #6b7280;
-  }
-
-  .app-scroll{
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 12px 24px;
-  }
-
-  /* Card base */
-  .card{
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 14px;
-    box-shadow: 0 6px 18px rgba(17,24,39,0.06);
-  }
-
-  /* Hero */
-  .hero-card{ padding: 16px; }
-  .hero-row{ display: flex; gap: 12px; align-items: center; }
-  .app-logo{
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: #000;
-    color: #07e607; // #06b306; //#111827;
-    //color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
-  .hero-name{
-    font-weight: 900;
-    font-size: 16px;
-    line-height: 1.1;
-  }
-  .hero-tag{
-    margin-top: 3px;
-    font-size: 12px;
-    color: #6b7280;
-  }
-  .hero-desc{
-    margin-top: 12px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #374151;
-  }
-  .hero-chips{
-    margin-top: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .chip{
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 10px;
-    border-radius: 999px;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    font-size: 12px;
-    color: #111827;
-    font-weight: 700;
-  }
-  .chip i{ color: #111827; opacity: .85; }
-
-  /* Sections */
-  .section-head{
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 0 4px;
-    margin: 14px 0 10px;
-  }
-  .section-title{
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: .2px;
-  }
-  .section-hint{
-    font-size: 11px;
-    color: #6b7280;
-  }
-
-  /* Grid of team cards */
-  .grid{
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .person{ padding: 12px; }
-  .person-top{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .avatar{
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    color: #111827;
-    flex: 0 0 auto;
-  }
-  .avatar img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .person-meta{ flex: 1; }
-  .person-name{
-    font-size: 13px;
-    font-weight: 900;
-    line-height: 1.2;
-  }
-  .person-role{
-    margin-top: 2px;
-    font-size: 11px;
-    color: #6b7280;
-    font-weight: 700;
-  }
-  .person-desc{
-    margin-top: 10px;
-    font-size: 12px;
-    line-height: 1.45;
-    color: #374151;
-  }
-
-  /* Tech list */
-  .tech-card{ padding: 12px; }
-  .tech-list{ display: grid; gap: 10px; }
-  .tech-item{
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 10px 10px;
-    border-radius: 14px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-  }
-  .tech-ico{
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: #111827;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    font-size: 16px;
-  }
-  .tech-name{
-    font-size: 12px;
-    font-weight: 900;
-    color: #111827;
-  }
-  .tech-desc{
-    margin-top: 2px;
-    font-size: 11px;
-    color: #6b7280;
-    line-height: 1.35;
-  }
-
-  /* Footer */
-  .footer-card{
-    margin-top: 12px;
-    padding: 12px;
-  }
-  .footer-line{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 2px;
-    border-bottom: 1px dashed #e5e7eb;
-  }
-  .footer-line:last-of-type{ border-bottom: none; }
-  .footer-label{ font-size: 12px; color: #6b7280; font-weight: 700; }
-  .footer-value{ font-size: 12px; font-weight: 900; color: #111827; }
-  .footer-copy{
-    margin-top: 10px;
-    text-align: center;
-    font-size: 11px;
-    color: #6b7280;
-  }
-</style>
-
 <script>
-  // If image missing, replace with initials (still looks app-like)
   function aboutFallback(imgEl, initials){
-    const wrap = imgEl.parentElement;
-    wrap.innerHTML = initials;
+    if (!imgEl || !imgEl.parentElement) return;
+    imgEl.parentElement.innerHTML = initials;
   }
-</script>  
+</script>
 </body>
 </html>

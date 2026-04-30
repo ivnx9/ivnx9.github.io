@@ -225,14 +225,19 @@
     let JWT_TOKEN = ""; // <-- set using setJwtToken()
   
    
-    function setJwtToken(){ 
-   
-          var token = app.LoadText(TOKEN_KEY, "");
-      //app.Alert(token);
+    function setJwtToken(nextToken){
+      const prevToken = JWT_TOKEN;
+      const hasParam = (typeof nextToken === "string");
+      const token = hasParam ? nextToken : app.LoadText(TOKEN_KEY, "");
+      JWT_TOKEN = (token || "").trim();
 
-          // app.Alert(token);
-         JWT_TOKEN = (token || "").trim();
-        renderJwtBadge();
+      // Prevent cross-account leakage:
+      // whenever JWT changes (or is cleared), reset cached/active device first.
+      if (prevToken !== JWT_TOKEN){
+        resetWebhookState();
+      }
+
+      renderJwtBadge();
     }
 
     function getJwtToken(){
@@ -256,6 +261,32 @@
       device_id: app.LoadText( "shvf_device_id" ) || "",   //localStorage.getItem("shvf_device_id") || "",
       device_code: app.LoadText("shvf_device_code") || ""  // localStorage.getItem("shvf_device_code") || ""
     };
+
+    function resetWebhookState(){
+      DEVICES = [];
+      ACTIVE_DEVICE.device_id = "";
+      ACTIVE_DEVICE.device_code = "";
+
+      // keep persistent storage aligned with current session state
+      app.SaveText("shvf_device_id", "");
+      app.SaveText("shvf_device_code", "");
+
+      const list = document.getElementById("whDeviceList");
+      const sel = document.getElementById("whActiveDeviceSelect");
+      const countBadge = document.getElementById("whCountBadge");
+
+      if (list){
+        list.innerHTML = `<div style="font-size:12px;color:var(--muted);">No devices loaded yet.</div>`;
+      }
+      if (sel){
+        sel.innerHTML = `<option value="">No device loaded</option>`;
+      }
+      if (countBadge){
+        countBadge.textContent = "0 devices";
+      }
+
+      renderActiveDeviceUI();
+    }
 
     function setActiveDevice(device_id, device_code){
       ACTIVE_DEVICE.device_id = device_id || "";
