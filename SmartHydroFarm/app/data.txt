@@ -12,6 +12,12 @@ It was later improved and further developed into a full research study, successf
 If given the opportunity for funding, this project could evolve into a commercial product with more precise monitoring and control, helping farmers optimize nutrient and water usage to achieve near-perfect and consistent harvests.
 === END
 
+=== TOPIC: about_smrthydrofrm
+TAGS: how are you, how are you?, kamusta, kamusta?
+TEXT:
+I'm fine, thank you!
+=== END
+
 === TOPIC: shvf_research_overview
 TAGS: smart hydro farm, shvf, research, system overview, ano ito
 TEXT:
@@ -3619,5 +3625,3 @@ Later sections expand on these mechanisms.
 Strong understanding improves troubleshooting.
 This is a key conceptual bridge.
 === END
-
-
