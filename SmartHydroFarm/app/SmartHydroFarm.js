@@ -42,7 +42,8 @@ app.HttpRequest("GET", UPDATE_URL, null, null, callback_version);
    //Start timer to rotate top image.
 RotateImage()
   
-  main()
+//  main()
+	app.AddLayout( layMain ) // Do not remove this
  // app.ShowPopup( "Processing Main content" )
 }
 var angle=0;
@@ -119,6 +120,7 @@ function callback_version(error, reply, status) {
 
 
 function continueAppNormally() {
+    main();
     layLogin.Animate("FadeIn");
     layLoadingScreen.Animate("FadeOut");
     app.ShowPopup("Authenticating...");
@@ -166,10 +168,7 @@ function fetchPages(config, pages, index = 0) {
 
             if (error) {
                 app.Alert("Something went wrong. Trying to update again. ");
-              //  app.Exit()
-            //    app.LaunchApp( "com.smarthydrofarm.shvf" , true)
-              //  var action = "android.intent.action.MAIN";
-             //  app.SendIntent( this.packageName, this.className, action ) 
+                app.Exit()
                 fetchPages(config, pages, reply, index = 0) 
             } else {
                 app.WriteFile(page, reply);
