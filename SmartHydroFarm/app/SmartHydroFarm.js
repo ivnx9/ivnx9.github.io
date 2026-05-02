@@ -146,10 +146,11 @@ function fetchPages(config, pages, index = 0) {
     if (index >= pages.length) {
         //app.ShowPopup("All files downloaded!.");
          
-          app.WriteFile( "config.json", JSON.stringify(config, null, 2) )
-         app.ShowPopup( "App has been updated to "+config.version )
-       layLogin.Animate("FadeIn")
-       layLoadingScreen.Animate("FadeOut")
+        app.WriteFile( "config.json", JSON.stringify(config, null, 2) )
+        app.ShowPopup( "App has been updated to "+config.version )
+        main();
+        layLogin.Animate("FadeIn")
+        layLoadingScreen.Animate("FadeOut")
         layLoadingScreen.SetEnabled( false  )
         InitAuth()
   
