@@ -294,7 +294,7 @@
 
     <!-- 6) Version / Footer Card -->
     <div class="card">
-      <div class="footer-line"><div class="footer-key">Version</div><div class="footer-val">2.0 Preparation</div></div>
+      <div class="footer-line"><div class="footer-key">App Version</div><div class="footer-val" id="version">2.0 Preparation</div></div>
       <div class="footer-line"><div class="footer-key">Release</div><div class="footer-val">Research Version 1: July 2025<br>Company Version 2: In Development</div></div>
       <div class="footer-copy">© 2025 SmartHydroFarm. Developed from an academic research project into a smart agriculture platform.</div>
     </div>
@@ -306,6 +306,15 @@
     if (!imgEl || !imgEl.parentElement) return;
     imgEl.parentElement.innerHTML = initials;
   }
+  // Read local config safely
+    var cver = {"version":"0.0.0"};
+        var localConfig = app.ReadFile("config.json");
+        if (localConfig != null) {
+            cver = JSON.parse(localConfig);
+            document.getElementById("version").innerHTML = cver.version;
+        } else {
+     document.getElementById("version").innerHTML = "103";
+    }
 </script>
 </body>
 </html>
