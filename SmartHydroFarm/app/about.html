@@ -84,6 +84,44 @@
     .footer-key{font-size:12px;color:var(--muted);font-weight:700}
     .footer-val{font-size:12px;font-weight:900}
     .footer-copy{margin-top:10px;font-size:11px;color:var(--muted);text-align:center;line-height:1.45}
+    
+    
+    .avatar {
+  perspective: 1000px;
+}
+
+.avatar-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.avatar:hover .avatar-inner {
+  transform: rotateY(180deg);
+}
+
+.avatar-front,
+.avatar-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.avatar-front img,
+.avatar-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Back side */
+.avatar-back {
+  transform: rotateY(180deg);
+}
   </style>
 </head>
 <body>
@@ -134,7 +172,7 @@
         <div class="person-top">
           <div class="avatar"><img src="https://smarthydrofarm.com/images/ivan.jpg" alt="Ivan Abueg" onerror="aboutFallback(this,'IA')"></div>
           <div>
-            <div class="name">Ivan Abueg</div>
+            <div class="name">Ivan Wesley S. Abueg</div>
             <div class="role">Founder / Lead Developer</div>
           </div>
         </div>
@@ -143,10 +181,10 @@
 
       <div class="card person">
         <div class="person-top">
-          <div class="avatar">AM</div>
+          <div class="avatar"><img src="https://smarthydrofarm.com/images/james.jpg" alt="James P. Bondoc" onerror="aboutFallback(this,'JB')"></div>
           <div>
-            <div class="name">[Name of Active Member]</div>
-            <div class="role">Co-Founder / Development Partner</div>
+            <div class="name">James P. Bondoc</div>
+            <div class="role">Development Partner</div>
           </div>
         </div>
         <div class="desc">Supports the continued development, improvement, testing, and future deployment of SmartHydroFarm Version 2.</div>
@@ -165,7 +203,7 @@
       <div class="card person">
         <div class="person-top">
           <div class="avatar"><img src="https://smarthydrofarm.com/images/ivan.jpg" alt="Ivan Abueg" onerror="aboutFallback(this,'IA')"></div>
-          <div><div class="name">Ivan Abueg</div><div class="role">Original Role: Lead Developer</div></div>
+          <div><div class="name">Ivan Wesley S. Abueg</div><div class="role">Original Role: Lead Developer</div></div>
         </div>
         <div class="desc">Contribution: Full-stack programming, IoT and solar integration, electronics assembly, system design, and overall project leadership.</div>
       </div>
@@ -178,7 +216,16 @@
       </div>
       <div class="card person">
         <div class="person-top">
-          <div class="avatar"><img src="https://smarthydrofarm.com/images/arnold.jpg" alt="Arnold John E. Cruz" onerror="aboutFallback(this,'AC')"></div>
+          <div class="avatar">
+  <div class="avatar-inner">
+    <div class="avatar-front">
+      <img src="https://smarthydrofarm.com/images/arnold.jpg" alt="Arnold">
+    </div>
+    <div class="avatar-back">
+      <img src="https://smarthydrofarm.com/images/arnold_back.jpg" alt="Arnold Back">
+    </div>
+  </div>
+</div>
           <div><div class="name">Arnold John E. Cruz</div><div class="role">Original Role: Electronics / Chassis Fabrication</div></div>
         </div>
         <div class="desc">Contribution: Helped with chassis fabrication, wiring organization, soldering, electronics assembly, and system build support.</div>
