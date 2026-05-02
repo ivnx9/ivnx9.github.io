@@ -1,9 +1,4 @@
-   function getVersionApp() {
-       return "0.1.3";
-   }
-   
-  function dashboardUI()
-{
+function dashboardUI() {
 
    dashboardWebView = app.CreateWebView( 1, 0.95,"NoActionBar,NoScrollBars, NoLongTouch")
    dashboardWebView.LoadUrl( "loader.html" )
