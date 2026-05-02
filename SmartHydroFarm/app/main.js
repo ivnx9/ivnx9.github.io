@@ -71,20 +71,10 @@ function main()
     layContent_Settings = app.CreateLayout( "Linear", "VCenter, FillXY" )
 //   layContent_Webhooks.child
 
-     CreateContent()
-   //Create main content. 
-    	//Add main layout and drawer to app.	
-	app.AddLayout( layMain ) // Do not remove this
+    CreateContent()
   app.AddLayout( layLogin )
   app.AddLayout( layHome )
- 
 }
-
-
-
-
-
-
 
 function noInternet()
 { 
@@ -114,7 +104,7 @@ function InitAuth()
        grantLogin();
        app.ShowProgress( "Logging in.." )
         app.ShowPopup("Logged In.");
-        LoadMe(LoadData)
+        LoadMe()
     } else {
         if (token)  ClearToken(); // had token but expired/invalid 
           
@@ -179,7 +169,7 @@ function handleLoginReply(error, reply, status)
 
         grantLogin();
         app.ShowProgress("Loading profile...");
-        LoadMe(LoadData);
+        LoadMe();
         app.ShowPopup("Access Granted.");
         return;
     }
@@ -385,9 +375,6 @@ setTimeout(function(){ syncWebhooksSession(token, true); }, 1200);
   // app.Alert( app.LoadText(TOKEN_KEY, "", "token") )
    // }
 }
-
-
-
 
 
 /*   ============ HOME LAYOUT ========== */
@@ -647,12 +634,6 @@ function LoadMe(cb) {
         }
     );
 }
-function LoadData(user)
-{
- 
-//txtUser.SetText( usernme)
-}
-
 
 //Called when a drawer is opened or closed.
 function OnDrawer( side, state )
