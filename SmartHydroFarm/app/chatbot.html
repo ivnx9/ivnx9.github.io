@@ -261,14 +261,6 @@
   </div>
 
   <script>
-    /* ============================================================
-      MESSENGER-STYLE AI CHAT PAGE (APP)
-      - Mobile-first
-      - Uses /api/chat.php (same as your old code)
-      - Optional Markdown rendering for bot replies (marked)
-      - Exposes functions so your app shell can inject JWT if needed later
-    ============================================================ */
-
     const CHAT_ENDPOINT = "https://smarthydrofarm.com/api/chat.php";
 
     // Optional: JWT variable (NOT required unless your chat.php needs it)
@@ -477,8 +469,6 @@
   <script>
 
 var datas = app.ReadFile("data.txt");
-// `     `;
-
 
 let KB = []; // [{id,tags,text}]
 let ready = false;
@@ -562,11 +552,10 @@ function answer(query){
 }
 
 async function init(){
-//  const r = await fetch("data.txt", {cache:"no-store"});
- // const txt = await r.text() || datas;
   KB = parseTxt(datas) ;
   ready = true;
 }
+  
 
 init();
 </script>
