@@ -1,3 +1,4 @@
+
 function main()
 {
  
@@ -6,35 +7,37 @@ function main()
 	layLogin.SetBackColor( "#454545" );
   layLogin.SetVisibility( "Hide" ) 
 
-  
-logo = app.CreateImage( "Img/SmartHydroFarm.png", 0.3,0.15)
+   color = MUI.colors.blue
+    app.InitializeUIKit(color.blue)
+
+    layMUI = MUI.CreateLayout("Linear", "VCenter,FillXY")
+    layMUI.SetBackground( "Img/hero-bg.jpg"  )
+    layLogin.AddChild( layMUI )
+
+  logo = app.CreateImage( "Img/SmartHydroFarm_clear.png", 0.3,0.15)
   logo.SetMargins( 0, 0.2, 0,0)
-  layLogin.AddChild( logo )
+  layMUI.AddChild( logo )
+ 
+  username = MUI.CreateTextEditOutline(0.8, "Left", "Username", true)
+//  username.SetMargins( 0, 0.08, 0,0)
+  username.SetEnabled( false )
+   layMUI.AddChild(username)
 
-  username = app.CreateTextEdit( "", 0.8, 0.05, "SingleLine" )
-
-  username.SetBackColor( "#dddddd" )
-  username.SetTextColor( "#000000" )
-  username.SetHint( "Username.." )
-  username.SetMargins( 0, 0.08, 0,0)
-  layLogin.AddChild( username )
-
-  password = app.CreateTextEdit( "", 0.8, 0.05, "SingleLine,Password")
-  password.SetBackColor( "#dddddd" )
-  password.SetTextColor( "#000000" )
-  password.SetHint( "Password.." )
-  password.SetMargins( 0, 0.02, 0,0.08)
-  layLogin.AddChild( password )
+  password = MUI.CreateTextEditOutline(0.8, "Left", "Password", true)
+  // password.SetMargins( 0, 0.02, 0,0.08)
+  password.SetEnabled( false )
+   layMUI.AddChild(password)
 
   loginBtn = app.CreateButton( "Login", 0.8, 0.07, "Custom")
+  loginBtn.SetEnabled( false )
   loginBtn.SetOnTouch( loginBtn_OnTouch ) 
   loginBtn.SetStyle( "#4285F4", "#4285F4", 20, null ,0, 0.2)
-  layLogin.AddChild( loginBtn )
+  layMUI.AddChild( loginBtn )
   
   RegisterAcc = app.CreateText( "No Account? Register here.", 0.45, 0.25, "" )
-  RegisterAcc.SetOnTouch( () => { app.OpenUrl( "https://smarthydrofarm.com" )} )
+  RegisterAcc.SetOnTouchUp( () => { app.OpenUrl( "https://smarthydrofarm.com" )} )
   RegisterAcc.SetMargins(0, 0.03, 0,0)
-  layLogin.AddChild( RegisterAcc )
+  layMUI.AddChild( RegisterAcc )
 
    	//Create the main app layout.
 
@@ -110,7 +113,7 @@ function InitAuth()
     if  (IsTokenValid(token)) {
        grantLogin();
        app.ShowProgress( "Logging in.." )
-        app.ShowPopup("Logged in (saved session).");
+        app.ShowPopup("Logged In.");
         LoadMe(LoadData)
     } else {
         if (token)  ClearToken(); // had token but expired/invalid 
@@ -119,7 +122,12 @@ function InitAuth()
          app.ShowPopup( "Token has expired. Please login again." ); 
        //  ClearToken(); 
           }
-         else {   app.ShowPopup( "Welcome to SmartHydroFarm!") }
+         else {   
+         app.ShowPopup( "Welcome to SmartHydroFarm!") 
+         username.SetEnabled( true)
+         password.SetEnabled( true )
+         loginBtn.SetEnabled( true )
+        }
 
         layHome.SetVisibility("Hide");
         removeDrawer();
@@ -478,7 +486,7 @@ These icons are commonly used for these types of functions and should fit well w
     lstMenu1 = app.AddList( layMenu, listItems, drawerWidth, -1, "Menu,Expand" )
     lstMenu1.SetColumnWidths( -1, 0.35, 0.18 )
     lstMenu1.SelectItemByIndex( 0, true )
-    lstMenu1.SetItemByIndex( 0, "Dashboard", 21 )
+    lstMenu1.SetItemByIndex( 0, "Dashboard" )
     lstMenu1.SetOnTouch( lstMenu_OnTouch )
     
     //Add seperator to menu layout.
@@ -530,6 +538,9 @@ function lstMenu_OnTouch( title, body, type, index )
     layLogin.SetVisibility("Show");
     username.SetText("");
     password.SetText("");
+    username.SetEnabled( true )
+    password.SetEnabled( true )
+    loginBtn.SetEnabled( true )
     return;
     }
     
