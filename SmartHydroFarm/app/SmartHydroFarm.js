@@ -109,7 +109,7 @@ function callback_version(error, reply, status) {
     // Version check
     if (config.version != cver.version) {
         DisplayText.SetText("Updating app...");
-
+        app.ShowPopup("Do not exit this app.");
         var merged = [...config.appjs, ...config.webpage];
         fetchPages(config, JSON.stringify(merged));
     } 
@@ -155,8 +155,7 @@ function fetchPages(config, pages, index = 0) {
         InitAuth()
   
         return;
-    }
-    //app.Alert(pages);
+    } 
     let page = JSON.parse(pages)[index];
     
 
