@@ -11,7 +11,7 @@
    // prevents the app from crash
   setTimeout(() => {
   dashboardWebView.LoadUrl( "dboard.html" )
-}, 3500);
+}, 5000);
 }
 
 function control_and_configUI() 
@@ -213,4 +213,3 @@ function setVal()
 {  
 	  StartGaugeAutoUpdate()
 }
-
