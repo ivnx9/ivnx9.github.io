@@ -490,7 +490,7 @@ function showRemoteQR() {
   if (oldBox) oldBox.remove();
 
   const remoteUrl =
-    `${window.location.origin}/remote.html?session=${tvSession}`;
+    `https://exam-miner.com/remote.html?session=${tvSession}`;
 
   const box = document.createElement("div");
   box.id = "remoteQrBox";
