@@ -14,6 +14,18 @@ initTvRemote();
 fetch("https://exam-miner.com/api/movies.php")
   .then(res => res.json())
   .then(movies => {
+     movies.forEach(movie => {
+
+      if (
+        movie.thumbnail &&
+        !movie.thumbnail.startsWith("http")
+      ) {
+        movie.thumbnail =
+          "https://exam-miner.com/" +
+          movie.thumbnail.replace(/^\/+/, "");
+      }
+
+    });
     allMovies = movies;
     showHome();
   })
