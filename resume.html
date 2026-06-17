@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatMe Portfolio | Ivan Wesley Abueg</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+html{scroll-behavior:smooth}
+body{background:#fff;color:#111;overflow:hidden}
+#startup{position:fixed;inset:0;background:#fff;z-index:999;pointer-events:all;display:flex;flex-direction:column;align-items:center;padding-top:38px}
+.title{font-size:25px;font-weight:400;margin-bottom:34px}
+.chat-input-wrapper{width:90%;max-width:765px}
+.chat-input{width:100%;height:54px;border:1px solid #e5e5e5;border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;align-items:center;padding:0 8px 0 15px;background:white}
+.plus{width:30px;height:30px;border:none;background:transparent;font-size:29px;font-weight:300;cursor:default;color:#333}
+#fakeInput{flex:1;border:none;outline:none;font-size:15px;color:#222;padding-left:14px;background:transparent}
+#fakeInput::placeholder{color:#888}
+.instant{font-size:14px;color:#777;margin-right:12px;white-space:nowrap}
+.mic{font-size:20px;margin-right:16px}
+.send{width:40px;height:40px;border:none;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;padding:0;cursor:default;transition:.2s}
+.quick-actions{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.action{border:1px solid #dedede;border-radius:999px;padding:10px 17px;font-size:14px;color:#777;background:white}
+.cursor{position:fixed;width:25px;height:25px;z-index:1000;pointer-events:none;transition:1s ease}
+#chatScreen{display:none;width:100%;max-width:780px;margin-top:40px}
+.message{padding:18px 20px;line-height:1.7;font-size:15px}
+.user{display:flex;justify-content:flex-end}
+.user span{background:#f4f4f4;padding:12px 18px;border-radius:20px;max-width:80%}
+.assistant{color:#222}
+.thinking{display:flex;gap:5px}
+.dot{width:7px;height:7px;background:#777;border-radius:50%;animation:pulse 1.4s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.2}50%{opacity:1}}
+.log-line{opacity:0;transform:translateY(8px);animation:showLog .5s forwards}
+@keyframes showLog{to{opacity:1;transform:translateY(0)}}
+.fade-out{opacity:0;transition:1s ease}
+
+#portfolio{display:none;min-height:100vh;background:#fff;overflow-y:auto}
+.resume-hero{padding:70px 10% 45px;border-bottom:1px solid #eee;background:linear-gradient(180deg,#fff,#fafafa)}
+.resume-wrap{max-width:1050px;margin:auto}
+.resume-top{display:flex;justify-content:space-between;gap:25px;align-items:center}
+.resume-name h1{font-size:44px;letter-spacing:-1px;margin-bottom:8px}
+.resume-name p{font-size:18px;color:#555}
+.contact-info{margin-top:18px;color:#555;line-height:1.9;font-size:15px}
+.contact-info a{color:#111;text-decoration:none;border-bottom:1px solid #ccc}
+.resume-badge{background:#111;color:#fff;padding:18px 22px;border-radius:22px;text-align:center;min-width:190px;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+.resume-badge strong{font-size:24px;display:block}
+.resume-badge span{font-size:13px;color:#ddd}
+
+main{max-width:1050px;margin:0 auto;padding:40px 10% 70px;display:grid;gap:22px}
+.card{border:1px solid #e7e7e7;border-radius:20px;padding:26px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.card h2{font-size:22px;margin-bottom:14px}
+.card h3{font-size:17px;margin:14px 0 6px}
+.card p,.card li{color:#555;line-height:1.8;font-size:15px}
+ul{margin-left:20px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.tags{display:flex;flex-wrap:wrap;gap:10px}
+.tag{background:#f4f4f4;border:1px solid #e5e5e5;padding:9px 13px;border-radius:999px;font-size:14px;color:#333}
+.project{padding:18px;border:1px solid #eee;border-radius:16px;margin-top:12px;background:#fafafa}
+.project a{color:#111;font-weight:bold;text-decoration:none;border-bottom:1px solid #999}
+.timeline{display:grid;gap:16px}
+.item{border-left:3px solid #111;padding-left:16px}
+.item-title{font-weight:bold;color:#111}
+.item-date{font-size:14px;color:#777;margin-bottom:8px}
+.cert-list li{margin-bottom:7px}
+footer{text-align:center;padding:28px;color:#777;border-top:1px solid #eee}
+
+@media(max-width:800px){
+    .resume-top{flex-direction:column;align-items:flex-start}
+    .grid{grid-template-columns:1fr}
+    .resume-name h1{font-size:34px}
+    main,.resume-hero{padding-left:6%;padding-right:6%}
+}
+@media(max-width:600px){
+    .instant{display:none}
+    .action{font-size:12px}
+    .title{font-size:22px}
+}
+
+.fade-in {
+    opacity: 0;
+    transform: translateY(25px);
+    animation: fadeIn 1s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="startup">
+    <div class="title">What’s on your mind today?</div>
+
+    <div class="chat-input-wrapper">
+        <div class="chat-input">
+            <button class="plus">+</button>
+
+            <input id="fakeInput" type="text" placeholder="Ask anything" readonly>
+
+            <div class="instant">Instant⌄</div>
+            <div class="mic">⌕</div>
+
+            <button class="send" id="sendBtn">
+                <svg style="width:66px;height:66px;display:block;margin-top:11px;margin-left:9px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 940">
+                    <path fill="rgb(255,255,255)" d="M342.6 73.4C330.1 60.9 309.8 60.9 297.3 73.4L137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7C149.8 291.2 170.1 291.2 182.6 278.7L288 173.3L288 544C288 561.7 302.3 576 320 576C337.7 576 352 561.7 352 544L352 173.3L457.4 278.7C469.9 291.2 490.2 291.2 502.7 278.7C515.2 266.2 515.2 245.9 502.7 233.4L342.7 73.4z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="quick-actions">
+            <div class="action">▧ Create an Image</div>
+            <div class="action">✎ Write or edit</div>
+            <div class="action">◎ Look something up</div>
+        </div>
+    </div>
+
+    <div id="chatScreen">
+        <div class="message user">
+            <span>Tell me About Ivan Wesley S. Abueg</span>
+        </div>
+
+        <div class="message assistant" id="assistantMessage">
+            <div class="thinking">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<svg id="cursor" class="cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+    <path d="M173.3 66.5C181.4 62.4 191.2 63.3 198.4 68.8L518.4 308.7C526.7 314.9 530 325.7 526.8 335.5C523.6 345.3 514.4 351.9 504 351.9L351.7 351.9L440.6 529.6C448.5 545.4 442.1 564.6 426.3 572.5C410.5 580.4 391.3 574 383.4 558.2L294.5 380.5L203.2 502.3C197 510.6 186.2 513.9 176.4 510.7C166.6 507.5 160 498.3 160 488L160 88C160 78.9 165.1 70.6 173.3 66.5z"/>
+</svg>
+
+<section id="portfolio">
+    <div class="resume-hero">
+        <div class="resume-wrap">
+            <div class="resume-top">
+                <div class="resume-name">
+                    <h1>Ivan Wesley S. Abueg</h1>
+                    <p>Web Developer • IT Support • IoT Developer • Computer Technology Graduate</p>
+
+                    <div class="contact-info">
+                        📞 0970-792-3734<br>
+                        ✉️ <a href="mailto:ivanabueg2004@gmail.com">ivanabueg2004@gmail.com</a><br>
+                        📍 51 Sitio Buga, San Isidro II, Paombong, Bulacan<br>
+                        GitHub: <a href="https://github.com/ivnx9" target="_blank">@ivnx9</a> |
+                        LinkedIn: <a href="https://www.linkedin.com/in/ivan-abueg-b18671236/" target="_blank">ivan-wesley-abueg</a>
+                    </div>
+                </div>
+
+                <div class="resume-badge">
+                    <strong>2026</strong>
+                    <span>Fresh Graduate Portfolio</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="card">
+            <h2>Objective</h2>
+            <p>
+                To secure a position that allows me to fully utilize my problem-solving, critical thinking,
+                leadership, and teamwork skills while continuously developing my professional capabilities.
+                I am eager to contribute to the success of the organization through my technical skills,
+                dedication, and strong work ethic.
+            </p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Technical Skills</h2>
+                <div class="tags">
+                    <span class="tag">JavaScript</span>
+                    <span class="tag">PHP Basics</span>
+                    <span class="tag">Java Basics</span>
+                    <span class="tag">C++ Basics</span>
+                    <span class="tag">HTML</span>
+                    <span class="tag">CSS</span>
+                    <span class="tag">REST API</span>
+                    <span class="tag">JSON</span>
+                    <span class="tag">MySQL</span>
+                    <span class="tag">phpMyAdmin</span>
+                    <span class="tag">Arduino</span>
+                    <span class="tag">ESP32</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>IT Support Skills</h2>
+                <ul>
+                    <li>Computer troubleshooting</li>
+                    <li>Printer troubleshooting and maintenance</li>
+                    <li>Hardware installation and maintenance</li>
+                    <li>Windows OS installation and formatting</li>
+                    <li>Windows Server basics</li>
+                    <li>Basic Active Directory</li>
+                    <li>Microsoft 365 basics</li>
+                    <li>Network installation and configuration</li>
+                    <li>UTP cabling and TCP/IP fundamentals</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Internship / OJT Experience</h2>
+            <div class="timeline">
+                <div class="item">
+                    <div class="item-title">Municipality of Hagonoy – Sto. Niño Poblacion, Hagonoy, Bulacan</div>
+                    <div class="item-date">On-the-Job Trainee | Dec 2025 – Mar 2026</div>
+                    <ul>
+                        <li>Performed troubleshooting and repair of computers, printers, and other hardware.</li>
+                        <li>Installed and configured Windows OS, including system formatting and setup.</li>
+                        <li>Supported network installation, including UTP cable layout and basic configuration.</li>
+                        <li>Conducted printer maintenance such as resetting and basic repairs.</li>
+                        <li>Provided technical assistance to staff for IT-related concerns.</li>
+                        <li>Designed basic visual materials using Canva.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Projects</h2>
+
+            <div class="project">
+                <h3>Smart Hydroponics Farm Website</h3>
+                <ul>
+                    <li>Developed a web-based smart hydroponics monitoring and management system using HTML, CSS, JavaScript, and PHP.</li>
+                    <li>Designed REST-style API endpoints for communication between ESP32 IoT devices and the web dashboard using HTTP and JSON.</li>
+                    <li>Processed, stored, and managed real-time sensor data using MySQL and phpMyAdmin.</li>
+                    <li>Developed features for real-time monitoring, remote control, and automated data collection.</li>
+                    <li>Collaborated in the development of an award-winning Smart Hydroponic Vertical Farming system.</li>
+                </ul>
+                <p><a href="https://www.smarthydrofarm.com" target="_blank">Live Demo →</a></p>
+            </div>
+
+            <div class="project">
+                <h3>LegitSource – Learning Resource Website</h3>
+                <ul>
+                    <li>Developed a personal website that curates and organizes learning resources for self-learners.</li>
+                    <li>Built using HTML, CSS, and JavaScript.</li>
+                    <li>Designed a clean and user-friendly interface for categorized links.</li>
+                    <li>Focused on accessibility and simplicity for users exploring educational content online.</li>
+                </ul>
+                <p><a href="https://legitsource.coolpage.biz/" target="_blank">Live Demo →</a></p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Education</h2>
+                <div class="item">
+                    <div class="item-title">Bulacan State University – Hagonoy Campus</div>
+                    <div class="item-date">2022 – 2026</div>
+                    <p>Bachelor of Industrial Technology Major in Computer Technology</p>
+                </div>
+
+                <br>
+
+                <div class="item">
+                    <div class="item-title">San Roque National High School</div>
+                    <div class="item-date">2020 – 2022</div>
+                    <p>Senior High School</p>
+                </div>
+
+                <br>
+
+                <div class="item">
+                    <div class="item-title">San Pedro National High School</div>
+                    <div class="item-date">2016 – 2020</div>
+                    <p>Junior High School</p>
+                </div>
+
+                <br>
+
+                <div class="item">
+                    <div class="item-title">Hangga Elementary School</div>
+                    <div class="item-date">2010 – 2016</div>
+                    <p>Elementary</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Organization</h2>
+                <div class="item">
+                    <div class="item-title">Future Industry Professionals Organization</div>
+                    <div class="item-date">Assistant Digital Artist / Acting Lead Designer | 2023 – 2024</div>
+                    <p>Created promotional materials and digital content for organizational events and student activities.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Achievements & Certifications</h2>
+            <ul class="cert-list">
+                <li>Best in Thesis Award – Smart Hydroponic Vertical Farming, Bulacan State University, June 2026</li>
+                <li>TESDA: Install and Configure Computer Systems – May 2025</li>
+                <li>TESDA: Set-up Computer Networks – May 2025</li>
+                <li>TESDA: Set-up Computer Servers – May 2025</li>
+                <li>TESDA: Maintain and Repair Computer Systems and Networks – May 2025</li>
+                <li>In-Plant Visit at Provincial Information Technology Office, Bulacan Provincial Capitol – November 2024</li>
+                <li>CISCO: Introduction to Internet of Things – September 2024</li>
+                <li>Asia Open RAN Academy: Introduction to Radio Access Network – September 2024</li>
+                <li>Asia Open RAN Academy: Software-Defined Networking, OpenFlow, NFV, and Open RAN – September 2024</li>
+                <li>Asia Open RAN Academy: Introduction to Cloud Computing – August 2024</li>
+                <li>Asia Open RAN Academy: Introduction to Edge Computing – August 2024</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Personal Information</h2>
+            <div class="grid">
+                <ul>
+                    <li>Age: 22</li>
+                    <li>Date of Birth: May 09, 2004</li>
+                    <li>Place of Birth: Paombong, Bulacan</li>
+                    <li>Gender: Male</li>
+                </ul>
+                <ul>
+                    <li>Civil Status: Single</li>
+                    <li>Nationality: Filipino</li>
+                    <li>Height: 5’6</li>
+                    <li>Weight: 51 kg</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        © 2026 – Ivan Wesley S. Abueg. All rights reserved.
+    </footer>
+</section>
+
+<script>
+const cursor=document.getElementById("cursor");
+const input=document.getElementById("fakeInput");
+const sendBtn=document.getElementById("sendBtn");
+const startup=document.getElementById("startup");
+const chatScreen=document.getElementById("chatScreen");
+const assistantMessage=document.getElementById("assistantMessage");
+const portfolio=document.getElementById("portfolio");
+
+const promptText="Tell me About Ivan Wesley S. Abueg";
+
+function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+function moveCursor(x,y){cursor.style.left=x+"px";cursor.style.top=y+"px"}
+
+async function typeText(){
+    for(let i=0;i<promptText.length;i++){
+        input.value+=promptText[i];
+        await wait(65);
+    }
+}
+
+async function startAnimation(){
+    moveCursor(window.innerWidth/2-180,window.innerHeight/2+30);
+    await wait(800);
+
+    const inputBox=document.querySelector(".chat-input").getBoundingClientRect();
+    moveCursor(inputBox.left+140,inputBox.top+25);
+
+    await wait(900);
+    await typeText();
+
+    await wait(600);
+
+    const btn=sendBtn.getBoundingClientRect();
+    moveCursor(btn.left+18,btn.top+18);
+
+    await wait(900);
+
+    sendBtn.style.transform="scale(0.88)";
+    await wait(180);
+    sendBtn.style.transform="scale(1)";
+
+    await wait(500);
+
+    document.querySelector(".chat-input-wrapper").style.display="none";
+    document.querySelector(".title").style.display="none";
+    chatScreen.style.display="block";
+
+    await wait(1600);
+    showLogs(); 
+}
+
+async function showLogs(){
+    const logs=[
+        "Analyzing query...",
+        "Searching profile database...",
+        "Found profile: Ivan Wesley S. Abueg",
+        "Loading contact information...",
+        "Loading technical skills...",
+        "Loading IT support experience...",
+        "Loading certifications and achievements...",
+        "Generating portfolio website..."
+    ];
+
+    assistantMessage.innerHTML="";
+
+    for(let i=0;i<logs.length;i++){
+        const line=document.createElement("div");
+        line.className="log-line";
+        line.textContent=logs[i];
+        assistantMessage.appendChild(line);
+        await wait(650);
+    }
+
+    await wait(1000);
+    revealPortfolio();
+}
+
+function revealPortfolio(){
+    startup.classList.add("fade-out");
+
+    setTimeout(()=>{
+        startup.style.display="none";
+        cursor.style.display="none";
+        portfolio.style.display="block";
+        portfolio.classList.add("fade-in");
+        document.body.style.overflow="auto";
+    },1000);
+}
+
+window.onload=startAnimation;
+</script>
+
+</body>
+</html>
