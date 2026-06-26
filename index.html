@@ -13,6 +13,17 @@
       --text: #e7e7e7;
       --subtle: #8a8a8a;
     }
+
+    a[target="_blank"]::after {
+      content: "\2197";
+      display: inline-block;
+      width: 0.7em;
+      height: 0.7em;
+      margin-left: 0.15em;
+      vertical-align: baseline;
+      opacity: 0.6;
+    }
+    
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       font-family:'Exo 2',sans-serif;
