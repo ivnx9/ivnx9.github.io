@@ -611,7 +611,7 @@
       <div class="project-card fade-in">
         <div class="project-image">
           <!--div class="project-image-placeholder"><i class="fas fa-leaf"></i></div-->
-          <img src="smarthydrofarm.jpg" alt="SmartHydroFarm" style="width:100%;height:100%;object-fit:cover;">
+          <img src="Img/smarthydrofarm.jpg" alt="SmartHydroFarm" style="width:100%;height:100%;object-fit:cover;">
           <div class="project-image-overlay"></div>
           <span class="project-badge">Award Winner</span>
         </div>
@@ -634,7 +634,7 @@
             <a href="https://www.smarthydrofarm.com" target="_blank" class="project-link">
               <i class="fas fa-external-link-alt"></i> Live Demo
             </a>
-            <a href="#" class="project-link">
+            <a href="https://github.com/ivnx9/SmartHydroFarm" class="project-link">
               <i class="fab fa-github"></i> Source Code
             </a>
           </div>
@@ -643,7 +643,7 @@
       <div class="project-card fade-in">
         <div class="project-image">
           <!--div class="project-image-placeholder"><i class="fas fa-film"></i></div-->
-          <img src="ivanmovies.jpg" alt="Ivan Movies" style="width:100%;height:100%;object-fit:cover;">
+          <img src="Img/ivanmovies.jpg" alt="Ivan Movies" style="width:100%;height:100%;object-fit:cover;">
           <div class="project-image-overlay"></div>
           <span class="project-badge">Experimental</span>
         </div>
@@ -675,7 +675,7 @@
       <div class="project-card fade-in">
         <div class="project-image">
           <!--div class="project-image-placeholder"><i class="fas fa-book"></i></div-->
-          <img src="legitsource.jpg" alt="LegitSource" style="width:100%;height:100%;object-fit:cover;">
+          <img src="Img/legitsource.jpg" alt="LegitSource" style="width:100%;height:100%;object-fit:cover;">
           <div class="project-image-overlay"></div>
           <span class="project-badge">Resource Hub</span>
         </div>
@@ -718,7 +718,7 @@
             <div class="certificate-date">May 2025</div>
           </div>
         </div>
-        <a href="NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
+        <a href="certs/NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
           <i class="fas fa-eye"></i> View Certificate
         </a>
       </div>
@@ -731,7 +731,7 @@
             <div class="certificate-date">May 2025</div>
           </div>
         </div>
-        <a href="NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
+        <a href="certs/NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
           <i class="fas fa-eye"></i> View Certificate
         </a>
       </div>
@@ -744,7 +744,7 @@
             <div class="certificate-date">May 2025</div>
           </div>
         </div>
-        <a href="NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
+        <a href="certs/NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
           <i class="fas fa-eye"></i> View Certificate
         </a>
       </div>
@@ -757,7 +757,7 @@
             <div class="certificate-date">May 2025</div>
           </div>
         </div>
-        <a href="NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
+        <a href="certs/NC_unlocked.pdf" class="certificate-verify" onclick="event.stopPropagation()">
           <i class="fas fa-eye"></i> View Certificate
         </a>
       </div>
@@ -772,7 +772,22 @@
             <div class="certificate-date">September 2024</div>
           </div>
         </div>
-        <a href="CISCO_IOT.pdf" class="certificate-verify" onclick="event.stopPropagation()">
+        <a href="certs/CISCO_IOT.pdf" class="certificate-verify" onclick="event.stopPropagation()">
+          <i class="fas fa-eye"></i> View Certificate
+        </a>
+      </div>
+      <div class="certificate-card fade-in" onclick="openModal('cisco2')">
+        <div class="certificate-header">
+          <div class="certificate-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--accent-green);">
+            <i class="fas fa-network-wired"></i>
+          </div>
+          <div class="certificate-info">
+            <h3>HTML Essentials</h3>
+            <div class="certificate-issuer">CISCO Networking Academy</div>
+            <div class="certificate-date">July 2026</div>
+          </div>
+        </div>
+        <a href="certs/HTML_Essentials_certificate_ivanabueg.pdf" class="certificate-verify" onclick="event.stopPropagation()">
           <i class="fas fa-eye"></i> View Certificate
         </a>
       </div>
@@ -1048,6 +1063,15 @@
         date: 'September 2024',
         description: 'CISCO certification covering IoT fundamentals, IoT architecture, sensors and actuators, connectivity protocols, data analytics, and security considerations in IoT deployments.',
         skills: ['IoT Architecture', 'Sensors & Actuators', 'MQTT Protocol', 'Data Analytics', 'IoT Security', 'Cloud Integration'],
+        icon: 'fa-network-wired',
+        color: 'var(--accent-green)'
+      },
+      cisco2: {
+        title: 'HTML Essentials',
+        issuer: 'CISCO Networking Academy',
+        date: 'July 2026',
+        description: 'CISCO certification covering HTML Essentials including Form and Data Collection, Hyperlinks and Multimedia Integration, Web Accessbility and Usability, etc.',
+        skills: ['Best Practices in Web Development','Entry-Level Web Development','Forms and Data Collection','HTML Fundamentals','Hyperlinks and Multimedia Integration','Structuring Web Content','Web Accessibility and Usability','Web Development Basics'],
         icon: 'fa-network-wired',
         color: 'var(--accent-green)'
       }
