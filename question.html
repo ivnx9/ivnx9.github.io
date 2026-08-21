@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lloyd Laboratories Interview Q&A</title>
+	<style>
+	* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --blue: #0a66c2;
+    --blue-dark: #004182;
+    --blue-light: #e8f3ff;
+
+    --background: #f3f2ef;
+    --white: #ffffff;
+
+    --text: #1d2226;
+    --muted: #666666;
+    --border: #d9d9d9;
+
+    --sidebar-width: 420px;
+}
+
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+    background: var(--background);
+    color: var(--text);
+
+    min-height: 100vh;
+}
+
+
+/* =========================
+   APP
+========================= */
+
+.app {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+
+    background: var(--white);
+    border-right: 1px solid var(--border);
+
+    display: flex;
+    flex-direction: column;
+
+    height: 100vh;
+}
+
+
+/* HEADER */
+
+.sidebar-header {
+    padding: 24px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    width: 44px;
+    height: 44px;
+
+    border-radius: 8px;
+
+    background: var(--blue);
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.sidebar-header h1 {
+    font-size: 19px;
+    font-weight: 650;
+}
+
+.sidebar-header p {
+    margin-top: 3px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+
+/* SEARCH */
+
+.search-box {
+    margin: 18px 18px 10px;
+
+    height: 42px;
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    background: #f8f8f8;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    transition: 0.2s;
+}
+
+.search-box:focus-within {
+    border-color: var(--blue);
+    background: white;
+
+    box-shadow:
+        0 0 0 2px rgba(10, 102, 194, 0.08);
+}
+
+.search-box span {
+    font-size: 23px;
+    color: #777;
+
+    margin-right: 8px;
+}
+
+.search-box input {
+    border: 0;
+    outline: none;
+
+    background: transparent;
+
+    width: 100%;
+
+    font-size: 14px;
+    color: var(--text);
+}
+
+
+/* COUNT */
+
+.question-count {
+    padding: 8px 20px 12px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+
+/* QUESTIONS */
+
+.question-list {
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding-bottom: 20px;
+}
+
+.question-item {
+    width: 100%;
+
+    border: 0;
+    border-left: 3px solid transparent;
+
+    background: transparent;
+
+    text-align: left;
+
+    padding: 15px 20px;
+
+    cursor: pointer;
+
+    display: flex;
+    gap: 13px;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.question-item:hover {
+    background: #f5f7f9;
+}
+
+.question-item.active {
+    background: var(--blue-light);
+    border-left-color: var(--blue);
+}
+
+.question-number-small {
+    flex-shrink: 0;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    background: #eef0f2;
+
+    color: #555;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.question-item.active .question-number-small {
+    background: var(--blue);
+    color: white;
+}
+
+.question-text {
+    color: #333;
+
+    font-size: 14px;
+    line-height: 1.4;
+
+    font-weight: 500;
+}
+
+.question-item.active .question-text {
+    color: var(--blue-dark);
+    font-weight: 650;
+}
+
+
+/* =========================
+   CONTENT
+========================= */
+
+.content {
+    flex: 1;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    height: 100vh;
+}
+
+
+/* HEADER */
+
+.content-header {
+    background: white;
+
+    min-height: 94px;
+
+    border-bottom: 1px solid var(--border);
+
+    padding: 20px 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.eyebrow {
+    display: block;
+
+    color: var(--blue);
+
+    font-size: 11px;
+    font-weight: 750;
+
+    letter-spacing: 1.2px;
+
+    margin-bottom: 6px;
+}
+
+.content-header h2 {
+    font-size: 25px;
+    line-height: 1.25;
+
+    font-weight: 650;
+
+    max-width: 850px;
+}
+
+
+/* COPY BUTTON */
+
+.copy-btn {
+    flex-shrink: 0;
+
+    border: 1px solid #b8b8b8;
+
+    background: white;
+
+    color: #333;
+
+    padding: 9px 17px;
+
+    border-radius: 18px;
+
+    font-size: 13px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition: 0.15s;
+}
+
+.copy-btn:hover {
+    background: #f3f3f3;
+}
+
+.copy-btn.copied {
+    background: #057642;
+    border-color: #057642;
+    color: white;
+}
+
+
+/* =========================
+   ANSWER
+========================= */
+
+.answer-area {
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 40px 42px 30px;
+}
+
+.question-number {
+    color: var(--muted);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 10px;
+}
+
+.answer-card {
+    max-width: 900px;
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 30px 34px;
+
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.answer-label {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid #eeeeee;
+
+    margin-bottom: 25px;
+}
+
+.answer-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--blue);
+}
+
+.answer-text {
+    white-space: pre-line;
+
+    font-size: 17px;
+
+    line-height: 1.75;
+
+    color: #252525;
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.navigation {
+    background: white;
+
+    border-top: 1px solid var(--border);
+
+    min-height: 74px;
+
+    padding: 14px 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-btn {
+    border: 1px solid #c8c8c8;
+
+    background: white;
+
+    color: #333;
+
+    border-radius: 20px;
+
+    padding: 9px 18px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 13px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition: 0.15s;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: #f3f3f3;
+}
+
+.nav-btn.primary {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+}
+
+.nav-btn.primary:hover:not(:disabled) {
+    background: var(--blue-dark);
+}
+
+.nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.progress {
+    color: var(--muted);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================
+   EMPTY SEARCH
+========================= */
+
+.no-results {
+    padding: 30px 20px;
+
+    text-align: center;
+
+    color: var(--muted);
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c8c8c8;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+    :root {
+        --sidebar-width: 330px;
+    }
+
+    .content-header {
+        padding: 18px 25px;
+    }
+
+    .answer-area {
+        padding: 30px 25px;
+    }
+
+    .navigation {
+        padding: 14px 25px;
+    }
+
+    .answer-card {
+        padding: 25px;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .app {
+        height: auto;
+        min-height: 100vh;
+
+        flex-direction: column;
+        overflow: visible;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .question-list {
+        max-height: 280px;
+    }
+
+    .content {
+        height: auto;
+        min-height: 600px;
+    }
+
+    .content-header {
+        padding: 20px;
+        align-items: flex-start;
+    }
+
+    .content-header h2 {
+        font-size: 20px;
+    }
+
+    .copy-btn {
+        display: none;
+    }
+
+    .answer-area {
+        padding: 25px 20px;
+    }
+
+    .answer-card {
+        padding: 22px;
+    }
+
+    .answer-text {
+        font-size: 16px;
+        line-height: 1.7;
+    }
+
+    .navigation {
+        padding: 14px 20px;
+    }
+}
+	</style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+            <div class="logo">LL</div>
+
+            <div>
+                <h1>Interview Prep</h1>
+                <p>Lloyd Laboratories</p>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <span>⌕</span>
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search questions..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="question-count">
+            <span id="visibleCount">21</span> Questions
+        </div>
+
+        <nav id="questionList" class="question-list"></nav>
+
+    </aside>
+
+
+    <!-- RIGHT CONTENT -->
+    <main class="content">
+
+        <header class="content-header">
+
+            <div>
+                <span class="eyebrow">PHONE INTERVIEW</span>
+                <h2 id="questionTitle">Tell Me About Yourself</h2>
+            </div>
+
+            <button id="copyButton" class="copy-btn">
+                Copy Answer
+            </button>
+
+        </header>
+
+
+        <section class="answer-area">
+
+            <div class="question-number" id="questionNumber">
+                QUESTION 2
+            </div>
+
+            <div class="answer-card">
+
+                <div class="answer-label">
+                    <span class="answer-dot"></span>
+                    Suggested Answer
+                </div>
+
+                <div id="answerText" class="answer-text"></div>
+
+            </div>
+
+        </section>
+
+
+        <footer class="navigation">
+
+            <button id="previousButton" class="nav-btn">
+                <span>←</span>
+                Previous
+            </button>
+
+            <div class="progress">
+                <span id="currentIndex">1</span>
+                /
+                <span id="totalQuestions">21</span>
+            </div>
+
+            <button id="nextButton" class="nav-btn primary">
+                Next
+                <span>→</span>
+            </button>
+
+        </footer>
+
+    </main>
+
+</div>
+
+<script>
+const questions = [
+    {
+        number: 2,
+        question: "Tell Me About Yourself",
+        answer: `Good day ma'am. I'm Ivan Wesley Abueg, a Computer Technology graduate from Bulacan State University, and I'm applying for the System and Network Administrator position.
+
+I have hands-on experience in network installation, computer systems maintenance, and Windows system administration. During my OJT at the Municipality of Hagonoy, I helped set up the network from the main internet line down to the router — doing UTP cabling and RJ45 termination — and connected workstations for different departments so employees could get online and access shared resources. I also handled troubleshooting for computers, printers, and other IT equipment.
+
+On top of that, I hold a TESDA Computer Systems Servicing NC II certification, which trained me in setting up computer networks and servers, and in maintaining and repairing computer systems and networks. So beyond general IT support, I already have a foundation specifically in the server and network infrastructure side of things.
+
+I'm now looking for an opportunity where I can apply and grow that foundation, and build a long-term career in system and network administration.`
+    },
+
+    {
+        number: 3,
+        question: "Why Are You Interested in Lloyd Laboratories?",
+        answer: `I'm interested in Lloyd Laboratories because the role lines up closely with what I trained for — I have a TESDA NC II certification specifically in setting up computer networks and servers, and I'd like to apply that in a real production environment.
+
+I also like that Lloyd Laboratories is a company where technology and system reliability actually matter to the business — as a pharmaceutical manufacturer, your operations depend on IT infrastructure running smoothly, and that's exactly the kind of responsibility I want to grow into.
+
+I also noticed the company values adaptability, proactive problem-solving, and open communication — those are qualities I already try to practice, and I want to keep developing them as I start my professional career.
+
+Overall, I'm looking for a company where I can contribute what I already know in networking and systems, keep learning, and grow long-term with the organization.`
+    },
+
+    {
+        number: 4,
+        question: "What Do You Know About LloydLabs?",
+        answer: `From what I learned, Lloyd Laboratories is a pharmaceutical manufacturing company that supports its marketing partners with the latest pharmaceutical technology, with a vision of becoming a global leader in healthcare products.
+
+What stood out to me is the company's strong focus on quality — following international standards like USFDA, WHO, and ISO 9001, and continuously upgrading its technical and quality systems. I also read that the company has kept zero non-conformance for ten straight years of ISO 9001 audits, which tells me quality isn't just a policy here, it's built into daily operations.
+
+I also learned the company's core values include timeliness, honesty, proactive problem-solving, adaptability, respect and open communication, commitment, productivity, and efficiency.
+
+I think those values matter a lot for a System and Network Administrator role too, since IT infrastructure directly supports the reliability, uptime, and efficiency that a manufacturing and quality-driven company like this depends on.`
+    },
+
+    {
+        number: 5,
+        question: "Why Should We Hire You?",
+        answer: `I believe you should consider me because, even as a fresh graduate, I already have practical, hands-on experience that's directly relevant to this specific role — not just general IT support.
+
+I hold a TESDA Computer Systems Servicing NC II certification, which specifically covered installing and configuring computer systems, setting up computer networks, setting up computer servers, and maintaining and repairing computer systems and networks. During my OJT at the Municipality of Hagonoy, I put that into practice — I set up the network connection from the main internet line to the router and connected workstations for different departments, plus handled ongoing troubleshooting for computers, printers, and network issues.
+
+So for a System and Network Administrator opening where server and network infrastructure experience is a plus, I already have both the certification and the real-world hands-on exposure to back it up.
+
+I'm also someone who's proactive and adaptable — I noticed those are values Lloyd Laboratories looks for — and I'm ready to keep learning from experienced people on the team while contributing from day one.`
+    },
+
+    {
+        number: 6,
+        question: "What Are Your Strengths?",
+        answer: `One of my strengths is troubleshooting, especially on the networking side. When something's not connecting properly, I don't just start swapping cables randomly — I trace the problem step by step, from the physical connection, to the IP configuration, to the device settings, until I find the actual cause.
+
+I'm also hands-on with infrastructure work. Between my OJT and my TESDA training, I've done actual UTP cabling and RJ45 termination, set up network connections from the source down to end-user workstations, and worked with basic server and network setup — so I'm comfortable being on the ground doing the physical and technical work, not just the theory.
+
+I'm also proactive. I try to investigate an issue and narrow down possible causes myself before escalating, which I think is important in a system administration role where problems need to get resolved efficiently.
+
+And I value clear communication, since network and system issues usually affect other people's work, so keeping users and the team informed matters just as much as fixing the issue itself.`
+    },
+
+    {
+        number: 7,
+        question: "What Is Your Weakness?",
+        answer: `One area I'm still improving is my confidence when I'm brand new to a professional environment — I can be a little reserved at first until I get comfortable with the team and the systems in place.
+
+I've been working on this by asking questions early instead of waiting, and by communicating proactively when I run into something I'm unfamiliar with. My OJT helped a lot with this, since I had to coordinate with different departments regularly, and I noticed I became more comfortable communicating the more exposure I got.`
+    },
+
+    {
+        number: 8,
+        question: "Do You Have Work Experience?",
+        answer: `I'm a fresh graduate, so I don't have extensive full-time professional experience yet, but I do have relevant hands-on experience from my OJT at the Municipality of Hagonoy, where I worked on network installation and IT support.
+
+That included setting up the connection from the main internet line to the router, UTP cabling and RJ45 termination, connecting and configuring workstations for different departments, and troubleshooting computers, printers, and other equipment.
+
+I also have a TESDA Computer Systems Servicing NC II certification, which gave me structured, hands-on training specifically in setting up computer networks and servers — so my experience isn't limited to general troubleshooting, it also covers the infrastructure side that's relevant to this role.`
+    },
+
+    {
+        number: 9,
+        question: "Tell Me About Your OJT",
+        answer: `My OJT was at the Municipality of Hagonoy, where I worked as an IT support trainee focused on network and systems tasks.
+
+One of the main things I worked on was setting up network connectivity — running and terminating UTP cable from the main internet line to the router, then connecting and configuring workstations for different departments so employees could get online.
+
+I also handled day-to-day troubleshooting: computers, printers, routers, and other equipment, plus Windows installation, formatting, OS recovery, and hardware diagnostics.
+
+The experience taught me that infrastructure work isn't just about getting a connection to work once — it's about making sure it's reliable, correctly configured, and that the end users actually understand what changed. That combination of technical accuracy and clear communication is something I carried forward.`
+    },
+
+    {
+        number: 10,
+        question: "What Technical Skills Do You Have?",
+        answer: `My core skills are in networking, systems administration, and IT support, with hands-on experience backed by a TESDA NC II certification.
+
+For networking: UTP cabling, RJ45 termination, IPv4 configuration, TCP/IP fundamentals, wired and wireless connectivity, router configuration and connectivity, and network troubleshooting — including setting up a connection from a main internet source down to end-user workstations.
+
+For systems and server administration: Windows OS, Windows Server fundamentals, basic Active Directory, Microsoft 365, and computer system deployment — this is the area my TESDA certification specifically trained me in, covering server setup and network configuration.
+
+For IT support: computer troubleshooting, hardware installation and maintenance, printer troubleshooting, workstation setup, and software installation.
+
+I also have some programming and web development background — JavaScript, PHP, Java, C++, HTML, CSS, REST APIs, and MySQL — plus IoT experience with Arduino and ESP32, which I used in my thesis project.`
+    },
+
+    {
+        number: 11,
+        question: "Tell Me About Your Capstone/Thesis Project",
+        answer: `My thesis project was a Solar-Powered Automated Smart Hydroponic Vertical Farming System with remote management, built using Arduino and ESP32.
+
+On the networking and infrastructure side, the ESP32 modules needed to communicate reliably over the network in real time to send sensor data and receive commands, so I had to make sure the connectivity and data flow were stable — which tied directly into the networking fundamentals I was learning at the time.
+
+On the software side, I worked with HTML, CSS, JavaScript, PHP, MySQL, and REST APIs to build the web-based monitoring and management system that received and displayed the ESP32's real-time data.
+
+The project combined hardware integration, networking, and troubleshooting, and it received a Best in Thesis Award at Bulacan State University — which meant a lot, since it required getting the hardware, network communication, and software all working together reliably.`
+    },
+
+    {
+        number: 12,
+        question: "How Do You Troubleshoot a Technical Problem?",
+        answer: `First, I try to understand and reproduce the problem — for a network issue, that means checking whether it's a physical connectivity problem, an IP configuration issue, or something on the device or server side.
+
+I isolate the cause by checking one layer at a time — physical cabling and connections first, then network configuration, then the device or system itself — instead of changing multiple things at once, since that makes it hard to tell what actually fixed it.
+
+Once I identify the likely cause, I apply the simplest, safest fix first and test the connection or system again to confirm it's fully resolved, not just working intermittently.
+
+If I can't resolve it myself, I document what I've already checked and ruled out, then bring that to someone more experienced so we can move faster together.`
+    },
+
+    {
+        number: 13,
+        question: "What Would You Do If You Don't Know How to Solve Something?",
+        answer: `I'd first try to investigate it myself using documentation or reliable resources, and narrow down what I do and don't know about the problem.
+
+If I still can't resolve it, I'd ask someone more experienced — but only after I've already done the groundwork, so I can clearly explain what I tried and what I ruled out. That way it's a faster, more useful conversation instead of just handing off the problem.
+
+I see that as part of being proactive — it's not about solving everything alone, it's about knowing when to loop in people with more experience and learning from how they approach it.`
+    },
+
+    {
+        number: 14,
+        question: "Are You Willing to Learn New Technologies?",
+        answer: `Yes, definitely — especially for this role, since I know network and server environments vary a lot between companies.
+
+During college and my TESDA training, I worked across different networking setups, hardware platforms, and systems, so I'm used to picking up new tools and environments as needed rather than expecting everything to be exactly the same as what I trained on.
+
+I also noticed Lloyd Laboratories puts real emphasis on continuous training and upgrading its technical systems, which is something I specifically want — I'd rather join a company where I keep growing technically than one where my skills stay static.`
+    },
+
+    {
+        number: 15,
+        question: "Where Do You See Yourself in 3–5 Years?",
+        answer: `In three to five years, I want to be an experienced System and Network Administrator who can independently manage network infrastructure and support critical systems with minimal supervision.
+
+Since I already have a foundation in networking and basic server administration through my TESDA certification and OJT, my goal is to deepen that — getting more advanced in server management, network security, and infrastructure planning.
+
+I also want to be someone the team can rely on for maintaining stable, efficient systems, especially in an environment like Lloyd Laboratories where uptime and reliability actually matter to operations.
+
+Most importantly, I want to keep growing with the company long-term rather than treating this as a stepping stone.`
+    },
+
+    {
+        number: 16,
+        question: "Are You Willing to Work Under Pressure?",
+        answer: `Yes. I understand that network or system issues can be urgent, especially if they affect multiple users or ongoing operations.
+
+When that happens, I try to stay calm, quickly assess the impact, and prioritize based on what's affecting the most people or the most critical process — rather than reacting to whatever comes in first.
+
+My OJT helped with this too, since I sometimes had to handle several technical requests from different departments at once, and I learned to stay systematic instead of rushing and risking a bigger issue.`
+    },
+
+    {
+        number: 17,
+        question: "Are You Willing to Work Overtime If Necessary?",
+        answer: `Yes, when it's genuinely needed — for example, urgent network issues, server maintenance, or deadlines that require extra time.
+
+I'm glad to help in those situations, as long as the work is properly planned and communicated so it's handled efficiently rather than just extending hours unnecessarily.`
+    },
+
+    {
+        number: 18,
+        question: "What Salary Are You Expecting?",
+        answer: `If they ask early in the interview:
+
+"I'm open to discussing the company's budget for the position. Since I'm a fresh graduate, my priority right now is finding the right opportunity where I can apply what I've trained for, gain real experience, and grow into the role.
+
+That said, I'd be happy to consider a salary that's fair based on the responsibilities of the position and the company's overall compensation package."
+
+If they require a specific number:
+
+"Based on what I found from sites like Google and Indeed, entry-level IT/network roles here are generally ranging from around ₱22,000 to ₱33,000. Given my background and the responsibilities of this position, I'd be comfortable with something around ₱20,000 to ₱25,000. I'm still open to discussion depending on the full compensation package, benefits, and scope of responsibilities."`
+    },
+
+    {
+        number: 19,
+        question: "Are You Currently Applying to Other Companies?",
+        answer: `Yes, I'm currently exploring a few opportunities that align with my background in networking and systems administration.
+
+I'm mainly focused on roles where I can apply my training in network and server infrastructure specifically, since that's the direction I want to grow in.
+
+That said, I'm not just looking for any opening — I'm looking for a company like Lloyd Laboratories where I can contribute, keep learning, and build a long-term career.`
+    },
+
+    {
+        number: 20,
+        question: "When Can You Start?",
+        answer: `I'm available to start immediately, or based on the company's preferred start date.`
+    },
+
+    {
+        number: 21,
+        question: "Do You Have Any Questions for Us?",
+        answer: `Yes, I have a few questions.
+
+First, what would you consider the most important skill or quality for someone to succeed in this System and Network Administrator role during their first six months?
+
+Also, could you tell me more about what the network and server infrastructure setup looks like here, and what a typical day in this role would involve?
+
+And lastly, what kind of training or learning opportunities are available for someone joining the IT team?
+
+If they only want one question:
+
+"What would you consider the most important skill or quality for someone to succeed in this position during their first six months?"`
+    },
+
+    {
+        number: 22,
+        question: "Closing the Call",
+        answer: `Thank you very much for your time and for giving me the opportunity to discuss the System and Network Administrator position.
+
+I appreciate learning more about the role and about Lloyd Laboratories. I'm genuinely interested in the opportunity, and I hope to have the chance to move forward with the next step of the process.
+
+Thank you again, and have a great day.`
+    }
+];
+/*
+const questions = [
+    {
+        number: 2,
+        question: "Tell Me About Yourself",
+        answer: `Sure. I’m Ivan Wesley Abueg, a Computer Technology graduate from Bulacan State University.
+
+I have hands-on experience in IT technical support, networking, computer systems maintenance, and Windows system administration. During my OJT at the Municipality of Hagonoy, I provided technical support by troubleshooting computers, printers, routers, and other IT equipment. I also worked with UTP cabling, RJ45 termination, basic IPv4 configuration, network connectivity, Windows installation, and hardware diagnostics.
+
+I also have experience with programming, databases, and IoT technologies through my academic projects. I’m now looking for an opportunity where I can apply my technical skills, continue learning, and build a long-term career in IT.`
+    },
+
+    {
+        number: 3,
+        question: "Why Are You Interested in Lloyd Laboratories?",
+        answer: `I’m interested in Lloyd Laboratories because I see an opportunity to apply my technical background in a company that values technology, continuous improvement, and quality.
+
+I also like that Lloyd Laboratories focuses on providing healthcare products while continuously upgrading its technical and quality systems. As a Computer Technology graduate, I’m interested in working in an environment where technology is important to the company’s operations.
+
+I also noticed that the company values adaptability, proactive problem-solving, open communication, commitment, productivity, and efficiency. Those are qualities I want to develop further as I start my professional career.
+
+I’m looking for a company where I can contribute what I already know, continue learning, and grow with the organization.`
+    },
+
+    {
+        number: 4,
+        question: "What Do You Know About LloydLabs?",
+        answer: `From what I learned, Lloyd Laboratories is a pharmaceutical manufacturing company focused on providing healthcare products and supporting its partners through pharmaceutical technology and innovation.
+
+One thing that stood out to me is the company’s focus on quality. Lloyd Laboratories follows international standards and guidelines and continuously upgrades its technical and quality systems.
+
+I also learned that the company values timeliness, honesty, proactive problem-solving, adaptability, respect and open communication, commitment, productivity, and efficiency.
+
+I think those values are important in an IT role as well, especially because IT supports the reliability and efficiency of the company’s operations.`
+    },
+
+    {
+        number: 5,
+        question: "Why Should We Hire You?",
+        answer: `I believe you should consider me because although I’m a fresh graduate, I already have hands-on experience in technical support, networking, computer systems, and troubleshooting.
+
+During my OJT at the Municipality of Hagonoy, I worked with computers, printers, routers, network connections, Windows systems, and hardware troubleshooting. I also have training in computer systems servicing, including computer networks and servers.
+
+I’m also someone who is willing to learn and adapt. I noticed that Lloyd Laboratories values being proactive in solving problems, adaptability, commitment, productivity, and efficiency, and I believe those are qualities that I can bring to the role.
+
+I may still have a lot to learn, but I’m willing to put in the effort, learn from experienced people, and contribute to the team.`
+    },
+
+    {
+        number: 6,
+        question: "What Are Your Strengths?",
+        answer: `One of my strengths is troubleshooting. When I encounter a technical problem, I try to understand the cause first and approach the problem systematically rather than making random changes.
+
+I’m also adaptable. During my OJT and academic projects, I worked with different hardware, software, networking equipment, and technologies, so I became comfortable learning new things when needed.
+
+Another strength is that I’m proactive when solving problems. I try to investigate an issue first, identify possible causes, and find a solution before asking for assistance.
+
+I also value communication and teamwork because I understand that technical work often involves helping and coordinating with other people.`
+    },
+
+    {
+        number: 7,
+        question: "What Is Your Weakness?",
+        answer: `One area I’m still improving is my confidence when communicating in a completely new professional environment.
+
+When I’m new to a team, I can initially be a little reserved. However, I’ve been working on this by communicating more, asking questions when necessary, and practicing how to explain technical issues clearly.
+
+I’ve become more comfortable with it through my OJT and working with other people on academic projects.`
+    },
+
+    {
+        number: 8,
+        question: "Do You Have Work Experience?",
+        answer: `I’m a fresh graduate, so I don’t have extensive full-time professional experience yet. However, I completed my OJT at the Municipality of Hagonoy, where I gained hands-on experience in IT technical support.
+
+I provided support for computers, printers, routers, and other IT equipment. I also worked with network installation, UTP cabling, RJ45 termination, IPv4 configuration, Windows installation, hardware troubleshooting, and network connectivity.
+
+I also have practical experience from my academic projects, particularly in web development, databases, networking, and IoT.`
+    },
+
+    {
+        number: 9,
+        question: "Tell Me About Your OJT",
+        answer: `My OJT was at the Municipality of Hagonoy, where I worked as an IT technical support trainee.
+
+I assisted municipal employees with technical issues involving computers, printers, routers, mobile devices, and other IT equipment. I also helped with network installation and troubleshooting, including UTP cabling, RJ45 termination, router connectivity, and basic IPv4 configuration.
+
+I also performed computer setup, Windows installation and formatting, operating system recovery, hardware diagnostics, and maintenance.
+
+The experience taught me that technical support is not only about fixing the technical problem. You also need to communicate properly with the user, understand what they are experiencing, and make sure the issue is actually resolved.`
+    },
+
+    {
+        number: 10,
+        question: "What Technical Skills Do You Have?",
+        answer: `My main technical skills are in IT support, networking, Windows systems, hardware, and basic system administration.
+
+For networking, I have experience with UTP cabling, RJ45 termination, IPv4 configuration, TCP/IP fundamentals, wired and wireless connectivity, router connectivity, and basic network troubleshooting.
+
+For system administration, I have experience with Windows OS, Windows Server fundamentals, basic Active Directory, Microsoft 365, operating system installation and configuration, and computer system deployment.
+
+For IT support, I have experience with computer troubleshooting, hardware installation and maintenance, printer troubleshooting, workstation setup, and software installation.
+
+I also have programming and web development experience with JavaScript, PHP, Java, C++, HTML, CSS, REST APIs, JSON, and MySQL. I’ve also worked with Arduino and ESP32 for IoT projects.`
+    },
+
+    {
+        number: 11,
+        question: "Tell Me About Your Capstone/Thesis Project",
+        answer: `My thesis project was a Solar-Powered Automated Smart Hydroponic Vertical Farming System with remote management.
+
+The system used Arduino and ESP32-based technologies together with sensors and automated components. It was designed to monitor the system and allow remote management.
+
+On the software side, I worked with HTML, CSS, JavaScript, PHP, MySQL, and REST APIs for the web-based monitoring and management system. The ESP32 communicated with the system for real-time IoT data.
+
+The project involved programming, hardware integration, troubleshooting, and connecting the hardware with the web-based monitoring system.
+
+Our project received a Best in Thesis Award at Bulacan State University, which was a great experience because it required us to combine hardware, software, networking, and problem-solving skills.`
+    },
+
+    {
+        number: 12,
+        question: "How Do You Troubleshoot a Technical Problem?",
+        answer: `First, I try to understand and reproduce the problem.
+
+Then I determine whether the issue is related to hardware, software, configuration, network connectivity, or possibly user error.
+
+After identifying the possible cause, I test the simplest and safest solution first. I try not to change multiple things at the same time because that can make it difficult to determine what actually caused or fixed the problem.
+
+After applying a solution, I test the system again to make sure the issue has been completely resolved.
+
+If I can’t solve the problem myself, I document what I’ve already checked and ask someone more experienced for assistance.`
+    },
+
+    {
+        number: 13,
+        question: "What Would You Do If You Don't Know How to Solve Something?",
+        answer: `I would first try to understand the problem and investigate possible solutions using appropriate documentation or resources.
+
+If I still couldn’t resolve it, I would ask someone more experienced for guidance. Before doing that, I would make sure I already investigated the problem and can explain what I tried.
+
+I think that approach is important because being proactive doesn’t mean trying to solve everything alone. It also means knowing when to ask for help and learning from the people who have more experience.`
+    },
+
+    {
+        number: 14,
+        question: "Are You Willing to Learn New Technologies?",
+        answer: `Yes, definitely.
+
+I understand that technology continues to change, and I don’t expect to know everything immediately.
+
+During college, I worked with different programming languages, databases, networking technologies, hardware platforms, and IoT technologies. I had to learn new tools depending on the project, so I’m already used to learning technologies that I haven’t worked with before.
+
+I also noticed that Lloyd Laboratories emphasizes continuous education, training, and upgrading its technical and quality systems. That is something I appreciate because I want to work in an environment where continuous learning is encouraged.`
+    },
+
+    {
+        number: 15,
+        question: "Where Do You See Yourself in 3–5 Years?",
+        answer: `In three to five years, I want to become a more experienced IT professional who can independently handle technical problems and contribute to important projects.
+
+Based on my current background, I’m particularly interested in developing my skills in system administration, networking, and IT infrastructure.
+
+I also want to become someone the team can rely on when it comes to troubleshooting and maintaining reliable IT systems.
+
+Most importantly, I want to continue learning and growing with the company while contributing to its productivity and efficiency. My goal is to build a long-term career in the technology field.`
+    },
+
+    {
+        number: 16,
+        question: "Are You Willing to Work Under Pressure?",
+        answer: `Yes.
+
+I understand that IT problems can sometimes be urgent, especially when they affect users or business operations.
+
+When working under pressure, I try to stay calm and focus on understanding the problem first. I prioritize issues based on their impact and work through them systematically instead of rushing and potentially creating additional problems.
+
+My OJT also helped me become more comfortable handling multiple technical issues while making sure the users’ problems were properly addressed.`
+    },
+
+    {
+        number: 17,
+        question: "Are You Willing to Work Overtime If Necessary?",
+        answer: `Yes, when the situation genuinely requires it. I understand that there may be urgent technical issues, maintenance, or deadlines that require additional time.
+
+I’m willing to help when necessary, while also making sure that the work is properly planned and communicated so that it can be completed efficiently.`
+    },
+
+    {
+        number: 18,
+        question: "What Salary Are You Expecting?",
+        answer: `If they ask early in the interview:
+
+“I’m open to discussing the company’s budget for the position. Since I’m a fresh graduate, my priority is also finding a good opportunity where I can gain experience, contribute to the team, and grow professionally.
+
+That said, I would be happy to consider a salary that is fair based on the responsibilities of the role and the company’s overall compensation package.”
+
+If they require a specific number:
+
+“Based on the responsibilities of the position and my technical background, I would be comfortable with something around ₱18,000 to ₱22,000. However, I’m still open to discussion depending on the overall compensation package, benefits, and responsibilities.”`
+    },
+
+    {
+        number: 19,
+        question: "Are You Currently Applying to Other Companies?",
+        answer: `Yes, I’m currently exploring opportunities that are aligned with my technical background.
+
+I’m mainly looking for positions where I can apply my experience in technical support, networking, systems, and technology while continuing to develop professionally.
+
+I’m not simply looking for any job. I’m looking for a company where I can learn, contribute, and build a long-term career.`
+    },
+
+    {
+        number: 20,
+        question: "When Can You Start?",
+        answer: `I’m available to start immediately, or based on the company’s preferred start date.`
+    },
+
+    {
+        number: 21,
+        question: "Do You Have Any Questions for Us?",
+        answer: `Yes, I have a few questions.
+
+First, what would you consider the most important skill or quality for someone to succeed in this position during their first six months?
+
+Also, could you tell me a little more about what a typical day would look like for someone in this position?
+
+And lastly, what kind of training or learning opportunities are available for someone joining the team?
+
+If they only want one question:
+
+“What would you consider the most important skill or quality for someone to succeed in this position during their first six months?”`
+    },
+
+    {
+        number: 22,
+        question: "Closing the Call",
+        answer: `Thank you very much for your time and for giving me the opportunity to discuss the position.
+
+I appreciate learning more about the role and LloydLabs. I’m very interested in the opportunity, and I hope to have the chance to move forward with the next step of the process.
+
+Thank you again, and have a great day.`
+    }
+];
+*/
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const questionList = document.getElementById("questionList");
+const searchInput = document.getElementById("searchInput");
+
+const questionTitle = document.getElementById("questionTitle");
+const questionNumber = document.getElementById("questionNumber");
+const answerText = document.getElementById("answerText");
+
+const previousButton = document.getElementById("previousButton");
+const nextButton = document.getElementById("nextButton");
+
+const currentIndex = document.getElementById("currentIndex");
+const totalQuestions = document.getElementById("totalQuestions");
+
+const visibleCount = document.getElementById("visibleCount");
+const copyButton = document.getElementById("copyButton");
+
+
+/* =========================
+   STATE
+========================= */
+
+let filteredQuestions = [...questions];
+let currentQuestionIndex = 0;
+
+
+/* =========================
+   RENDER QUESTION LIST
+========================= */
+
+function renderQuestionList() {
+
+    questionList.innerHTML = "";
+
+    if (filteredQuestions.length === 0) {
+
+        questionList.innerHTML = `
+            <div class="no-results">
+                No questions found.
+            </div>
+        `;
+
+        visibleCount.textContent = "0";
+        return;
+    }
+
+    filteredQuestions.forEach((item, index) => {
+
+        const button = document.createElement("button");
+
+        button.className = "question-item";
+
+        if (index === currentQuestionIndex) {
+            button.classList.add("active");
+        }
+
+        button.innerHTML = `
+            <span class="question-number-small">
+                ${item.number}
+            </span>
+
+            <span class="question-text">
+                ${item.question}
+            </span>
+        `;
+
+        button.addEventListener("click", () => {
+
+            currentQuestionIndex = index;
+
+            displayQuestion();
+
+        });
+
+        questionList.appendChild(button);
+
+    });
+
+    visibleCount.textContent = filteredQuestions.length;
+}
+
+
+/* =========================
+   DISPLAY QUESTION
+========================= */
+
+function displayQuestion() {
+
+    if (filteredQuestions.length === 0) {
+        return;
+    }
+
+    const item = filteredQuestions[currentQuestionIndex];
+
+    questionTitle.textContent = item.question;
+
+    questionNumber.textContent =
+        `QUESTION ${item.number}`;
+
+    answerText.textContent = item.answer;
+
+    currentIndex.textContent =
+        currentQuestionIndex + 1;
+
+    totalQuestions.textContent =
+        filteredQuestions.length;
+
+    previousButton.disabled =
+        currentQuestionIndex === 0;
+
+    nextButton.disabled =
+        currentQuestionIndex === filteredQuestions.length - 1;
+
+    renderQuestionList();
+
+    scrollActiveQuestionIntoView();
+}
+
+
+/* =========================
+   SCROLL ACTIVE QUESTION
+========================= */
+
+function scrollActiveQuestionIntoView() {
+
+    const activeQuestion =
+        document.querySelector(".question-item.active");
+
+    if (!activeQuestion) {
+        return;
+    }
+
+    activeQuestion.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+    });
+}
+
+
+/* =========================
+   NEXT
+========================= */
+
+function nextQuestion() {
+
+    if (
+        currentQuestionIndex <
+        filteredQuestions.length - 1
+    ) {
+
+        currentQuestionIndex++;
+
+        displayQuestion();
+    }
+}
+
+
+/* =========================
+   PREVIOUS
+========================= */
+
+function previousQuestion() {
+
+    if (currentQuestionIndex > 0) {
+
+        currentQuestionIndex--;
+
+        displayQuestion();
+    }
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+searchInput.addEventListener("input", function () {
+
+    const searchTerm =
+        this.value
+            .trim()
+            .toLowerCase();
+
+    filteredQuestions = questions.filter(item => {
+
+        return (
+            item.question
+                .toLowerCase()
+                .includes(searchTerm)
+        );
+
+    });
+
+    currentQuestionIndex = 0;
+
+    displayQuestion();
+
+});
+
+
+/* =========================
+   COPY ANSWER
+========================= */
+
+copyButton.addEventListener("click", async function () {
+
+    if (filteredQuestions.length === 0) {
+        return;
+    }
+
+    const answer =
+        filteredQuestions[currentQuestionIndex].answer;
+
+    try {
+
+        await navigator.clipboard.writeText(answer);
+
+        copyButton.textContent = "Copied!";
+
+        copyButton.classList.add("copied");
+
+        setTimeout(() => {
+
+            copyButton.textContent = "Copy Answer";
+
+            copyButton.classList.remove("copied");
+
+        }, 1600);
+
+    } catch (error) {
+
+        const textarea =
+            document.createElement("textarea");
+
+        textarea.value = answer;
+
+        document.body.appendChild(textarea);
+
+        textarea.select();
+
+        document.execCommand("copy");
+
+        textarea.remove();
+
+        copyButton.textContent = "Copied!";
+
+        copyButton.classList.add("copied");
+
+        setTimeout(() => {
+
+            copyButton.textContent = "Copy Answer";
+
+            copyButton.classList.remove("copied");
+
+        }, 1600);
+    }
+
+});
+
+
+/* =========================
+   NAVIGATION BUTTONS
+========================= */
+
+nextButton.addEventListener(
+    "click",
+    nextQuestion
+);
+
+previousButton.addEventListener(
+    "click",
+    previousQuestion
+);
+
+
+/* =========================
+   KEYBOARD NAVIGATION
+========================= */
+
+document.addEventListener("keydown", function (event) {
+
+    /*
+       Don't navigate while typing
+       in the search box.
+    */
+
+    if (
+        document.activeElement === searchInput
+    ) {
+        return;
+    }
+
+    if (event.key === "ArrowDown") {
+
+        event.preventDefault();
+
+        nextQuestion();
+
+    }
+
+    if (event.key === "ArrowUp") {
+
+        event.preventDefault();
+
+        previousQuestion();
+
+    }
+
+});
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
+totalQuestions.textContent =
+    questions.length;
+
+renderQuestionList();
+
+displayQuestion();
+</script>
+</body>
+</html>
