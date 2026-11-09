@@ -1,2 +1,2 @@
 # ivnx9.github.io
-Hello guys, this is my simple page for now.
+I'm Ivan Abueg, this is my website portfolio. 
